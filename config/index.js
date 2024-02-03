@@ -1,0 +1,36 @@
+import config from "config";
+
+const configVariables = {
+  SYS_APP_CNF: config.get("SYS_APP_CNF"),
+  PRIVATE_API_KEY: config.get("PRIVATE_API_KEY"),
+  DATABASE_CONNECTION_URI_DEV: config.get("DATABASE_CONNECTION_URI_DEV"),
+  AWS_ACCESS_KEY_ID: config.get("AWS_ACCESS_KEY_ID"),
+  AWS_SECRET_ACCESS_KEY: config.get("AWS_SECRET_ACCESS_KEY"),
+  S3_BUCKET_NAME: config.get("S3_BUCKET_NAME"),
+  S3_BUCKET_NAME_PROFILE_PICS: config.get("S3_BUCKET_NAME_PROFILE_PICS"),
+  TIMEZONE: config.get("TIMEZONE"),
+  JWT_SECRET_KEY: config.get("JWT_SECRET_KEY"),
+  EMAIL_HOST: config.get("EMAIL_HOST"),
+  EMAIL_PORT: config.get("EMAIL_PORT"),
+  EMAIL_USER: config.get("EMAIL_USER"),
+  EMAIL_PASS: config.get("EMAIL_PASS"),
+  EMAIL_FROM: config.get("EMAIL_FROM"),
+  FAST2SMS_API_KEY: config.get("FAST2SMS_API_KEY"),
+  FAST2SMS_API_ROUTE: config.get("FAST2SMS_API_ROUTE"),
+  FAST2SMS_API_SENDER_ID: config.get("FAST2SMS_API_SENDER_ID"),
+  FRONT_END_URL: config.get("FRONT_END_URL"),
+  EXPIRED_IN: config.get("EXPIRED_IN"),
+  REFRESH_EXPIRED_IN: config.get("REFRESH_EXPIRED_IN"),
+  STRIPE_PUBLISHABLE_KEY: config.get("STRIPE_PUBLISHABLE_KEY"),
+  STRIPE_SECRET_KEY: config.get("STRIPE_SECRET_KEY"),
+  STRIPE_WEBHOOK_SECRET: config.get("STRIPE_WEBHOOK_SECRET"),
+  BASIC: config.get("BASIC"),
+  PREMIUM: config.get("PREMIUM"),
+  SSO_SERVER_JWT_URL: config.get("SSO_SERVER_JWT_URL"),
+  ENDPOINT_SECRET_STRIPE: config.get("ENDPOINT_SECRET_STRIPE"),
+  STRIPE_SECRET: config.get("STRIPE_SECRET"),
+  MEMBER_LOGIN: config.get("MEMBER_LOGIN"),
+  API_KEY: config.get("API_KEY")
+};
+
+export default configVariables;
