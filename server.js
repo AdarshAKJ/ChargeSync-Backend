@@ -5,7 +5,7 @@ import { mongooseConnection } from "./src/mongodb";
 
 let db;
 // eslint-disable-next-line no-undef
-const port = 8004;
+const port = 8010;
 
 /** Connect to Mongo */
 

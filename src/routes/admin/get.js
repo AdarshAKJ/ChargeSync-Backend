@@ -36,4 +36,37 @@ export const listAdminHandler = async (req, res) => {
   }
 };
 
-export const infoAdminHandler = async (req, res) => {};
+export const infoAdminHandler = async (req, res) => {
+  try {
+    if (!req.params.id) throw new CustomError(`Please provide valid id`);
+
+    const isAvailable = await adminModel.findOne(
+      { isDeleted: false, id: req.params.id },
+      { password: 0 }
+    );
+
+    if (!isAvailable) throw new CustomError(`Admin doesn't exist`);
+
+    return res
+      .status(StatusCodes.OK)
+      .send(responseGenerators(isAvailable, StatusCodes.OK, "SUCCESS", 0));
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};

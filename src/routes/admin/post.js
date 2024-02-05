@@ -2,9 +2,12 @@ import { ValidationError } from "webpack";
 import {
   createAdminValidation,
   deleteAdminValidation,
+  loginAdminValidation,
+  loginMemberValidation,
   updateAdminValidation,
 } from "../../helpers/validations/admin.user.validation";
 import {
+  comparePassword,
   getCurrentUnix,
   hashPassword,
   setPagination,
@@ -13,6 +16,7 @@ import { StatusCodes } from "http-status-codes";
 import { CustomError } from "../../helpers/custome.error";
 import adminModel from "../../models/admin";
 import { responseGenerators } from "../../lib/utils";
+import { getJwt } from "../../helpers/Jwt.helper";
 
 // Create Admin
 export const createAdminHandler = async (req, res) => {
@@ -151,9 +155,9 @@ export const updateAdminHandler = async (req, res) => {
 export const deleteAdminHandler = async (req, res) => {
   try {
     if (!req.params.id) throw new CustomError(`Please provide vaild id`);
-    const isAvailable = await adminModel.findone({
+    const isAvailable = await adminModel.findOne({
       isDeleted: false,
-      email: req.body.id,
+      id: req.params.id,
     });
     if (!isAvailable) throw new CustomError(`Admin dosnt't exists`);
 
@@ -172,6 +176,59 @@ export const deleteAdminHandler = async (req, res) => {
         );
     }
     console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+// login adminModel
+export const loginAdminHandler = async (req, res) => {
+  try {
+    await loginAdminValidation.validateAsync(req.body);
+    let loginData = await adminModel.findOne({
+      email: req.body.email,
+      isDeleted: false,
+    });
+
+    if (!loginData) throw new CustomError(`Invalid email or password.`);
+
+    let isPasswordMatched = await comparePassword(
+      req.body.password,
+      loginData.password
+    );
+    if (!isPasswordMatched) throw new CustomError(`Invalid email or password.`);
+    let loginDataRaw = loginData.toJSON();
+    loginData.lastLogin = getCurrentUnix();
+    loginData.save();
+    delete loginDataRaw.password;
+    let jswToken = await getJwt(loginDataRaw);
+
+    return res
+      .status(StatusCodes.OK)
+      .send(
+        responseGenerators(
+          { token: jswToken, userData: loginData, loginCompleted: true },
+          StatusCodes.OK,
+          "SUCCESS",
+          0
+        )
+      );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send(

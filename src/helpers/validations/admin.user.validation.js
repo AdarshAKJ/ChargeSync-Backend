@@ -68,3 +68,8 @@ export const deleteAdminValidation = Joi.object({
       .required(),
   }),
 });
+
+export const loginAdminValidation = Joi.object({
+  email: Joi.string().required(),
+  password: Joi.string().required(),
+});
