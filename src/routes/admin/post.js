@@ -77,33 +77,8 @@ export const updateAdminHandler = async (req, res) => {
     let isAvailable = await adminModel.findOne({
       $and: [
         { isDeleted: false },
-        { _id: { $ne: req.params.id } },
-        {
-          $or: [
-            { email: req.body.email },
-            { clientName: req.body.clientName },
-            { userName: req.body.userName },
-            {
-              mobileNumber: req.body.mobileNumber,
-            },
-          ],
-        },
-      ],
-    });
-
-    isAvailable = await ClientModel.findOne({
-      $and: [
-        { isDeleted: false },
-        { _id: { $ne: req.params.id } },
-        {
-          $or: [
-            { clientName: req.body.clientName },
-            { userName: req.body.userName },
-            {
-              mobileNumber: req.body.mobileNumber,
-            },
-          ],
-        },
+        { id: { $ne: req.params.id } },
+        { email: req.body.email },
       ],
     });
 
@@ -113,7 +88,7 @@ export const updateAdminHandler = async (req, res) => {
       );
 
     let updatedData = await adminModel.findOneAndUpdate(
-      { _id: req.params.id },
+      { id: req.params.id },
       { ...req.body },
       { new: true }
     );
@@ -159,6 +134,7 @@ export const deleteAdminHandler = async (req, res) => {
       isDeleted: false,
       id: req.params.id,
     });
+
     if (!isAvailable) throw new CustomError(`Admin dosnt't exists`);
 
     isAvailable.isDeleted = true;

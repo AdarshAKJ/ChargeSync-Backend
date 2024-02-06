@@ -11,62 +11,42 @@ export const createAdminValidation = Joi.object({
     "any.required": "Please provide the valid name",
     "string.base": "Please provide the valid name",
   }),
-  email: Joi.string().when("login_type", {
-    is: REGISTER.LOGIN_TYPE_EMAIL,
-    then: Joi.string().email().required(),
-  }),
-  phone: Joi.string().when("login_type", {
-    is: REGISTER.LOGIN_TYPE_PHONE_NUMBER,
-    then: Joi.string()
-      .min(7)
-      .max(12)
-      .pattern(/^[0-9]+$/),
-    // .required(),
-  }),
+  gender: Joi.string().valid("Male", "Female", "Others").optional(),
+  status: Joi.string().valid("Active", "Inactive").optional(),
+  email: Joi.string().email().required(),
+  phone: Joi.string()
+    .min(7)
+    .max(12)
+    .pattern(/^[0-9]+$/)
+    .optional(),
   password: Joi.string().required(),
 });
 
 export const updateAdminValidation = Joi.object({
   id: Joi.string().required(),
   // auth_type: Joi.string().optional().allow(null),
-  fname: Joi.string().required().messages({
+  fname: Joi.string().optional().messages({
     "any.required": `Please provide the valid name.`,
     "string.base": "Please provide the valid name",
   }),
-  lname: Joi.string().required().messages({
+  lname: Joi.string().optional().messages({
     "any.required": "Please provide the valid name",
     "string.base": "Please provide the valid name",
   }),
-  email: Joi.string().when("login_type", {
-    is: REGISTER.LOGIN_TYPE_EMAIL,
-    then: Joi.string().email().required(),
-  }),
-  phone: Joi.string().when("login_type", {
-    is: REGISTER.LOGIN_TYPE_PHONE_NUMBER,
-    then: Joi.string()
-      .min(7)
-      .max(12)
-      .pattern(/^[0-9]+$/)
-      .required(),
-  }),
+  email: Joi.string().email().required(),
+  gender: Joi.string().valid("Male", "Female", "Others").optional(),
+  status: Joi.string().valid("Active", "Inactive").optional(),
+  phone: Joi.string()
+    .min(7)
+    .max(12)
+    .pattern(/^[0-9]+$/)
+    .optional(),
 });
 
 export const listAdminValidation = Joi.object({});
 
 export const deleteAdminValidation = Joi.object({
   id: Joi.string().required(),
-  email: Joi.string().when("login_type", {
-    is: REGISTER.LOGIN_TYPE_EMAIL,
-    then: Joi.string().email().required(),
-  }),
-  phone: Joi.string().when("login_type", {
-    is: REGISTER.LOGIN_TYPE_PHONE_NUMBER,
-    then: Joi.string()
-      .min(7)
-      .max(12)
-      .pattern(/^[0-9]+$/)
-      .required(),
-  }),
 });
 
 export const loginAdminValidation = Joi.object({
