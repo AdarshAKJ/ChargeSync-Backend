@@ -81,10 +81,18 @@ export const updateAdminHandler = async (req, res) => {
         { email: req.body.email },
       ],
     });
-
+    if (req.body.phone) {
+      isAvailable = await adminModel.findOne({
+        $and: [
+          { isDeleted: false },
+          { id: { $ne: req.params.id } },
+          { phone: req.body.phone },
+        ],
+      });
+    }
     if (isAvailable)
       throw new CustomError(
-        `Client is Already Exist with Email or Client Name or Mobile Number`
+        `Admin is Already Exist with Email or  Mobile Number`
       );
 
     let updatedData = await adminModel.findOneAndUpdate(

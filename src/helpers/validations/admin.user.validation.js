@@ -35,7 +35,7 @@ export const updateAdminValidation = Joi.object({
   }),
   email: Joi.string().email().required(),
   gender: Joi.string().valid("Male", "Female", "Others").optional(),
-  status: Joi.string().valid("Active", "Inactive").optional(),
+  status: Joi.string().valid("ACTIVE", "INACTIVE").optional(),
   phone: Joi.string()
     .min(7)
     .max(12)
