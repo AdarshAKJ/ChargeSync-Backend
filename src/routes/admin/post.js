@@ -1,16 +1,14 @@
 import { ValidationError } from "webpack";
 import {
   createAdminValidation,
-  deleteAdminValidation,
   loginAdminValidation,
-  loginMemberValidation,
   updateAdminValidation,
 } from "../../helpers/validations/admin.user.validation";
 import {
   comparePassword,
+  encryptData,
   getCurrentUnix,
   hashPassword,
-  setPagination,
 } from "../../commons/common-functions";
 import { StatusCodes } from "http-status-codes";
 import { CustomError } from "../../helpers/custome.error";
@@ -35,6 +33,7 @@ export const createAdminHandler = async (req, res) => {
 
     const adminData = await adminModel.create({
       ...req.body,
+      email: req.body.email.toLowerCase(),
       createdAt: getCurrentUnix(),
       createdBy: "",
     });
@@ -78,7 +77,7 @@ export const updateAdminHandler = async (req, res) => {
       $and: [
         { isDeleted: false },
         { id: { $ne: req.params.id } },
-        { email: req.body.email },
+        { email: req.body.email.toLowerCase() },
       ],
     });
     if (req.body.phone && !isAvailable) {
@@ -97,7 +96,7 @@ export const updateAdminHandler = async (req, res) => {
 
     let updatedData = await adminModel.findOneAndUpdate(
       { id: req.params.id },
-      { ...req.body },
+      { ...req.body, email: req.body.email.toLowerCase() },
       { new: true }
     );
 
@@ -178,7 +177,7 @@ export const loginAdminHandler = async (req, res) => {
   try {
     await loginAdminValidation.validateAsync(req.body);
     let loginData = await adminModel.findOne({
-      email: req.body.email,
+      email: req.body.email.toLowerCase(),
       isDeleted: false,
     });
 
@@ -193,18 +192,20 @@ export const loginAdminHandler = async (req, res) => {
     loginData.lastLogin = getCurrentUnix();
     loginData.save();
     delete loginDataRaw.password;
-    let jswToken = await getJwt(loginDataRaw);
+    let jswToken = await getJwt({ id: loginDataRaw._id });
 
-    return res
-      .status(StatusCodes.OK)
-      .send(
-        responseGenerators(
-          { token: jswToken, userData: loginData, loginCompleted: true },
-          StatusCodes.OK,
-          "SUCCESS",
-          0
-        )
-      );
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          token: encryptData(jswToken),
+          userData: loginData,
+          loginCompleted: true,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res

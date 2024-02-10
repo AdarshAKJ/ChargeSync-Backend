@@ -1,5 +1,4 @@
 import Joi from "joi";
-import { REGISTER } from "../../commons/global-constants";
 
 export const createAdminValidation = Joi.object({
   id: Joi.string().required(),
@@ -12,7 +11,6 @@ export const createAdminValidation = Joi.object({
     "string.base": "Please provide the valid name",
   }),
   gender: Joi.string().valid("Male", "Female", "Others").optional(),
-  status: Joi.string().valid("Active", "Inactive").optional(),
   email: Joi.string().email().required(),
   phone: Joi.string()
     .min(7)

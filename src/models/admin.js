@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { generatePublicId } from "../commons/common-functions";
 
 const adminSchema = new mongoose.Schema({
-  id: { type: String, required: true },
+  id: { type: String, required: true, trim: true, default: generatePublicId },
   fname: { type: String, required: true },
   lname: { type: String },
   gender: {

@@ -1,6 +1,5 @@
 // List Admin
 import { ValidationError } from "webpack";
-import { setPagination } from "../../commons/common-functions";
 import { StatusCodes } from "http-status-codes";
 import { CustomError } from "../../helpers/custome.error";
 import adminModel from "../../models/admin";
@@ -40,10 +39,10 @@ export const infoAdminHandler = async (req, res) => {
   try {
     if (!req.params.id) throw new CustomError(`Please provide valid id`);
 
-    const isAvailable = await adminModel.findOne(
-      { isDeleted: false, id: req.params.id },
-      { password: 0 }
-    );
+    const isAvailable = await adminModel
+      .findOne({ isDeleted: false, id: req.params.id }, { password: 0 })
+      .lean()
+      .exec();
 
     if (!isAvailable) throw new CustomError(`Admin doesn't exist`);
 
