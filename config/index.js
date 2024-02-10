@@ -30,7 +30,8 @@ const configVariables = {
   ENDPOINT_SECRET_STRIPE: config.get("ENDPOINT_SECRET_STRIPE"),
   STRIPE_SECRET: config.get("STRIPE_SECRET"),
   MEMBER_LOGIN: config.get("MEMBER_LOGIN"),
-  API_KEY: config.get("API_KEY")
+  API_KEY: config.get("API_KEY"),
+  ENCRYPT_SECRET: config.get("ENCRYPT_SECRET"),
 };
 
 export default configVariables;

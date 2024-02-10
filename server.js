@@ -5,7 +5,7 @@ import { mongooseConnection } from "./src/mongodb";
 
 let db;
 // eslint-disable-next-line no-undef
-const port = 8003;
+const port = 8010;
 
 /** Connect to Mongo */
 
@@ -33,6 +33,5 @@ const port = 8003;
   }
 })();
 
-
-console.log(process.env.NODE_ENV)
+console.log(process.env.NODE_ENV);
 export default db;

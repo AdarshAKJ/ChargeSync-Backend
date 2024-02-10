@@ -13,9 +13,9 @@ import adminRoute from "./routes/admin";
 const app = express();
 const server = new http.Server(app);
 
-// // eslint-disable-next-line no-undef
+// eslint-disable-next-line no-undef
 // if (process.env.NODE_ENV !== "development") {
-//     // eslint-disable-next-line no-undef
+// eslint-disable-next-line no-undef
 //     app.use(cors({ origin: [config.FRONT_END_URL] }));
 // } else {
 app.use(cors({ origin: "*" }));

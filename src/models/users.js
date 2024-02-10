@@ -42,7 +42,6 @@ const userSchema = new mongoose.Schema({
     default: "Male",
   },
   dob: { type: String },
-  phone_country_code: { type: String },
   token: { type: String }, // this is JWT token for the user
   password: { type: String },
   payment_status: {
