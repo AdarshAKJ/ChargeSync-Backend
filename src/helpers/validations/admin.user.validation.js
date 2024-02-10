@@ -1,7 +1,6 @@
 import Joi from "joi";
 
 export const createAdminValidation = Joi.object({
-  id: Joi.string().required(),
   fname: Joi.string().required().messages({
     "any.required": `Please provide the valid name.`,
     "string.base": "Please provide the valid name",
@@ -22,18 +21,17 @@ export const createAdminValidation = Joi.object({
 
 export const updateAdminValidation = Joi.object({
   id: Joi.string().required(),
-  // auth_type: Joi.string().optional().allow(null),
-  fname: Joi.string().optional().messages({
+  fname: Joi.string().required().messages({
     "any.required": `Please provide the valid name.`,
     "string.base": "Please provide the valid name",
   }),
-  lname: Joi.string().optional().messages({
+  lname: Joi.string().required().messages({
     "any.required": "Please provide the valid name",
     "string.base": "Please provide the valid name",
   }),
   email: Joi.string().email().required(),
   gender: Joi.string().valid("Male", "Female", "Others").optional(),
-  status: Joi.string().valid("ACTIVE", "INACTIVE").optional(),
+  status: Joi.string().valid("ACTIVE", "BLOCKED").optional(),
   phone: Joi.string()
     .min(7)
     .max(12)

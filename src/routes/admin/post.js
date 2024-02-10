@@ -1,20 +1,19 @@
+import { StatusCodes } from "http-status-codes";
 import { ValidationError } from "webpack";
-import {
-  createAdminValidation,
-  loginAdminValidation,
-  updateAdminValidation,
-} from "../../helpers/validations/admin.user.validation";
 import {
   comparePassword,
   encryptData,
   getCurrentUnix,
   hashPassword,
 } from "../../commons/common-functions";
-import { StatusCodes } from "http-status-codes";
-import { CustomError } from "../../helpers/custome.error";
-import adminModel from "../../models/admin";
-import { responseGenerators } from "../../lib/utils";
 import { getJwt } from "../../helpers/Jwt.helper";
+import { CustomError } from "../../helpers/custome.error";
+import {
+  createAdminValidation,
+  loginAdminValidation,
+} from "../../helpers/validations/admin.user.validation";
+import { responseGenerators } from "../../lib/utils";
+import adminModel from "../../models/admin";
 
 // Create Admin
 export const createAdminHandler = async (req, res) => {
@@ -26,7 +25,7 @@ export const createAdminHandler = async (req, res) => {
       email: req.body.email,
     });
     if (isAvailable)
-      throw new CustomError(`Member with give details already exists`);
+      throw new CustomError(`Member with given details already exists`);
 
     let hashPass = await hashPassword(req.body.password);
     req.body.password = hashPass;
@@ -72,7 +71,7 @@ export const createAdminHandler = async (req, res) => {
 // updated Admin
 export const updateAdminHandler = async (req, res) => {
   try {
-    await updateAdminValidation.validateAsync({ ...req.body, ...req.params });
+    // await updateAdminValidation.validateAsync({ ...req.body, ...req.params });
     let isAvailable = await adminModel.findOne({
       $and: [
         { isDeleted: false },

@@ -1,14 +1,15 @@
 /* eslint-disable no-case-declarations */
-import express from "express";
-import helmet from "helmet";
 import * as bodyParser from "body-parser";
-import http from "http";
 import cors from "cors";
+import express from "express";
 import { rateLimit } from "express-rate-limit";
-import logger from "./lib/logger";
+import helmet from "helmet";
+import http from "http";
 import { StatusCodes } from "http-status-codes";
+import logger from "./lib/logger";
 import { responseValidation } from "./lib/utils";
 import adminRoute from "./routes/admin";
+import clientUserRouter from "./routes/clientUsers";
 
 const app = express();
 const server = new http.Server(app);
@@ -73,6 +74,7 @@ const health = async (req, res) => {
 
 app.get("/", health);
 app.use("/api/admin", adminRoute);
+app.use("/api/client-user", clientUserRouter);
 
 app.use((req, res) => {
   return res

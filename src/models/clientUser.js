@@ -15,7 +15,7 @@ const clientUserSchema = new mongoose.Schema({
   },
   fname: { type: String, required: true },
   lname: { type: String, required: true },
-  email: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
   phoneNumber: { type: String, required: true },
   countryCode: { type: String, required: true },
   password: { type: String, required: true },
@@ -30,13 +30,13 @@ const clientUserSchema = new mongoose.Schema({
   documents: {
     type: [],
   },
-  lastLogin: { type: String, required: true },
+  lastLogin: { type: String },
   created_by: { type: String },
   updated_by: { type: String },
   created_at: { type: String },
   updated_at: { type: String },
 });
 
-const UserModel = mongoose.model("client-user", clientUserSchema);
+const clientUserModel = mongoose.model("client-user", clientUserSchema);
 
-export default UserModel;
+export default clientUserModel;

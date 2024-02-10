@@ -1,13 +1,12 @@
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
-import isBetween from "dayjs/plugin/isBetween";
-import { nanoid } from "nanoid";
 import * as bcrypt from "bcryptjs";
 import crypto from "crypto";
+import dayjs from "dayjs";
+import isBetween from "dayjs/plugin/isBetween";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+import { nanoid } from "nanoid";
 import { totp } from "otplib";
-import config from "../../config";
-import configVariables from "../../config";
+import { default as config, default as configVariables } from "../../config";
 
 const salt = bcrypt.genSaltSync(10);
 
