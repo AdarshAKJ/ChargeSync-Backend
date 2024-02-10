@@ -61,7 +61,7 @@ app.use((req, res, next) => {
 const health = async (req, res) => {
   try {
     res.json({
-      message: "Server is up an running",
+      message: "We are ready to serve the charger API's",
       // eslint-disable-next-line no-undef
       env: process.env.NODE_ENV || "development",
       headers: req.headers,
