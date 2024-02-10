@@ -10,7 +10,7 @@ const clientUserSchema = new mongoose.Schema({
   },
   roleId: {
     type: String,
-    enum: ["ADMIN", "ACCOUNT", "OPERATION"],
+    enum: ["ADMIN", "ACCOUNT", "OPERATION", "REPORTER"],
     required: true,
   },
   fname: { type: String, required: true },

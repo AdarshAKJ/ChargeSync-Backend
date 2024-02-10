@@ -16,6 +16,7 @@ const clientSchema = new mongoose.Schema({
     trim: true,
     default: "ACTIVE",
   },
+  onBoard:{type: Boolean, },
   subscriptionId: { type: String, required: true },
   // documents like array [{type:"NDA", path:"s3://s3.amazonaws.com"}]
   documents: {
