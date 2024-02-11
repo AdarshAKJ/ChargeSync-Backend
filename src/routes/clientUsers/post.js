@@ -14,12 +14,12 @@ export const createClientUser = async (req, res) => {
     await createClientUserValidation.validateAsync({ ...req.body });
     const isAvailable = await clientUserModel
       .findOne({
-        $and: [{ email: req.body.email }, { clientId: req.body.clientId }],
+        $and: [{ email: req.body.email }, { clientId: req.body.clientId }, { isDeleted: false }],
       })
       .lean()
       .exec();
 
-    if (isAvailable) throw new CustomError(`User already exists.`);
+    if (isAvailable) throw new CustomError(`The user you are trying to create is already registered.`);
 
     let data = {
       ...req.body,
@@ -31,7 +31,8 @@ export const createClientUser = async (req, res) => {
     };
 
     const clientUser = await clientUserModel.create(data);
-    if (!clientUser) throw new CustomError(`User could not be created.`);
+
+    if (!clientUser) throw new CustomError(`We are encountering some errors from our side. Please try again later.`);
 
     return res
       .status(StatusCodes.OK)
@@ -74,13 +75,16 @@ export const updateClientUser = async (req, res) => {
     const userId = req.params.id;
     const user = await clientUserModel.findOne({
       _id: userId,
+      isDeleted: false
     });
 
-    if (!user) throw new CustomError(`User does not exists.`);
+    if (!user) throw new CustomError(`The user you are trying to update is deleted or does not exist.`);
+
+    // any key handling that cannot be updated should be handled here i.e. email, contact
+    // if(req.body.email) throw new CustomError(`email cannot be updated.`);
 
     let keys = [];
     for (let key in req.body) {
-      if (key === "_id") continue;
       keys.push(key);
     }
 
