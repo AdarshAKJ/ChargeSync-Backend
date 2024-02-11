@@ -9,6 +9,7 @@ import { StatusCodes } from "http-status-codes";
 import logger from "./lib/logger";
 import { responseValidation } from "./lib/utils";
 import adminRoute from "./routes/admin";
+import clientRouter from "./routes/client";
 import clientUserRouter from "./routes/clientUsers";
 
 const app = express();
@@ -47,9 +48,9 @@ app.use((req, res, next) => {
       `------------ API Info ------------
       IMP - API called path: ${req.path},
       method: ${req.method},
-      query: ${JSON.stringify(req.query)}, 
+      query: ${JSON.stringify(req.query)},
       remote address (main/proxy ip):,
-      reference: ${req.headers.referer} , 
+      reference: ${req.headers.referer} ,
       user-agent: ${req.headers["user-agent"]}
       ------------ End ------------  `
     );
@@ -75,6 +76,7 @@ const health = async (req, res) => {
 app.get("/", health);
 app.use("/api/admin", adminRoute);
 app.use("/api/client-user", clientUserRouter);
+app.use("/api/client", clientRouter)
 
 app.use((req, res) => {
   return res

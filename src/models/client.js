@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-import { generatePublicId } from "../commons/common-functions";
+import mongoose from 'mongoose'
+import { generatePublicId } from '../commons/common-functions'
 
 const clientSchema = new mongoose.Schema({
   _id: { type: String, required: true, trim: true, default: generatePublicId },
@@ -11,12 +11,12 @@ const clientSchema = new mongoose.Schema({
   address: { type: String, required: true },
   status: {
     type: String,
-    enum: ["ACTIVE", "BLOCKED"],
+    enum: ['ACTIVE', 'BLOCKED'],
     required: true,
     trim: true,
-    default: "ACTIVE",
+    default: 'ACTIVE',
   },
-  onBoard:{type: Boolean, },
+  onBoard: { type: Boolean },
   subscriptionId: { type: String, required: true },
   // documents like array [{type:"NDA", path:"s3://s3.amazonaws.com"}]
   documents: {
@@ -27,8 +27,9 @@ const clientSchema = new mongoose.Schema({
   updated_by: { type: String },
   created_at: { type: String },
   updated_at: { type: String },
-});
+  isDeleted: { type: Boolean, default: false },
+})
 
-const UserModel = mongoose.model("client", clientSchema);
+const ClientModel = mongoose.model('client', clientSchema)
 
-export default UserModel;
+export default ClientModel

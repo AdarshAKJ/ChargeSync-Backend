@@ -27,14 +27,15 @@ const clientUserSchema = new mongoose.Schema({
     trim: true,
     default: "ACTIVE",
   },
-  documents: {
-    type: [],
-  },
+  // documents: {
+  //   type: [],
+  // },
   lastLogin: { type: String },
   created_by: { type: String },
   updated_by: { type: String },
   created_at: { type: String },
   updated_at: { type: String },
+  isDeleted: { type: Boolean, default: false },
 });
 
 const clientUserModel = mongoose.model("client-user", clientUserSchema);

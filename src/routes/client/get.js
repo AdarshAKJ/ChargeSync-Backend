@@ -1,19 +1,18 @@
 import { ValidationError } from "webpack";
 import { CustomError } from "../../helpers/custome.error";
 import { responseGenerators } from "../../lib/utils";
-import clientUserModel from "../../models/clientUser";
 
-export const listClientUser = async (req, res) => {
-  try {
-    const users = await clientUserModel.find({ isDeleted: false });
+import ClientModel from "../../models/client";
 
-    if(!users) throw new CustomError(`No users found.`);
+export const listClient = async (req, res) => {
+    try {
+        const clients = await ClientModel.find({ isDeleted: false });
 
-    return res
+        return res
         .status(StatusCodes.OK)
         .send(
           responseGenerators(
-            { ...users.toJSON() },
+            { ...clients.toJSON() },
             StatusCodes.OK,
             "SUCCESS",
             0
@@ -39,24 +38,20 @@ export const listClientUser = async (req, res) => {
         )
       );
   }
-};
+}
 
+export const deleteClient = async (req, res) => {
+    try {
+        const {id: _id} = req.params;
+        const client = await ClientModel.findOne({ _id, isDeleted: false });
 
-export const deleteClientUser = async (req, res) => {
-  try {
-    const { id: userId } = req.params;
-    const user = await clientUserModel.findOne({
-      _id: userId,
-      isDeleted: false
-    });
+        if(!client) throw new CustomError(`This client could not be found.`);
 
-    if(!user) throw new CustomError(`No such user is registered with us.`);
+        client.isDeleted = true;
 
-    user.isDeleted = true;
+        await client.save();
 
-    await user.save();
-
-    return res
+        return res
         .status(StatusCodes.OK)
         .send(
           responseGenerators(

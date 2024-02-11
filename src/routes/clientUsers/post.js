@@ -5,7 +5,7 @@ import { CustomError } from "../../helpers/custome.error";
 import {
   createClientUserValidation,
   updateClientUserValidation,
-} from "../../helpers/validations/client.uservalidation";
+} from "../../helpers/validations/client.user.validation";
 import { responseGenerators } from "../../lib/utils";
 import clientUserModel from "../../models/clientUser";
 
