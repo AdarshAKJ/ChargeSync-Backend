@@ -1,9 +1,10 @@
-import Joi from 'joi/lib'
+import Joi from "joi/lib";
 
 export const createClientValidation = Joi.object({
   name: Joi.string().min(3).max(50).required(),
   contactPerson: Joi.string().min(3).max(50).required(),
   contactPersonEmailAddress: Joi.string().email().required(),
+  prefix: Joi.string().max(10).required(),
   contactPersonPhoneNumber: Joi.string()
     .pattern(/^[0-9]{10}$/)
     .required(),
@@ -17,12 +18,13 @@ export const createClientValidation = Joi.object({
     .required(),
   countryCode: Joi.string().optional(),
   address: Joi.string().min(5).max(100).optional(),
-})
+});
 
 export const updateClientValidation = Joi.object({
   name: Joi.string().min(3).max(50).required(),
   contactPerson: Joi.string().min(3).max(50).required(),
   contactPersonEmailAddress: Joi.string().email().required(),
+  prefix: Joi.string().max(10).required(),
   contactPersonPhoneNumber: Joi.string()
     .pattern(/^[0-9]{10}$/)
     .required(),
@@ -36,4 +38,4 @@ export const updateClientValidation = Joi.object({
     .required(),
   countryCode: Joi.string().optional(),
   address: Joi.string().min(5).max(100).optional(),
-})
+});

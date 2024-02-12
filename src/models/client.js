@@ -1,5 +1,5 @@
-import mongoose from 'mongoose'
-import { generatePublicId } from '../commons/common-functions'
+import mongoose from "mongoose";
+import { generatePublicId } from "../commons/common-functions";
 
 const clientSchema = new mongoose.Schema({
   _id: { type: String, required: true, trim: true, default: generatePublicId },
@@ -9,12 +9,13 @@ const clientSchema = new mongoose.Schema({
   contactPersonPhoneNumber: { type: String, required: true },
   countryCode: { type: String, required: true },
   address: { type: String, required: true },
+  prefix: { type: String, required: true },
   status: {
     type: String,
-    enum: ['ACTIVE', 'BLOCKED'],
+    enum: ["ACTIVE", "BLOCKED"],
     required: true,
     trim: true,
-    default: 'ACTIVE',
+    default: "ACTIVE",
   },
   onBoard: { type: Boolean },
   subscriptionId: { type: String, required: true },
@@ -28,8 +29,8 @@ const clientSchema = new mongoose.Schema({
   created_at: { type: String },
   updated_at: { type: String },
   isDeleted: { type: Boolean, default: false },
-})
+});
 
-const ClientModel = mongoose.model('client', clientSchema)
+const ClientModel = mongoose.model("client", clientSchema);
 
-export default ClientModel
+export default ClientModel;
