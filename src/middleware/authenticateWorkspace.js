@@ -1,7 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import { ERROR } from "../commons/global-constants";
 import { logsErrorAndUrl, responseGenerators } from "../lib/utils";
-import TeamUserModel from "../models/teamUser";
+import TeamUserModel from "../models/clientUser";
 
 /* we are checking workspace is belongs to the user or not  */
 export const authenticateWorkspace = async (req, res, next) => {

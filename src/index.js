@@ -76,7 +76,7 @@ const health = async (req, res) => {
 app.get("/", health);
 app.use("/api/admin", adminRoute);
 app.use("/api/client-user", clientUserRouter);
-app.use("/api/client", clientRouter)
+app.use("/api/client", clientRouter);
 
 app.use((req, res) => {
   return res

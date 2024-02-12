@@ -2,9 +2,9 @@ import { StatusCodes } from "http-status-codes";
 import { ERROR } from "../commons/global-constants";
 import { verifyJwt } from "../helpers/Jwt.helper";
 import { logsErrorAndUrl, responseGenerators } from "../lib/utils";
-import AdminUserModel from "../models/adminUsers";
-import TeamUserModel from "../models/teamUser";
+import TeamUserModel from "../models/clientUser";
 import { TokenExpiredError } from "jsonwebtoken";
+import AdminUserModel from "../models/admin";
 // import { CustomError } from "../helpers/custome.error";
 
 export const authenticateUser = async (req, res, next) => {

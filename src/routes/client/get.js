@@ -3,21 +3,17 @@ import { CustomError } from "../../helpers/custome.error";
 import { responseGenerators } from "../../lib/utils";
 
 import ClientModel from "../../models/client";
+import { StatusCodes } from "http-status-codes";
 
 export const listClient = async (req, res) => {
-    try {
-        const clients = await ClientModel.find({ isDeleted: false });
+  try {
+    const clients = await ClientModel.find().lean().exec();
 
-        return res
-        .status(StatusCodes.OK)
-        .send(
-          responseGenerators(
-            { ...clients.toJSON() },
-            StatusCodes.OK,
-            "SUCCESS",
-            0
-          )
-        );
+    if (!clients) throw new CustomError(`No client found.`);
+
+    return res
+      .status(StatusCodes.OK)
+      .send(responseGenerators({ ...clients }, StatusCodes.OK, "SUCCESS", 0));
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
@@ -38,29 +34,22 @@ export const listClient = async (req, res) => {
         )
       );
   }
-}
+};
 
 export const deleteClient = async (req, res) => {
-    try {
-        const {id: _id} = req.params;
-        const client = await ClientModel.findOne({ _id, isDeleted: false });
+  try {
+    const { id: _id } = req.params;
+    const client = await ClientModel.findOne({ _id, isDeleted: false });
 
-        if(!client) throw new CustomError(`This client could not be found.`);
+    if (!client) throw new CustomError(`This client could not be found.`);
 
-        client.isDeleted = true;
+    client.isDeleted = true;
 
-        await client.save();
+    await client.save();
 
-        return res
-        .status(StatusCodes.OK)
-        .send(
-          responseGenerators(
-            {},
-            StatusCodes.OK,
-            "SUCCESS",
-            0
-          )
-        );
+    return res
+      .status(StatusCodes.OK)
+      .send(responseGenerators({}, StatusCodes.OK, "SUCCESS", 0));
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
@@ -81,4 +70,4 @@ export const deleteClient = async (req, res) => {
         )
       );
   }
-}
+};

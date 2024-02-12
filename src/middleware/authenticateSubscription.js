@@ -5,7 +5,7 @@ import { CustomError } from "../helpers/custome.error";
 import Stripe from "stripe";
 import configVariables from "../../config";
 import path from "path";
-import AdminUserModel from "../models/adminUsers";
+import AdminUserModel from "../models/admin";
 
 const stripe = new Stripe(configVariables.STRIPE_SECRET, {
   apiVersion: "2022-11-15",
