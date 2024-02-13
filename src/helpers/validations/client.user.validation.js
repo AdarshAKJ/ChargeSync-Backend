@@ -12,7 +12,7 @@ export const createClientUserValidation = Joi.object({
     .min(7)
     .max(12)
     .pattern(/^[0-9]+$/)
-    .optional(),
+    .required(),
   countryCode: Joi.string().required(),
   password: Joi.string().required(),
   address: Joi.string().required(),
@@ -52,4 +52,9 @@ export const updateClientUserValidation = Joi.object({
       })
     )
     .required(),
+});
+
+export const loginClientUserValidation = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().required(),
 });

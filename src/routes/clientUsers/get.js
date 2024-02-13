@@ -6,15 +6,16 @@ import clientUserModel from "../../models/clientUser";
 
 export const listClientUser = async (req, res) => {
   try {
-    const users = await clientUserModel.find({ isDeleted: false });
+    const users = await clientUserModel
+      .find({ isDeleted: false })
+      .lean()
+      .exec();
 
     if (!users) throw new CustomError(`No users found.`);
 
     return res
       .status(StatusCodes.OK)
-      .send(
-        responseGenerators({ ...users.toJSON() }, StatusCodes.OK, "SUCCESS", 0)
-      );
+      .send(responseGenerators({ ...users }, StatusCodes.OK, "SUCCESS", 0));
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res

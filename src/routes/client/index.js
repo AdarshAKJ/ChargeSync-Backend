@@ -7,7 +7,8 @@ const clientRouter = express.Router();
 
 clientRouter.post("/login", loginClient);
 
-// clientRouter.use(authenticateUser);
+clientRouter.use(authenticateUser);
+
 clientRouter.get("/list", listClient);
 clientRouter.get("/delete/:id", deleteClient);
 clientRouter.post("/create", createClient);
