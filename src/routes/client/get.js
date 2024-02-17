@@ -2,8 +2,8 @@ import { ValidationError } from "webpack";
 import { CustomError } from "../../helpers/custome.error";
 import { responseGenerators } from "../../lib/utils";
 
-import ClientModel from "../../models/client";
 import { StatusCodes } from "http-status-codes";
+import ClientModel from "../../models/client";
 
 export const listClient = async (req, res) => {
   try {

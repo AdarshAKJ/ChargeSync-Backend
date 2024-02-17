@@ -11,6 +11,8 @@ import { responseValidation } from "./lib/utils";
 import adminRoute from "./routes/admin";
 import clientRouter from "./routes/client";
 import clientUserRouter from "./routes/clientUsers";
+import chargerStationRouter from "./routes/chargerStation";
+import chargerRouter from "./routes/charger";
 
 const app = express();
 const server = new http.Server(app);
@@ -77,6 +79,8 @@ app.get("/", health);
 app.use("/api/admin", adminRoute);
 app.use("/api/client-user", clientUserRouter);
 app.use("/api/client", clientRouter);
+app.use("/api/charger-station", chargerStationRouter);
+app.use("/api/charger", chargerRouter);
 
 app.use((req, res) => {
   return res

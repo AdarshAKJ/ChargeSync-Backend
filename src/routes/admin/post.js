@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import { ValidationError } from "webpack";
+import { ValidationError } from "joi";
 import {
   comparePassword,
   encryptData,
@@ -13,16 +13,16 @@ import {
   loginAdminValidation,
 } from "../../helpers/validations/admin.user.validation";
 import { responseGenerators } from "../../lib/utils";
-import adminModel from "../../models/admin";
+import AdminModel from "../../models/admin";
 
 // Create Admin
 export const createAdminHandler = async (req, res) => {
   try {
     await createAdminValidation.validateAsync(req.body);
 
-    const isAvailable = await adminModel.findOne({
+    const isAvailable = await AdminModel.findOne({
       isDeleted: false,
-      email: req.body.email,
+      email: req.body.email.toLowerCase(),
     });
     if (isAvailable)
       throw new CustomError(`Member with given details already exists`);
@@ -30,7 +30,7 @@ export const createAdminHandler = async (req, res) => {
     let hashPass = await hashPassword(req.body.password);
     req.body.password = hashPass;
 
-    const adminData = await adminModel.create({
+    const adminData = await AdminModel.create({
       ...req.body,
       email: req.body.email.toLowerCase(),
       createdAt: getCurrentUnix(),
@@ -72,7 +72,7 @@ export const createAdminHandler = async (req, res) => {
 export const updateAdminHandler = async (req, res) => {
   try {
     // await updateAdminValidation.validateAsync({ ...req.body, ...req.params });
-    let isAvailable = await adminModel.findOne({
+    let isAvailable = await AdminModel.findOne({
       $and: [
         { isDeleted: false },
         { id: { $ne: req.params.id } },
@@ -80,7 +80,7 @@ export const updateAdminHandler = async (req, res) => {
       ],
     });
     if (req.body.phone && !isAvailable) {
-      isAvailable = await adminModel.findOne({
+      isAvailable = await AdminModel.findOne({
         $and: [
           { isDeleted: false },
           { id: { $ne: req.params.id } },
@@ -93,7 +93,7 @@ export const updateAdminHandler = async (req, res) => {
         `Admin is Already Exist with Email or Admin Name or Mobile Number`
       );
 
-    let updatedData = await adminModel.findOneAndUpdate(
+    let updatedData = await AdminModel.findOneAndUpdate(
       { id: req.params.id },
       { ...req.body, email: req.body.email.toLowerCase() },
       { new: true }
@@ -132,11 +132,11 @@ export const updateAdminHandler = async (req, res) => {
   }
 };
 
-// delete adminModel
+// delete AdminModel
 export const deleteAdminHandler = async (req, res) => {
   try {
     if (!req.params.id) throw new CustomError(`Please provide vaild id`);
-    const isAvailable = await adminModel.findOne({
+    const isAvailable = await AdminModel.findOne({
       isDeleted: false,
       id: req.params.id,
     });
@@ -171,11 +171,11 @@ export const deleteAdminHandler = async (req, res) => {
   }
 };
 
-// login adminModel
+// login AdminModel
 export const loginAdminHandler = async (req, res) => {
   try {
     await loginAdminValidation.validateAsync(req.body);
-    let loginData = await adminModel.findOne({
+    let loginData = await AdminModel.findOne({
       email: req.body.email.toLowerCase(),
       isDeleted: false,
     });
@@ -191,7 +191,7 @@ export const loginAdminHandler = async (req, res) => {
     loginData.lastLogin = getCurrentUnix();
     loginData.save();
     delete loginDataRaw.password;
-    let jswToken = await getJwt({ id: loginDataRaw._id });
+    let jswToken = await getJwt({ id: loginDataRaw._id, superAdmin: true });
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(

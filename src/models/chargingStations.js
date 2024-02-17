@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
+import { generatePublicId } from "../commons/common-functions";
 
 const chargingStationSchema = new mongoose.Schema({
-  station_id: { type: String, required: true },
+  _id: { type: String, required: true, default: generatePublicId },
+  clientId: { type: String, required: true },
   station_name: { type: String, required: true },
   address: {
     area: { type: String, required: true },
@@ -13,16 +15,17 @@ const chargingStationSchema = new mongoose.Schema({
       longitude: { type: String, required: true },
     },
   },
-  organization: { type: String, required: true },
-  chargingPoint: { type: [], required: true },
-  amenities: { type: [] },
-  station_facilities: { type: [], required: true },
-  station_images: { type: "string" },
+  station_facilities: { type: [] },
+  station_images: { type: [] },
+  created_by: { type: String },
+  updated_by: { type: String },
+  created_at: { type: String },
+  updated_at: { type: String },
 });
 
-const chargingStationModel = mongoose.model(
-  "chargingStation",
+const ChargingStationModel = mongoose.model(
+  "charging-station",
   chargingStationSchema
 );
 
-export default chargingStationSchema;
+export default ChargingStationModel;

@@ -16,15 +16,6 @@ export const createClientUserValidation = Joi.object({
   countryCode: Joi.string().required(),
   password: Joi.string().required(),
   address: Joi.string().required(),
-  status: Joi.string().valid("ACTIVE", "BLOCKED").required(),
-  // documents: Joi.array()
-  //   .items(
-  //     Joi.object({
-  //       type: Joi.string().required(),
-  //       path: Joi.string().required(),
-  //     })
-  //   )
-  //   .required(),
 });
 
 export const updateClientUserValidation = Joi.object({

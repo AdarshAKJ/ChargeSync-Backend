@@ -104,6 +104,7 @@ export const generateApiKey = (length = 32) => {
   const buffer = crypto.randomBytes(length);
   return buffer.toString("base64");
 };
+
 export const generatePassword = async () => {
   return new Promise((resolve) => {
     const length = 8; // Length of the generated password

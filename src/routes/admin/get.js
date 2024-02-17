@@ -2,14 +2,14 @@
 import { ValidationError } from "webpack";
 import { StatusCodes } from "http-status-codes";
 import { CustomError } from "../../helpers/custome.error";
-import adminModel from "../../models/admin";
+import AdminModel from "../../models/admin";
 import { responseGenerators } from "../../lib/utils";
 
 export const listAdminHandler = async (req, res) => {
   try {
     let where = { isDeleted: false };
 
-    let updatedData = await adminModel.find(where);
+    let updatedData = await AdminModel.find(where);
 
     return res
       .status(StatusCodes.OK)
@@ -39,8 +39,10 @@ export const infoAdminHandler = async (req, res) => {
   try {
     if (!req.params.id) throw new CustomError(`Please provide valid id`);
 
-    const isAvailable = await adminModel
-      .findOne({ isDeleted: false, id: req.params.id }, { password: 0 })
+    const isAvailable = await AdminModel.findOne(
+      { isDeleted: false, id: req.params.id },
+      { password: 0 }
+    )
       .lean()
       .exec();
 

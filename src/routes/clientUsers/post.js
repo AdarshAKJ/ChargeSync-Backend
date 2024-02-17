@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import { ValidationError } from "webpack";
+import { ValidationError } from "joi";
 import {
   comparePassword,
   encryptData,
@@ -13,38 +13,48 @@ import {
   updateClientUserValidation,
 } from "../../helpers/validations/client.user.validation";
 import { responseGenerators } from "../../lib/utils";
-import clientUserModel from "../../models/clientUser";
+import ClientUserModel from "../../models/clientUser";
 import { getJwt } from "../../helpers/Jwt.helper";
+import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 
 export const createClientUser = async (req, res) => {
   try {
     await createClientUserValidation.validateAsync({ ...req.body });
-    const isAvailable = await clientUserModel
-      .findOne({
-        $and: [
-          { email: req.body.email },
-          { clientId: req.body.clientId },
-          { isDeleted: false },
-        ],
-      })
+    checkClientIdAccess(req.session, req.body.clientId);
+    const isAvailable = await ClientUserModel.findOne({
+      $or: [
+        {
+          phoneNumber: req.body.phoneNumber,
+          clientId: req.body.clientId,
+          isDeleted: false,
+        },
+
+        {
+          email: req.body.email.toLowerCase(),
+          clientId: req.body.clientId,
+          isDeleted: false,
+        },
+      ],
+    })
       .lean()
       .exec();
 
     if (isAvailable)
       throw new CustomError(
-        `The user you are trying to create is already registered.`
+        `The user you are trying to create is already registered with given Email or Phone Number.`
       );
 
     let data = {
       ...req.body,
+      email: req.body.email.toLowerCase(),
       password: await hashPassword(req.body.password),
       created_at: getCurrentUnix(),
       updated_at: getCurrentUnix(),
-      updated_by: req.clientId,
-      created_by: req.clientId,
+      updated_by: req.session._id,
+      created_by: req.session._id,
     };
 
-    const clientUser = await clientUserModel.create(data);
+    const clientUser = await ClientUserModel.create(data);
 
     if (!clientUser)
       throw new CustomError(
@@ -90,7 +100,7 @@ export const updateClientUser = async (req, res) => {
       ...req.params,
     });
     const userId = req.params.id;
-    const user = await clientUserModel.findOne({
+    const user = await ClientUserModel.findOne({
       _id: userId,
       isDeleted: false,
     });
@@ -143,7 +153,7 @@ export const updateClientUser = async (req, res) => {
 export const loginClientUser = async (req, res) => {
   try {
     await loginClientUserValidation.validateAsync(req.body);
-    let loginData = await clientUserModel.findOne({
+    let loginData = await ClientUserModel.findOne({
       email: req.body.email.toLowerCase(),
       isDeleted: false,
     });
@@ -161,13 +171,17 @@ export const loginClientUser = async (req, res) => {
     loginData.save();
 
     delete loginDataRaw.password;
-    let jswToken = await getJwt({ id: loginDataRaw._id });
+    let jswToken = await getJwt({
+      id: loginDataRaw._id,
+      clientId: loginData.clientId,
+      role: loginData.roleId,
+    });
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(
         {
           token: encryptData(jswToken),
-          userData: loginData,
+          userData: loginDataRaw,
           loginCompleted: true,
         },
         StatusCodes.OK,

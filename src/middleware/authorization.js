@@ -25,8 +25,8 @@ export const authenticateUser = async (req, res, next) => {
     // Verify JWT token
     const tokenData = await verifyJwt(authorization);
     // if(!tokenData.payment_status || tokenData.payment_status !=='ACTIVE') throw new CustomError('Error, please complete the payment request first')
-    req.tokenData = tokenData;
-    if (req.tokenData.is_central_user) {
+    req.session = tokenData;
+    if (req.session.is_central_user) {
       // Check if user exists in the admin model based on the UID from the token
       let user = await AdminUserModel.findOne({
         _id: tokenData._id,
@@ -73,8 +73,6 @@ export const authenticateUser = async (req, res, next) => {
     }
   } catch (error) {
     // JWT verification failed, return unauthorized response
-    logsErrorAndUrl(req, error);
-
     if (error instanceof TokenExpiredError) {
       return res
         .status(StatusCodes.UNAUTHORIZED)
@@ -124,7 +122,7 @@ export const checkAuthorizeOrSsoToken = async (req, res, next) => {
   } else {
     try {
       const tokenData = await verifyJwt(authorization);
-      req.tokenData = tokenData;
+      req.session = tokenData;
       next();
     } catch (error) {
       if (error instanceof TokenExpiredError) {

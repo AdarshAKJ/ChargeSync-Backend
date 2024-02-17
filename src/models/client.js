@@ -9,6 +9,7 @@ const clientSchema = new mongoose.Schema({
   contactPersonPhoneNumber: { type: String, required: true },
   countryCode: { type: String, required: true },
   address: { type: String, required: true },
+  prefix: { type: String, required: true },
   status: {
     type: String,
     enum: ["ACTIVE", "BLOCKED"],
@@ -18,12 +19,12 @@ const clientSchema = new mongoose.Schema({
   },
   onBoard: { type: Boolean },
   subscriptionId: { type: String, required: true },
-  password: { type: String, required: true },
   // documents like array [{type:"NDA", path:"s3://s3.amazonaws.com"}]
   documents: {
     type: [],
   },
   lastPaymentPaid: { type: Boolean, required: true, default: true },
+  serialNumberCount: { type: Number, required: true, default: 0 },
   created_by: { type: String },
   updated_by: { type: String },
   created_at: { type: String },

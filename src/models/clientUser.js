@@ -38,6 +38,6 @@ const clientUserSchema = new mongoose.Schema({
   isDeleted: { type: Boolean, default: false },
 });
 
-const clientUserModel = mongoose.model("client-user", clientUserSchema);
+const ClientUserModel = mongoose.model("client-user", clientUserSchema);
 
-export default clientUserModel;
+export default ClientUserModel;

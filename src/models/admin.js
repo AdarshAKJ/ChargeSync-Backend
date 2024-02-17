@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { generatePublicId } from "../commons/common-functions";
 
 const adminSchema = new mongoose.Schema({
-  id: { type: String, required: true, trim: true, default: generatePublicId },
+  _id: { type: String, required: true, trim: true, default: generatePublicId },
   fname: { type: String, required: true },
   lname: { type: String },
   gender: {
@@ -29,6 +29,6 @@ const adminSchema = new mongoose.Schema({
   isDeleted: { type: Boolean, default: false },
 });
 
-const adminModel = mongoose.model("admin", adminSchema);
+const AdminModel = mongoose.model("admin", adminSchema);
 
-export default adminModel;
+export default AdminModel;

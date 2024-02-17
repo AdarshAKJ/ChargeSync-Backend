@@ -1,32 +1,22 @@
-import { ValidationError } from "webpack";
+import { ValidationError } from "joi";
 import { CustomError } from "../../helpers/custome.error";
 import { responseGenerators } from "../../lib/utils";
 
 import {
   createClientValidation,
-  loginClientValidation,
   updateClientValidation,
 } from "../../helpers/validations/client.validation";
 import ClientModel from "../../models/client";
-import {
-  comparePassword,
-  encryptData,
-  getCurrentUnix,
-  hashPassword,
-} from "../../commons/common-functions";
-import { getJwt } from "../../helpers/Jwt.helper";
+import { getCurrentUnix } from "../../commons/common-functions";
 import { StatusCodes } from "http-status-codes";
 
+//DONE
 export const createClient = async (req, res) => {
   try {
     await createClientValidation.validateAsync(req.body);
     const isAvailable = await ClientModel.findOne({
-      $and: [
-        { email: req.body.email },
-        // ! from where should clientId be taken
-        { clientId: req.body.clientId },
-        { isDeleted: false },
-      ],
+      name: req.body.name,
+      isDeleted: false,
     })
       .lean()
       .exec();
@@ -44,27 +34,24 @@ export const createClient = async (req, res) => {
       countryCode,
       address,
       documents,
-      password,
+      prefix,
     } = req.body;
 
-    // ! onBoard ?? subscriptionId ?? lastPaymentPaid ??
     let data = {
       name,
       contactPerson,
-      contactPersonEmailAddress,
+      prefix: prefix.toUpperCase(),
+      contactPersonEmailAddress: contactPersonEmailAddress.toLowerCase(),
       contactPersonPhoneNumber,
       countryCode,
       address,
       documents,
+      subscriptionId: "kwrgfvwhkfkwhgcjhd",
       created_at: getCurrentUnix(),
       updated_at: getCurrentUnix(),
-      subscriptionId: "kwrgfvwhkfkwhgcjhd",
-      // !  no specific middleware to get admin._id
-      //   updated_by: adminId,
-      //   created_by: adminId,
+      updated_by: req.session._id,
+      created_by: req.session._id,
     };
-
-    data.password = await hashPassword(password);
 
     const client = await ClientModel.create(data);
 
@@ -79,7 +66,7 @@ export const createClient = async (req, res) => {
         responseGenerators({ ...client.toJSON() }, StatusCodes.OK, "SUCCESS", 0)
       );
   } catch (error) {
-    if (error instanceof ValidationError instanceof CustomError) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
       return res
         .status(StatusCodes.BAD_REQUEST)
         .send(
@@ -132,64 +119,6 @@ export const updateClient = async (req, res) => {
       .send(
         responseGenerators({ ...client.toJSON() }, StatusCodes.OK, "SUCCESS", 0)
       );
-  } catch (error) {
-    if (error instanceof ValidationError || error instanceof CustomError) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(
-          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-        );
-    }
-    console.log(JSON.stringify(error));
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        responseGenerators(
-          {},
-          StatusCodes.INTERNAL_SERVER_ERROR,
-          "Internal Server Error",
-          1
-        )
-      );
-  }
-};
-
-export const loginClient = async (req, res) => {
-  try {
-    await loginClientValidation.validateAsync(req.body);
-    let loginData = await ClientModel.findOne({
-      contactPersonEmailAddress:
-        req.body.contactPersonEmailAddress.toLowerCase(),
-      isDeleted: false,
-    });
-
-    if (!loginData) throw new CustomError(`Invalid email or password.`);
-
-    let isPasswordMatched = await comparePassword(
-      req.body.password,
-      loginData.password
-    );
-    if (!isPasswordMatched) throw new CustomError(`Invalid email or password.`);
-
-    let loginDataRaw = loginData.toJSON();
-    loginData.lastLogin = getCurrentUnix();
-    loginData.save();
-
-    delete loginDataRaw.password;
-    let jswToken = await getJwt({ id: loginDataRaw._id });
-
-    return res.status(StatusCodes.OK).send(
-      responseGenerators(
-        {
-          token: encryptData(jswToken),
-          userData: loginData,
-          loginCompleted: true,
-        },
-        StatusCodes.OK,
-        "SUCCESS",
-        0
-      )
-    );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res

@@ -1,15 +1,19 @@
 import express from "express";
-import { authenticateUser } from "../../middleware/authorization";
+// import { authenticateUser } from "../../middleware/authorization";
 import { deleteClientUser, listClientUser } from "./get";
 import { createClientUser, loginClientUser, updateClientUser } from "./post";
+import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 
 const clientUserRouter = express.Router();
 
-clientUserRouter.post("/login", loginClientUser);
+clientUserRouter.post("/login", loginClientUser); // DONE
 
-clientUserRouter.use(authenticateUser);
+clientUserRouter.post(
+  "/create",
+  onlyAdminAndClientWithRoles(["ADMIN"]),
+  createClientUser
+); // DONE
 
-clientUserRouter.post("/create", createClientUser);
 clientUserRouter.get("/list", listClientUser);
 clientUserRouter.post("/update/:id", updateClientUser);
 clientUserRouter.get("/delete/:id", deleteClientUser);

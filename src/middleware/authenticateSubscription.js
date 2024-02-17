@@ -14,45 +14,41 @@ const stripe = new Stripe(configVariables.STRIPE_SECRET, {
 /* we are checking the subscription for the user  */
 export const authenticateSubscription = async (req, res, next) => {
   try {
-    if (!req.tokenData)
-      throw new CustomError("User data not present in token.");
+    if (!req.session) throw new CustomError("User data not present in token.");
 
-    if (
-      !req.tokenData.payment_status ||
-      req.tokenData.payment_status != "ACTIVE"
-    )
+    if (!req.session.payment_status || req.session.payment_status != "ACTIVE")
       throw new CustomError(
         "Please complete the subscription purchase process first."
       );
-    if (!req.tokenData.subscription_id)
+    if (!req.session.subscription_id)
       throw new CustomError("Subscription is required.");
 
     const subscription = await stripe.subscriptions.retrieve(
-      req.tokenData.subscription_id
+      req.session.subscription_id
     );
     if (!subscription) throw new CustomError("Subscription not found.");
 
     req.SD = subscription;
     if (subscription.status === "active") {
-      if (subscription.status.toUpperCase() !== req.tokenData.plan_status)
+      if (subscription.status.toUpperCase() !== req.session.plan_status)
         await AdminUserModel.findOneAndUpdate(
-          { workspace_id: req.tokenData.workspace_id },
+          { workspace_id: req.session.workspace_id },
           { plan_status: "ACTIVE" }
         );
       console.log("Subscription is paid.");
       next();
     } else if (subscription.status === "trialing") {
-      if (subscription.status.toUpperCase() !== req.tokenData.plan_status)
+      if (subscription.status.toUpperCase() !== req.session.plan_status)
         await AdminUserModel.findOneAndUpdate(
-          { workspace_id: req.tokenData.workspace_id },
+          { workspace_id: req.session.workspace_id },
           { plan_status: "TRIALING" }
         );
       console.log("Subscription is in trial.");
       next();
     } else if (subscription.status === "past_due") {
-      if (subscription.status.toUpperCase() !== req.tokenData.plan_status)
+      if (subscription.status.toUpperCase() !== req.session.plan_status)
         await AdminUserModel.findOneAndUpdate(
-          { workspace_id: req.tokenData.workspace_id },
+          { workspace_id: req.session.workspace_id },
           { plan_status: "PAST_DUE" }
         );
       try {

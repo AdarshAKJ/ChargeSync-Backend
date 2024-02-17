@@ -2,12 +2,11 @@ import { StatusCodes } from "http-status-codes";
 import { ValidationError } from "webpack";
 import { CustomError } from "../../helpers/custome.error";
 import { responseGenerators } from "../../lib/utils";
-import clientUserModel from "../../models/clientUser";
+import ClientUserModel from "../../models/clientUser";
 
 export const listClientUser = async (req, res) => {
   try {
-    const users = await clientUserModel
-      .find({ isDeleted: false })
+    const users = await ClientUserModel.find({ isDeleted: false })
       .lean()
       .exec();
 
@@ -41,7 +40,7 @@ export const listClientUser = async (req, res) => {
 export const deleteClientUser = async (req, res) => {
   try {
     const { id: userId } = req.params;
-    const user = await clientUserModel.findOne({
+    const user = await ClientUserModel.findOne({
       _id: userId,
       isDeleted: false,
     });

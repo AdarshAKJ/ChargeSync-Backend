@@ -14,7 +14,7 @@ export const authenticateWorkspace = async (req, res, next) => {
     } else if (req.params.workspace_id) {
       providedWorkspaceId = req.params.workspace_id;
     }
-    let userData = req.tokenData;
+    let userData = req.session;
     if (!userData) throw new Error("User data not present in token.");
     let user = await TeamUserModel.findOne({
       _id: userData._id,
