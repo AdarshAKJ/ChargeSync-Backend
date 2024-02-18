@@ -2,7 +2,10 @@ import { ValidationError } from "joi";
 import { CustomError } from "../../helpers/custome.error";
 import { StatusCodes } from "http-status-codes";
 import { responseGenerators } from "../../lib/utils";
-import { createChargerValidation } from "../../helpers/validations/charger.validation";
+import {
+  createChargerValidation,
+  getSerialNumberqValidation,
+} from "../../helpers/validations/charger.validation";
 
 import { generateApiKey, getCurrentUnix } from "../../commons/common-functions";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
@@ -105,12 +108,60 @@ export const createChargerHandler = async (req, res) => {
       );
   }
 };
-
 export const getSerialNumberHandler = async (req, res) => {
-  // try catch
-  // check validation  only client id with joi
-  // check client access
-  // get charger count from client model
-  // increment it by one
-  // and send back the response with  and charger count
+  try {
+    await getSerialNumberqValidation.validateAsync(req.body);
+    checkClientIdAccess(req.session, req.body.clientId);
+
+    const clientData = await ClientModel.findOne({
+      _id: req.body.clientId,
+    })
+      .select("serialNumber")
+      .lean()
+      .exec();
+
+    if (!clientData) {
+      throw new CustomError(`Client with the given ID not found.`);
+    }
+
+    // Increment the serial number count by one
+    const newSerialNumberCount = clientData.serialNumberCount + 1;
+
+    return res
+      .status(StatusCodes.OK)
+      .send(
+        responseGenerators(
+          { ChargerCount: newSerialNumberCount },
+          StatusCodes.OK,
+          "SUCCESS",
+          0
+        )
+      );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
 };
+
+// try catch
+// check validation  only client id with joi
+// check client access
+// get charger count from client model
+// increment it by one
+// and send back the response with  and charger count

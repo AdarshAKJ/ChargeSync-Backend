@@ -7,23 +7,29 @@ import ChargingStationModel from "../../models/chargingStations";
 import { getCurrentUnix, setPagination } from "../../commons/common-functions";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 
-// DONE
-export const createChargerStationHandler = async (req, res) => {
+export const listChargerStationHandler = async (req, res) => {
   try {
-    await createChargerStationValidation.validateAsync(req.body);
-    checkClientIdAccess(req.session, req.body.clientId);
-    let chargerStationData = await ChargingStationModel.create({
-      ...req.body,
-      created_by: req.session._id,
-      updated_by: req.session._id,
-      created_at: getCurrentUnix(),
-      updated_at: getCurrentUnix(),
-    });
+    let where = {
+      isDeleted: false,
+      clientId: req.session.clientId || req.query.clientId,
+    };
+
+    checkClientIdAccess(req.session, where.clientId);
+
+    const pagination = setPagination(req.query);
+    const stations = await ChargingStationModel.find(where)
+      .sort(pagination.sort)
+      .skip(pagination.offset)
+      .limit(pagination.limit);
+
+    if (!users) throw new CustomError(`No Station found.`);
+    let total_count = await ChargingStationModel.count(where);
+
     return res
       .status(StatusCodes.OK)
       .send(
         responseGenerators(
-          { ...chargerStationData.toJSON() },
+          { paginatedData: stations, totalCount: total_count },
           StatusCodes.OK,
           "SUCCESS",
           0

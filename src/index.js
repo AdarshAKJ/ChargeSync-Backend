@@ -82,6 +82,8 @@ app.use("/api/client", clientRouter);
 app.use("/api/charger-station", chargerStationRouter);
 app.use("/api/charger", chargerRouter);
 
+app.use(express.json());
+
 app.use((req, res) => {
   return res
     .status(StatusCodes.INTERNAL_SERVER_ERROR)
