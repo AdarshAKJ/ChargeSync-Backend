@@ -14,8 +14,22 @@ clientUserRouter.post(
   createClientUser
 ); // DONE
 
-clientUserRouter.get("/list", listClientUser);
-clientUserRouter.post("/update/:id", updateClientUser);
-clientUserRouter.get("/delete/:id", deleteClientUser);
+clientUserRouter.get(
+  "/list",
+  onlyAdminAndClientWithRoles(["ADMIN"]),
+  listClientUser
+); //DONE
+
+clientUserRouter.post(
+  "/update/:id",
+  onlyAdminAndClientWithRoles(["ADMIN"]),
+  updateClientUser
+); //DONE
+
+clientUserRouter.get(
+  "/delete/:id",
+  onlyAdminAndClientWithRoles(["ADMIN"]),
+  deleteClientUser
+); //DONE
 
 export default clientUserRouter;
