@@ -1,12 +1,55 @@
-import { ValidationError } from "joi";
-import { CustomError } from "../../helpers/custome.error";
 import { StatusCodes } from "http-status-codes";
-import { responseGenerators } from "../../lib/utils";
-import ChargingStationModel from "../../models/chargingStations";
+import { CustomError } from "../../helpers/custome.error";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
+import ChargerModel from "../../models/charger";
+import { responseGenerators } from "../../lib/utils";
+import { ValidationError } from "webpack";
 import { setPagination } from "../../commons/common-functions";
 
-export const listChargerStationHandler = async (req, res) => {
+export const deleteChargerHandler = async (req, res) => {
+  try {
+    const { id: ChargerId } = req.params;
+    let clientId = req.session.clientId || req.query.clientId;
+    checkClientIdAccess(req.session, clientId);
+
+    const Charger = await ChargerModel.findOne({
+      _id: ChargerId,
+      clientId: clientId,
+      isDeleted: false,
+    });
+
+    if (!Charger) throw new CustomError(`No existing charger found.`);
+
+    Charger.isDeleted = true;
+
+    await Charger.save();
+
+    return res
+      .status(StatusCodes.OK)
+      .send(responseGenerators({}, StatusCodes.OK, "SUCCESS", 0));
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+export const listChargerHandler = async (req, res) => {
   try {
     let where = {
       isDeleted: false,
@@ -15,23 +58,35 @@ export const listChargerStationHandler = async (req, res) => {
 
     checkClientIdAccess(req.session, where.clientId);
 
-    const pagination = setPagination(req.query);
+    if (req.query?.status) {
+      where = {
+        ...where,
+        status: new RegExp(req.query?.status.toString(), "i"),
+      };
+    }
 
-    const stations = await ChargingStationModel.find(where)
+    if (req.query?.search) {
+      where = {
+        ...where,
+        name: new RegExp(req.query?.search.toString(), "i"),
+      };
+    }
+
+    const pagination = setPagination(req.query);
+    const chargers = await ChargerModel.find(where)
       .sort(pagination.sort)
       .skip(pagination.offset)
       .limit(pagination.limit)
       .lean()
       .exec();
-    // search name add
 
-    if (!stations) throw new CustomError(`No Station found.`);
-    let total_count = stations.length;
+    if (!chargers) throw new CustomError(`No users found.`);
+    let total_count = chargers.length;
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(
         {
-          paginatedData: stations,
+          paginatedData: chargers,
           totalCount: total_count,
           itemsPerPage: pagination.limit,
         },
@@ -62,25 +117,27 @@ export const listChargerStationHandler = async (req, res) => {
   }
 };
 
-export const singleChargerStationHandler = async (req, res) => {
+export const singleChargerHandler = async (req, res) => {
   try {
-    const { id: ChargerStationId } = req.params;
+    const { id: ChargerId } = req.params;
     let clientId = req.session.clientId || req.query.clientId;
     checkClientIdAccess(req.session, clientId);
 
-    const ChargerStation = await ChargingStationModel.findOne({
-      _id: ChargerStationId,
+    const Charger = await ChargerModel.findOne({
+      _id: ChargerId,
       clientId: clientId,
       isDeleted: false,
-    });
+    })
+      .lean()
+      .exec();
 
-    if (!ChargerStation) throw new CustomError(`No such Charger found.`);
+    if (!Charger) throw new CustomError(`No such charger found.`);
 
     return res
       .status(StatusCodes.OK)
       .send(
         responseGenerators(
-          { ChargerStationDetails: ChargerStation.toJSON() },
+          { ChargerStationDetails: Charger },
           StatusCodes.OK,
           "SUCCESS",
           0
@@ -108,7 +165,8 @@ export const singleChargerStationHandler = async (req, res) => {
   }
 };
 
-export const getChargerStationCountHandler = async (req, res) => {
+// filter according to status
+export const getChargerCountHandler = async (req, res) => {
   try {
     let where = {
       isDeleted: false,
@@ -117,15 +175,15 @@ export const getChargerStationCountHandler = async (req, res) => {
 
     checkClientIdAccess(req.session, where.clientId);
 
-    let total_count = await ChargingStationModel.count(where);
+    let total_count = await ChargerModel.count(where);
 
-    if (!total_count) throw new CustomError(`No Station found.`);
+    if (!total_count) throw new CustomError(`No chargers found.`);
 
     return res
       .status(StatusCodes.OK)
       .send(
         responseGenerators(
-          { totalStationCount: total_count },
+          { totalChargerCount: total_count },
           StatusCodes.OK,
           "SUCCESS",
           0

@@ -2,14 +2,14 @@ import express from "express";
 
 import {
   createChargerStationHandler,
+  deleteChargerStationHandler,
   updateChargerStationHandler,
 } from "./post";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 import {
-  deleteChargerStationHandler,
   getChargerStationCountHandler,
   listChargerStationHandler,
-  single_chargerChargerStationHandler,
+  singleChargerStationHandler,
 } from "./get";
 
 const chargerStationRouter = express.Router();
@@ -35,7 +35,7 @@ chargerStationRouter.post(
 ); // DONE
 
 // delete
-chargerStationRouter.get(
+chargerStationRouter.post(
   "/delete/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   deleteChargerStationHandler
@@ -43,9 +43,9 @@ chargerStationRouter.get(
 
 // single charger.
 chargerStationRouter.get(
-  "/single-charger/:id",
+  "/single-chargingStation/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
-  single_chargerChargerStationHandler
+  singleChargerStationHandler
 ); // DONE
 
 // get chargingStation count

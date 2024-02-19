@@ -67,6 +67,7 @@ export const updateChargerStationHandler = async (req, res) => {
 
     const chargerStation = await ChargingStationModel.findOne({
       _id: chargerStationId,
+      clientId: req.body.clientId,
       isDeleted: false,
     });
 
@@ -99,6 +100,58 @@ export const updateChargerStationHandler = async (req, res) => {
           0
         )
       );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+export const deleteChargerStationHandler = async (req, res) => {
+  try {
+    await updateChargerStationValidation.validateAsync({
+      ...req.body,
+      ...req.params,
+    });
+    const chargerStationId = req.params.id;
+
+    checkClientIdAccess(req.session, req.body.clientId);
+
+    const { id: ChargerStationId } = req.params;
+    let clientId = req.session.clientId || req.query.clientId;
+    checkClientIdAccess(req.session, clientId);
+
+    const ChargerStation = await ChargingStationModel.findOne({
+      _id: ChargerStationId,
+      clientId: clientId,
+      isDeleted: false,
+    });
+
+    if (!ChargerStation)
+      throw new CustomError(`No such user is registered with us.`);
+
+    ChargerStation.isDeleted = true;
+
+    await ChargerStation.save();
+
+    return res
+      .status(StatusCodes.OK)
+      .send(responseGenerators({}, StatusCodes.OK, "SUCCESS", 0));
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
