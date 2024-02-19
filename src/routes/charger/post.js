@@ -108,6 +108,7 @@ export const createChargerHandler = async (req, res) => {
       );
   }
 };
+
 export const getSerialNumberHandler = async (req, res) => {
   try {
     await getSerialNumberqValidation.validateAsync(req.body);

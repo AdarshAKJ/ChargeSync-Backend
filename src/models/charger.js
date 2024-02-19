@@ -25,6 +25,7 @@ const ChargerSchema = new mongoose.Schema({
   updated_by: { type: String },
   created_at: { type: String },
   updated_at: { type: String },
+  isDeleted: { type: Boolean, default: false },
 });
 
 const ChargerModel = mongoose.model("charger", ChargerSchema);
