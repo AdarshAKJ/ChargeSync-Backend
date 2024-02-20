@@ -19,7 +19,6 @@ chargerRouter.post(
   createChargerHandler
 );
 
-// check
 chargerRouter.post(
   "/get-serial-number",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
@@ -47,7 +46,7 @@ chargerRouter.post(
   listChargerHandler
 ); // Done
 
-// single charger.
+// single charger
 chargerRouter.post(
   "/single-charger/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),

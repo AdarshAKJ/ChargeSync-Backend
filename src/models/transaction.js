@@ -8,7 +8,7 @@ const TransactionSchema = new mongoose.Schema({
     unique: true,
   },
   clientId: { type: String, required: true, trim: true }, //database
-  serialNumber: { type: Number, required: true }, //database
+  serialNumber: { type: String, required: true }, //database
   connectorId: { type: String, required: true }, //database
   status: {
     type: String,

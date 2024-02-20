@@ -190,6 +190,7 @@ export const listChargerStationHandler = async (req, res) => {
     const pagination = setPagination(req.query);
 
     const stations = await ChargingStationModel.find(where)
+      .select("_id station_name address")
       .sort(pagination.sort)
       .skip(pagination.offset)
       .limit(pagination.limit)
@@ -246,7 +247,6 @@ export const singleChargerStationHandler = async (req, res) => {
 
     const { id: chargerStationId } = req.params;
     let clientId = req.session.clientId || req.query.clientId;
-    checkClientIdAccess(req.session, clientId);
 
     const ChargerStation = await ChargingStationModel.findOne({
       _id: chargerStationId,
