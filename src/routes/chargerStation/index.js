@@ -4,16 +4,15 @@ import {
   createChargerStationHandler,
   deleteChargerStationHandler,
   updateChargerStationHandler,
-} from "./post";
-import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
-import {
   getChargerStationCountHandler,
   listChargerStationHandler,
   singleChargerStationHandler,
-} from "./get";
+} from "./post";
+import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 
 const chargerStationRouter = express.Router();
 
+// create
 chargerStationRouter.post(
   "/create",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
@@ -21,7 +20,7 @@ chargerStationRouter.post(
 ); // DONE
 
 // list
-chargerStationRouter.get(
+chargerStationRouter.post(
   "/list",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   listChargerStationHandler
@@ -42,14 +41,14 @@ chargerStationRouter.post(
 ); // DONE
 
 // single charger.
-chargerStationRouter.get(
+chargerStationRouter.post(
   "/single-chargingStation/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   singleChargerStationHandler
 ); // DONE
 
 // get chargingStation count
-chargerStationRouter.get(
+chargerStationRouter.post(
   "/chargingStation-count",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   getChargerStationCountHandler

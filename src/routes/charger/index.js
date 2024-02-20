@@ -5,13 +5,11 @@ import {
   createChargerHandler,
   getSerialNumberHandler,
   updateChargerHandler,
-} from "./post";
-import {
   deleteChargerHandler,
   getChargerCountHandler,
   listChargerHandler,
   singleChargerHandler,
-} from "./get";
+} from "./post";
 
 const chargerRouter = express.Router();
 
@@ -36,28 +34,28 @@ chargerRouter.post(
 );
 
 // delete
-chargerRouter.get(
+chargerRouter.post(
   "/delete/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   deleteChargerHandler
 ); // Done
 
 // list filter by status by station and pagination
-chargerRouter.get(
+chargerRouter.post(
   "/list",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   listChargerHandler
 ); // Done
 
 // single charger.
-chargerRouter.get(
+chargerRouter.post(
   "/single-charger/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   singleChargerHandler
 ); // DONE
 
 // get charging count
-chargerRouter.get(
+chargerRouter.post(
   "/charging-count",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   getChargerCountHandler

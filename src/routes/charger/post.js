@@ -4,11 +4,18 @@ import { StatusCodes } from "http-status-codes";
 import { responseGenerators } from "../../lib/utils";
 import {
   createChargerValidation,
+  deleteChargerValidation,
+  getChargerCountValidation,
   getSerialNumberqValidation,
+  listChargerValidation,
   updateChargerValidation,
 } from "../../helpers/validations/charger.validation";
 
-import { generateApiKey, getCurrentUnix } from "../../commons/common-functions";
+import {
+  generateApiKey,
+  getCurrentUnix,
+  setPagination,
+} from "../../commons/common-functions";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 import ChargerModel from "../../models/charger";
 import ClientModel from "../../models/client";
@@ -115,19 +122,21 @@ export const getSerialNumberHandler = async (req, res) => {
     await getSerialNumberqValidation.validateAsync(req.body);
     checkClientIdAccess(req.session, req.body.clientId);
 
-    const chargerData = await ClientModel.findOne({
+    const chargerData = await ChargerModel.findOne({
       _id: req.body.clientId,
+      isDeleted: false,
+      clientId: req.session.clientId,
     })
       .select("serialNumber")
       .lean()
       .exec();
 
-    if (!clientData) {
+    if (!chargerData) {
       throw new CustomError(`Client with the given ID not found.`);
     }
 
     // Increment the serial number count by one
-    const newSerialNumberCount = clientData.serialNumberCount + 1;
+    const newSerialNumberCount = chargerData.serialNumber + 1;
 
     return res
       .status(StatusCodes.OK)
@@ -160,12 +169,6 @@ export const getSerialNumberHandler = async (req, res) => {
       );
   }
 };
-// try catch
-// check validation  only client id with joi
-// check client access
-// get charger count from client model
-// increment it by one
-// and send back the response with  and charger count
 
 export const updateChargerHandler = async (req, res) => {
   try {
@@ -209,6 +212,226 @@ export const updateChargerHandler = async (req, res) => {
       .send(
         responseGenerators(
           { ...charger.toJSON() },
+          StatusCodes.OK,
+          "SUCCESS",
+          0
+        )
+      );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+export const deleteChargerHandler = async (req, res) => {
+  try {
+    await deleteChargerValidation.validateAsync({
+      ...req.body,
+      ...req.params,
+    });
+
+    checkClientIdAccess(req.session, req.body.clientId);
+
+    const chargerId = req.params.id;
+    const Charger = await ChargerModel.findOne({
+      _id: chargerId,
+      clientId: clientId,
+      isDeleted: false,
+    });
+
+    if (!Charger) throw new CustomError(`No existing charger found.`);
+
+    Charger.isDeleted = true;
+
+    await Charger.save();
+
+    return res
+      .status(StatusCodes.OK)
+      .send(responseGenerators({}, StatusCodes.OK, "SUCCESS", 0));
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+export const listChargerHandler = async (req, res) => {
+  try {
+    await listChargerValidation.validateAsync(req.body);
+
+    checkClientIdAccess(req.session, req.body.clientId);
+
+    let where = {
+      isDeleted: false,
+      clientId: req.session.clientId || req.query.clientId,
+    };
+
+    if (req.query?.status) {
+      where = {
+        ...where,
+        status: new RegExp(req.query?.status.toString(), "i"),
+      };
+    }
+
+    if (req.query?.search) {
+      where = {
+        ...where,
+        name: new RegExp(req.query?.search.toString(), "i"),
+      };
+    }
+
+    const pagination = setPagination(req.query);
+    const chargers = await ChargerModel.find(where)
+      .sort(pagination.sort)
+      .skip(pagination.offset)
+      .limit(pagination.limit)
+      .lean()
+      .exec();
+
+    if (!chargers) throw new CustomError(`No users found.`);
+    let total_count = chargers.length;
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          paginatedData: chargers,
+          totalCount: total_count,
+          itemsPerPage: pagination.limit,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+export const singleChargerHandler = async (req, res) => {
+  try {
+    await listChargerValidation.validateAsync({
+      ...req.body,
+      ...req.params,
+    });
+
+    checkClientIdAccess(req.session, req.body.clientId);
+
+    const chargerId = req.params.id;
+
+    const Charger = await ChargerModel.findOne({
+      _id: chargerId,
+      clientId: clientId,
+      isDeleted: false,
+    })
+      .lean()
+      .exec();
+
+    if (!Charger) throw new CustomError(`No such charger found.`);
+
+    return res
+      .status(StatusCodes.OK)
+      .send(
+        responseGenerators(
+          { ChargerStationDetails: Charger },
+          StatusCodes.OK,
+          "SUCCESS",
+          0
+        )
+      );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+// filter according to status
+export const getChargerCountHandler = async (req, res) => {
+  try {
+    await getChargerCountValidation.validateAsync({
+      ...req.body,
+    });
+
+    checkClientIdAccess(req.session, req.body.clientId);
+
+    let where = {
+      isDeleted: false,
+      clientId: req.session.clientId || req.query.clientId,
+    };
+
+    let total_count = await ChargerModel.count(where);
+
+    if (!total_count) throw new CustomError(`No chargers found.`);
+
+    return res
+      .status(StatusCodes.OK)
+      .send(
+        responseGenerators(
+          { totalChargerCount: total_count },
           StatusCodes.OK,
           "SUCCESS",
           0
