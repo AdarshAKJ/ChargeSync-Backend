@@ -122,27 +122,26 @@ export const getSerialNumberHandler = async (req, res) => {
     await getSerialNumberqValidation.validateAsync(req.body);
     checkClientIdAccess(req.session, req.body.clientId);
 
-    const chargerData = await ChargerModel.findOne({
+    const clientData = await ClientModel.findOne({
       _id: req.body.clientId,
       isDeleted: false,
-      clientId: req.session.clientId,
     })
-      .select("serialNumber")
+      .select("serialNumberCount prefix")
       .lean()
       .exec();
 
-    if (!chargerData) {
+    if (!clientData) {
       throw new CustomError(`Client with the given ID not found.`);
     }
 
     // Increment the serial number count by one
-    const newSerialNumberCount = chargerData.serialNumber + 1;
+    const newSerialNumberCount = clientData.serialNumberCount + 1;
 
     return res
       .status(StatusCodes.OK)
       .send(
         responseGenerators(
-          { ChargerCount: newSerialNumberCount },
+          { ChargerCount: `${clientData.prefix}` + newSerialNumberCount },
           StatusCodes.OK,
           "SUCCESS",
           0
@@ -311,6 +310,13 @@ export const listChargerHandler = async (req, res) => {
       };
     }
 
+    if (req.query?.stationId) {
+      where = {
+        ...where,
+        stationId: req.query.stationId,
+      };
+    }
+
     const pagination = setPagination(req.query);
     const chargers = await ChargerModel.find(where)
       .sort(pagination.sort)
@@ -424,6 +430,13 @@ export const getChargerCountHandler = async (req, res) => {
     };
 
     let total_count = await ChargerModel.count(where);
+
+    if (req.query.status) {
+      where = {
+        ...where,
+        status: new RegExp(req.query?.status.toString(), "i"),
+      };
+    }
 
     if (!total_count) throw new CustomError(`No chargers found.`);
 

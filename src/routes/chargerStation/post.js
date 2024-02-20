@@ -246,7 +246,6 @@ export const singleChargerStationHandler = async (req, res) => {
 
     const { id: chargerStationId } = req.params;
     let clientId = req.session.clientId || req.query.clientId;
-    checkClientIdAccess(req.session, clientId);
 
     const ChargerStation = await ChargingStationModel.findOne({
       _id: chargerStationId,

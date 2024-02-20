@@ -19,7 +19,6 @@ chargerRouter.post(
   createChargerHandler
 );
 
-// check
 chargerRouter.post(
   "/get-serial-number",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
