@@ -105,6 +105,13 @@ export const generateApiKey = (length = 32) => {
   return buffer.toString("base64");
 };
 
+export const generateUniqueKey = (length = 24) => {
+  return crypto
+    .randomBytes(Math.ceil(length / 2))
+    .toString("hex")
+    .slice(0, length);
+};
+
 export const generatePassword = async () => {
   return new Promise((resolve) => {
     const length = 8; // Length of the generated password

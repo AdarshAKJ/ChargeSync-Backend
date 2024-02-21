@@ -4,7 +4,10 @@ import { StatusCodes } from "http-status-codes";
 import { responseGenerators } from "../../lib/utils";
 import { createChargerValidation } from "../../helpers/validations/charger.validation";
 
-import { generateApiKey, getCurrentUnix } from "../../commons/common-functions";
+import {
+  generateUniqueKey,
+  getCurrentUnix,
+} from "../../commons/common-functions";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 import ChargerModel from "../../models/charger";
 import ClientModel from "../../models/client";
@@ -43,7 +46,7 @@ export const createChargerHandler = async (req, res) => {
       serialNumber: req.body.serialNumber,
       name: req.body.name,
       connectorCount: req.body.connectorCount,
-      chargerKey: generateApiKey(),
+      chargerKey: generateUniqueKey(),
       created_by: req.session._id,
       updated_by: req.session._id,
       created_at: getCurrentUnix(),
