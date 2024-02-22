@@ -100,18 +100,22 @@ export const updateClientUser = async (req, res) => {
       ...req.params,
     });
     const userId = req.params.id;
+
     const user = await ClientUserModel.findOne({
       _id: userId,
+      phoneNumber: req.body.phoneNumber,
+      email: req.body.email,
+      password: req.body.password,
       isDeleted: false,
+      clientId: req.session.clientId || req.query.clientId,
     });
+
+    checkClientIdAccess(req.session, where.clientId);
 
     if (!user)
       throw new CustomError(
         `The user you are trying to update is deleted or does not exist.`
       );
-
-    // any key handling that cannot be updated should be handled here i.e. email, contact
-    // if(req.body.email) throw new CustomError(`email cannot be updated.`);
 
     let keys = [];
     for (let key in req.body) {
@@ -121,6 +125,9 @@ export const updateClientUser = async (req, res) => {
     for (let i = 0; i < keys.length; ++i) {
       user[keys[i]] = req.body[keys[i]];
     }
+
+    user.updated_at = getCurrentUnix();
+    user.updated_by = req.session._id;
 
     await user.save();
     return res

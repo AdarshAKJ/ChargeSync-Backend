@@ -19,6 +19,7 @@ export const createClientUserValidation = Joi.object({
 });
 
 export const updateClientUserValidation = Joi.object({
+  id: Joi.string().required(),
   clientId: Joi.string().required(),
   roleId: Joi.string()
     .valid("ADMIN", "ACCOUNT", "OPERATION", "REPORTER")
@@ -30,7 +31,8 @@ export const updateClientUserValidation = Joi.object({
     .min(7)
     .max(12)
     .pattern(/^[0-9]+$/)
-    .optional(),
+    .optional()
+    .allow(null),
   countryCode: Joi.string().required(),
   password: Joi.string().required(),
   address: Joi.string().required(),
@@ -38,11 +40,11 @@ export const updateClientUserValidation = Joi.object({
   documents: Joi.array()
     .items(
       Joi.object({
-        type: Joi.string().required(),
-        path: Joi.string().required(),
+        type: Joi.string().optional().allow(null),
+        path: Joi.string().optional().allow(null),
       })
     )
-    .required(),
+    .optional(),
 });
 
 export const loginClientUserValidation = Joi.object({

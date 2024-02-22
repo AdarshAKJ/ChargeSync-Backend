@@ -8,8 +8,8 @@ const clientRouter = express.Router();
 
 clientRouter.post("/create", onlyAdmin, createClient); // DONE
 
-clientRouter.get("/list", listClient);
-clientRouter.get("/delete/:id", deleteClient);
-clientRouter.post("/update/:id", updateClient);
+clientRouter.get("/list", onlyAdmin, listClient);
+clientRouter.get("/delete/:id", onlyAdmin, deleteClient);
+clientRouter.post("/update/:id", onlyAdmin, updateClient);
 
 export default clientRouter;
