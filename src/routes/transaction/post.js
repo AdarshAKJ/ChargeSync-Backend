@@ -30,12 +30,6 @@ export const listTransactions = async (req, res) => {
       };
     }
 
-    if (req.query?.id) {
-      where = {
-        ...where,
-        _id: req.query.id,
-      };
-    }
     if (req?.query?.startDate) {
       where.createdAt = {
         $gte: getUnixStartTime(dateToUnix(req.query.startDate)),
@@ -58,11 +52,13 @@ export const listTransactions = async (req, res) => {
 
     if (!transactions) throw new CustomError(`No transactions found.`);
 
+    let total_count = await TransactionModel.count(where);
+
     return res.status(StatusCodes.OK).send(
       responseGenerators(
         {
           paginatedData: transactions,
-          totalCount: transactions.length,
+          totalCount: total_count,
           itemsPerPage: pagination.limit,
         },
         StatusCodes.OK,

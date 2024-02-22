@@ -329,7 +329,8 @@ export const listChargerHandler = async (req, res) => {
       .exec();
 
     if (!chargers) throw new CustomError(`No users found.`);
-    let total_count = chargers.length;
+
+    let total_count = await ChargerModel.count(where);
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(

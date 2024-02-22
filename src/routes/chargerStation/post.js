@@ -200,7 +200,7 @@ export const listChargerStationHandler = async (req, res) => {
     // search name add
 
     if (!stations) throw new CustomError(`No Station found.`);
-    let total_count = stations.length;
+    let total_count = await ChargingStationModel.count(where);
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(

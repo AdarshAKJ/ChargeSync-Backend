@@ -6,7 +6,7 @@ import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin
 
 const transactionRouter = express.Router();
 
-transactionRouter.get(
+transactionRouter.post(
   "/list",
   onlyAdminAndClientWithRoles(["ADMIN"]),
   listTransactions
