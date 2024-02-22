@@ -13,6 +13,7 @@ import clientRouter from "./routes/client";
 import clientUserRouter from "./routes/clientUsers";
 import chargerStationRouter from "./routes/chargerStation";
 import chargerRouter from "./routes/charger";
+import transactionRouter from "./routes/transaction";
 
 const app = express();
 const server = new http.Server(app);
@@ -81,6 +82,7 @@ app.use("/api/client-user", clientUserRouter);
 app.use("/api/client", clientRouter);
 app.use("/api/charger-station", chargerStationRouter);
 app.use("/api/charger", chargerRouter);
+app.use("/api/transaction", transactionRouter);
 
 app.use(express.json());
 

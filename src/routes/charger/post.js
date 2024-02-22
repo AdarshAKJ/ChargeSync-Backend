@@ -135,19 +135,21 @@ export const getSerialNumberHandler = async (req, res) => {
     }
 
     // Increment the serial number count by one
+    const newSerialNumberCount = (clientData.serialNumberCount + 1)
+      .toString()
+      .padStart(3, "0");
 
-    const newSerialNumberCount = clientData.serialNumberCount + 1;
-
-    return res
-      .status(StatusCodes.OK)
-      .send(
-        responseGenerators(
-          { ChargerCount: `${clientData.prefix}` + newSerialNumberCount },
-          StatusCodes.OK,
-          "SUCCESS",
-          0
-        )
-      );
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          serialNumber: newSerialNumberCount,
+          prefix: clientData.prefix,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
