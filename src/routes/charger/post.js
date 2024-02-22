@@ -8,6 +8,7 @@ import {
   getChargerCountValidation,
   getSerialNumberqValidation,
   listChargerValidation,
+  singleChargerValidation,
   updateChargerValidation,
 } from "../../helpers/validations/charger.validation";
 
@@ -135,7 +136,7 @@ export const getSerialNumberHandler = async (req, res) => {
     }
 
     // Increment the serial number count by one
-    const newSerialNumberCount = (chargerData.serialNumber + 1)
+    const newSerialNumberCount = (clientData.serialNumberCount + 1)
       .toString()
       .padStart(3, "0");
 
@@ -252,7 +253,7 @@ export const deleteChargerHandler = async (req, res) => {
     const chargerId = req.params.id;
     const Charger = await ChargerModel.findOne({
       _id: chargerId,
-      clientId: clientId,
+      clientId: req.body.clientId,
       isDeleted: false,
     });
 
@@ -366,7 +367,7 @@ export const listChargerHandler = async (req, res) => {
 
 export const singleChargerHandler = async (req, res) => {
   try {
-    await listChargerValidation.validateAsync({
+    await singleChargerValidation.validateAsync({
       ...req.body,
       ...req.params,
     });
@@ -377,7 +378,7 @@ export const singleChargerHandler = async (req, res) => {
 
     const Charger = await ChargerModel.findOne({
       _id: chargerId,
-      clientId: clientId,
+      clientId: req.body.clientId,
       isDeleted: false,
     })
       .lean()

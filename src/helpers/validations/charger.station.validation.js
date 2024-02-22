@@ -35,6 +35,11 @@ export const updateChargerStationValidation = Joi.object({
   station_images: Joi.array().optional().allow(null),
 });
 
+export const deleteChargerStationValidation = Joi.object({
+  id: Joi.string().required(),
+  clientId: Joi.string().required(),
+});
+
 export const listChargerStationValidation = Joi.object({
   clientId: Joi.string().required(),
 });

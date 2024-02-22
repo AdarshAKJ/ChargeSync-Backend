@@ -4,6 +4,7 @@ import { StatusCodes } from "http-status-codes";
 import { responseGenerators } from "../../lib/utils";
 import {
   createChargerStationValidation,
+  deleteChargerStationValidation,
   getChargerStationValidation,
   listChargerStationValidation,
   singleChargerStationValidation,
@@ -128,7 +129,7 @@ export const updateChargerStationHandler = async (req, res) => {
 // DONE
 export const deleteChargerStationHandler = async (req, res) => {
   try {
-    await updateChargerStationValidation.validateAsync({
+    await deleteChargerStationValidation.validateAsync({
       ...req.body,
       ...req.params,
     });
