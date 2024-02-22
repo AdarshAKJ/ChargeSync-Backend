@@ -12,7 +12,7 @@ import {
 } from "../../helpers/validations/charger.validation";
 
 import {
-  generateApiKey,
+  generateUniqueKey,
   getCurrentUnix,
   setPagination,
 } from "../../commons/common-functions";
@@ -54,7 +54,7 @@ export const createChargerHandler = async (req, res) => {
       serialNumber: req.body.serialNumber,
       name: req.body.name,
       connectorCount: req.body.connectorCount,
-      chargerKey: generateApiKey(),
+      chargerKey: generateUniqueKey(),
       created_by: req.session._id,
       updated_by: req.session._id,
       created_at: getCurrentUnix(),
@@ -135,21 +135,18 @@ export const getSerialNumberHandler = async (req, res) => {
     }
 
     // Increment the serial number count by one
-    const newSerialNumberCount = (clientData.serialNumberCount + 1)
-      .toString()
-      .padStart(3, "0");
+    const newSerialNumberCount = chargerData.serialNumber + 1;
 
-    return res.status(StatusCodes.OK).send(
-      responseGenerators(
-        {
-          serialNumber: newSerialNumberCount,
-          prefix: clientData.prefix,
-        },
-        StatusCodes.OK,
-        "SUCCESS",
-        0
-      )
-    );
+    return res
+      .status(StatusCodes.OK)
+      .send(
+        responseGenerators(
+          { ChargerCount: newSerialNumberCount },
+          StatusCodes.OK,
+          "SUCCESS",
+          0
+        )
+      );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res

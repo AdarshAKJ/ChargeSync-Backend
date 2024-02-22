@@ -140,7 +140,7 @@ export const deleteChargerStationHandler = async (req, res) => {
 
     const ChargerStation = await ChargingStationModel.findOne({
       _id: chargerStationId,
-      clientId: clientId,
+      clientId: req.body.clientId,
       isDeleted: false,
     });
 
