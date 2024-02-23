@@ -8,12 +8,12 @@ const transactionRouter = express.Router();
 
 transactionRouter.post(
   "/list",
-  onlyAdminAndClientWithRoles(["ADMIN"]),
+  onlyAdminAndClientWithRoles(["ADMIN", "ACCOUNT"]),
   listTransactions
 );
 transactionRouter.post(
   "/single-transaction/:id",
-  onlyAdminAndClientWithRoles(["ADMIN"]),
+  onlyAdminAndClientWithRoles(["ADMIN", "ACCOUNT"]),
   singleTransaction
 );
 

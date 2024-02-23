@@ -4,11 +4,11 @@ import { StatusCodes } from "http-status-codes";
 import { responseGenerators } from "../../lib/utils";
 import { setPagination } from "../../commons/common-functions";
 import TransactionModel from "../../models/transaction";
-import { listChargerStationValidation } from "../../helpers/validations/charger.station.validation";
 import {
   listTransactionsValidation,
   singleTransactionValidation,
 } from "../../helpers/validations/transaction.validation";
+import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 
 export const listTransactions = async (req, res) => {
   try {
