@@ -16,6 +16,7 @@ import chargerRouter from "./routes/charger";
 import transactionRouter from "./routes/transaction";
 import transactionLogRouter from "./routes/transactionLogs";
 import maintenanceRouter from "./routes/maintenance";
+import customerRouter from "./routes/customer";
 
 const app = express();
 const server = new http.Server(app);
@@ -87,6 +88,7 @@ app.use("/api/charger", chargerRouter);
 app.use("/api/transaction", transactionRouter);
 app.use("/api/transaction-logs", transactionLogRouter);
 app.use("/api/maintenance", maintenanceRouter);
+app.use("/api/customer", customerRouter);
 
 app.use(express.json());
 
