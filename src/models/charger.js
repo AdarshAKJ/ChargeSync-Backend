@@ -18,6 +18,7 @@ const ChargerSchema = new mongoose.Schema({
     enum: ["ONLINE", "OFFLINE", "CONFIGURING"],
     default: "CONFIGURING",
   },
+  maxCapacity: { type: Number },
   connectorCount: { type: Number },
   chargerKey: { type: String, required: true },
   created_by: { type: String },

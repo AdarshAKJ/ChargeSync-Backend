@@ -9,6 +9,7 @@ export const createChargerValidation = Joi.object({
     .valid("ONLINE", "OFFLINE", "CONFIGURING")
     .default("CONFIGURING"),
   connectorCount: Joi.number().optional(),
+  maxCapacity: Joi.number().optional(),
 });
 
 export const updateChargerValidation = Joi.object({
@@ -19,6 +20,7 @@ export const updateChargerValidation = Joi.object({
   name: Joi.string().required(),
   status: Joi.string().valid("ONLINE", "OFFLINE", "CONFIGURING").required(),
   connectorCount: Joi.number().optional(),
+  maxCapacity: Joi.number().optional(),
 });
 
 export const getSerialNumberqValidation = Joi.object({

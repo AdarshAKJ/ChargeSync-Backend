@@ -55,6 +55,7 @@ export const createChargerHandler = async (req, res) => {
       serialNumber: req.body.serialNumber,
       name: req.body.name,
       connectorCount: req.body.connectorCount,
+      maxCapacity: req.body.maxCapacity,
       chargerKey: generateUniqueKey(),
       created_by: req.session._id,
       updated_by: req.session._id,
