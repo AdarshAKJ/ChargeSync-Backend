@@ -69,13 +69,18 @@ export const listTransactions = async (req, res) => {
       {
         $lookup: {
           from: "chargers",
-          localField: "connectorId",
-          foreignField: "_id",
-          as: "chargerConnectorsData",
+          localField: "serialNumber",
+          foreignField: "serialNumber",
+          as: "chargersData",
           pipeline: [
             {
               $project: {
-                connectorId: 1,
+                stationId: 1,
+                name: 1,
+                status: 1,
+                maxCapacity: 1,
+                connectorCount: 1,
+                chargerKey: 1,
               },
             },
           ],
