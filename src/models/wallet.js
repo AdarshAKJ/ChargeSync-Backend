@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { generatePublicId } from "../commons/common-functions";
 
-const CustomerSchema = new mongoose.Schema({
+const WalletSchema = new mongoose.Schema({
   _id: {
     type: String,
     required: true,
@@ -9,13 +9,8 @@ const CustomerSchema = new mongoose.Schema({
     default: generatePublicId,
   },
   clientId: { type: String, required: true, trim: true },
-  fname: { type: String, required: true },
-  lname: { type: String, required: true },
-  email: { type: String, trim: true },
-  phoneNumber: { type: String },
-  address: { type: Object, trim: true },
-  dob: { type: String },
-  countryCode: { type: String },
+  userId: { type: String, required: true, trim: true },
+  amount: { type: Number, required: true, trim: true },
   created_by: { type: String },
   updated_by: { type: String },
   created_at: { type: String },
@@ -23,6 +18,6 @@ const CustomerSchema = new mongoose.Schema({
   isDeleted: { type: Boolean, default: false },
 });
 
-const CustomerModel = mongoose.model("customer", CustomerSchema);
+const WalletModel = mongoose.model("wallet", WalletSchema);
 
-export default CustomerModel;
+export default WalletModel;
