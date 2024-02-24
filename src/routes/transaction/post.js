@@ -67,6 +67,22 @@ export const listTransactions = async (req, res) => {
         },
       },
       {
+        $lookup: {
+          from: "chargers",
+          localField: "connectorId",
+          foreignField: "_id",
+          as: "chargerConnectorsData",
+          pipeline: [
+            {
+              $project: {
+                connectorId: 1,
+              },
+            },
+          ],
+        },
+      },
+
+      {
         $unwind: "$chargerConnectorsData",
       },
       {

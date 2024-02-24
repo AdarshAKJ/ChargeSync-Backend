@@ -1,5 +1,4 @@
 import express from "express";
-// import { authenticateUser } from "../../middleware/authorization";
 import { deleteClient, listClient } from "./get";
 import { createClient, updateClient } from "./post";
 import { onlyAdmin } from "../../middleware/onlyAdmin";
