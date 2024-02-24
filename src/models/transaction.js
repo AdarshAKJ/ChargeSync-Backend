@@ -5,7 +5,6 @@ const TransactionSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    unique: true,
   },
   clientId: { type: String, required: true, trim: true }, //database
   serialNumber: { type: String, required: true }, //database

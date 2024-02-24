@@ -4,6 +4,7 @@ import { StatusCodes } from "http-status-codes";
 import { responseGenerators } from "../../lib/utils";
 import {
   createChargerStationValidation,
+  deleteChargerStationValidation,
   getChargerStationValidation,
   listChargerStationValidation,
   singleChargerStationValidation,
@@ -128,7 +129,7 @@ export const updateChargerStationHandler = async (req, res) => {
 // DONE
 export const deleteChargerStationHandler = async (req, res) => {
   try {
-    await updateChargerStationValidation.validateAsync({
+    await deleteChargerStationValidation.validateAsync({
       ...req.body,
       ...req.params,
     });
@@ -190,6 +191,7 @@ export const listChargerStationHandler = async (req, res) => {
     const pagination = setPagination(req.query);
 
     const stations = await ChargingStationModel.find(where)
+      .select("_id station_name address")
       .sort(pagination.sort)
       .skip(pagination.offset)
       .limit(pagination.limit)
@@ -198,7 +200,7 @@ export const listChargerStationHandler = async (req, res) => {
     // search name add
 
     if (!stations) throw new CustomError(`No Station found.`);
-    let total_count = stations.length;
+    let total_count = await ChargingStationModel.count(where);
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(

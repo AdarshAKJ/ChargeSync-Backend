@@ -46,7 +46,7 @@ chargerRouter.post(
   listChargerHandler
 ); // Done
 
-// single charger.
+// single charger
 chargerRouter.post(
   "/single-charger/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),

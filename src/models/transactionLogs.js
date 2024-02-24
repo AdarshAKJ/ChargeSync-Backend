@@ -6,7 +6,7 @@ const TransactionLogsSchema = new mongoose.Schema({
     required: true,
     trim: true,
     default: generatePublicId,
-    unique: true,
+    // unique: true,
   },
   transactionId: { type: String, required: true, trim: true },
   context: { type: String, required: true },
