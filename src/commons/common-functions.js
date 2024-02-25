@@ -167,3 +167,15 @@ export const decryptData = (encryptedText) => {
   decrypted += decipher.final("utf8");
   return decrypted;
 };
+
+export const getUnixEndTime = (unixData) => {
+  return dayjs.unix(unixData).endOf("day").unix(unixData).toString();
+};
+
+export const dateToUnix = (dateString) => {
+  return dayjs(dateString).unix().toString();
+};
+
+export const getUnixStartTime = (unixData) => {
+  return dayjs.unix(unixData).startOf("day").unix(unixData).toString();
+};

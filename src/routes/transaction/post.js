@@ -2,7 +2,12 @@ import { ValidationError } from "joi";
 import { CustomError } from "../../helpers/custome.error";
 import { StatusCodes } from "http-status-codes";
 import { responseGenerators } from "../../lib/utils";
-import { setPagination } from "../../commons/common-functions";
+import {
+  dateToUnix,
+  getUnixEndTime,
+  getUnixStartTime,
+  setPagination,
+} from "../../commons/common-functions";
 import TransactionModel from "../../models/transaction";
 import {
   listTransactionsValidation,
@@ -20,7 +25,7 @@ export const listTransactions = async (req, res) => {
       clientId: req.session.clientId || req.body.clientId,
     };
 
-    // filtures
+    // filters
     if (req.query?.status) {
       where = {
         ...where,
