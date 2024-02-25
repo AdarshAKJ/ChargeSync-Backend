@@ -4,6 +4,7 @@ import { CustomError } from "../../helpers/custome.error";
 import { responseGenerators } from "../../lib/utils";
 import ClientUserModel from "../../models/clientUser";
 import { setPagination } from "../../commons/common-functions";
+import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 
 export const listClientUser = async (req, res) => {
   try {
