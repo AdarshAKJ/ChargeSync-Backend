@@ -80,7 +80,7 @@ export const deleteClientUser = async (req, res) => {
   try {
     const { id: userId } = req.params;
     let clientId = req.session.clientId || req.query.clientId;
-    checkClientIdAccess(req.session, where.clientId);
+    checkClientIdAccess(req.session, clientId.clientId);
 
     const user = await ClientUserModel.findOne({
       _id: userId,

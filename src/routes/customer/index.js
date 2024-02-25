@@ -1,5 +1,10 @@
 import express from "express";
-import { createCustomerHandler, updateCustomerHandler } from "./post";
+import {
+  createCustomerHandler,
+  listCustomerHandler,
+  singleCustomerHandler,
+  updateCustomerHandler,
+} from "./post";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 
 const customerRouter = express.Router();
@@ -10,9 +15,19 @@ customerRouter.post(
   createCustomerHandler
 );
 customerRouter.post(
-  "/update:id",
+  "/update/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   updateCustomerHandler
+);
+customerRouter.post(
+  "/list",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  listCustomerHandler
+);
+customerRouter.post(
+  "/single-customer/:id",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  singleCustomerHandler
 );
 
 export default customerRouter;
