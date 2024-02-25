@@ -184,18 +184,20 @@ export const listVehicleHandler = async (req, res) => {
       .lean()
       .exec();
 
-    let total_count = await CustomerModel.count(where);
+    let total_count = await VehicleModel.count(where);
 
-    return res
-      .status(StatusCodes.OK)
-      .send(
-        responseGenerators(
-          { VehicleData: where.toJSON() },
-          StatusCodes.OK,
-          "SUCCESS",
-          0
-        )
-      );
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          paginatedData: vehicles,
+          totalCount: total_count,
+          itemsPerPage: pagination.limit,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
