@@ -73,26 +73,35 @@ export const updateMaintenanceHandler = async (req, res) => {
       existingMaintenance[key]= req.body[key];
     }
     
-    const updatedMaintenance = await existingMaintenance.save();
+    await existingMaintenance.save();
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(
-        { ...updatedMaintenance.toJSON() },
+        null,
         StatusCodes.OK,
         "Maintenance record updated successfully",
         0
       )
     );
   } catch (error) {
-    console.error("Error:", error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(
-      responseGenerators(
-        {},
-        StatusCodes.INTERNAL_SERVER_ERROR,
-        "Internal Server Error",
-        1
-      )
-    );
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
   }
 };
 
