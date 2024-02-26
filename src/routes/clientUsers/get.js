@@ -37,6 +37,7 @@ export const listClientUser = async (req, res) => {
 
     const pagination = setPagination(req.query);
     const users = await ClientUserModel.find(where)
+      .select("-password")
       .sort(pagination.sort)
       .skip(pagination.offset)
       .limit(pagination.limit);

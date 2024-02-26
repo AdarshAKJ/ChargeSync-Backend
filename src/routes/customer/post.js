@@ -23,17 +23,18 @@ export const createCustomerHandler = async (req, res) => {
     checkClientIdAccess(req.session, req.body.clientId);
 
     const isAvailable = await CustomerModel.findOne({
-      $and: [
-        { isDeleted: false },
-        { clientId: req.body.clientId },
+      $or: [
         {
-          $or: [
-            { email: req.body.email.toLowerCase() },
-            {
-              mobileNumber: req.body.mobileNumber,
-              countryCode: req.body.countryCode,
-            },
-          ],
+          phoneNumber: req.body.phoneNumber,
+          countryCode: req.body.countryCode,
+          clientId: req.body.clientId,
+          isDeleted: false,
+        },
+
+        {
+          email: req.body.email.toLowerCase(),
+          clientId: req.body.clientId,
+          isDeleted: false,
         },
       ],
     });
@@ -188,6 +189,7 @@ export const listCustomerHandler = async (req, res) => {
     const pagination = setPagination(req.query);
 
     const customers = await CustomerModel.find(where)
+      .select("-password")
       .sort(pagination.sort)
       .skip(pagination.offset)
       .limit(pagination.limit)
@@ -233,7 +235,10 @@ export const listCustomerHandler = async (req, res) => {
 
 export const singleCustomerHandler = async (req, res) => {
   try {
-    await singleCustomerValidation.validateAsync(req.body);
+    await singleCustomerValidation.validateAsync({
+      ...req.body,
+      ...req.params,
+    });
     checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
@@ -242,7 +247,10 @@ export const singleCustomerHandler = async (req, res) => {
       clientId: req.session.clientId || req.query.clientId,
     };
 
-    const customer = await CustomerModel.find(where).lean().exec();
+    const customer = await CustomerModel.find(where)
+      .select("-password")
+      .lean()
+      .exec();
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(

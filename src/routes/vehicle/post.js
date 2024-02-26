@@ -231,41 +231,12 @@ export const singleVehicleHandler = async (req, res) => {
       clientId: req.body.clientId,
       userId: req.body.userId,
     };
-    if (req.body?.search) {
-      where = {
-        ...where,
-        name: new RegExp(req.query?.search.toString(), "i"),
-      };
-    }
-    if (req.body?.vehicleType) {
-      where = {
-        ...where,
-        vehicleType: new RegExp(req.query?.vehicleType.toString(), "i"),
-      };
-    }
-    if (req.body?.vehicleNumber) {
-      where = {
-        ...where,
-        vehicleNumber: new RegExp(req.query?.vehicleNumber.toString(), "i"),
-      };
-    }
-
-    const pagination = setPagination(req.query);
-    const vehicles = await VehicleModel.find(where)
-      .sort(pagination.sort)
-      .skip(pagination.offset)
-      .limit(pagination.limit)
-      .lean()
-      .exec();
-
-    let total_count = await VehicleModel.count(where);
+    const vehicle = await VehicleModel.find(where).lean().exec();
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(
         {
-          paginatedData: vehicles,
-          totalCount: total_count,
-          itemsPerPage: pagination.limit,
+          vehicleData: vehicle,
         },
         StatusCodes.OK,
         "SUCCESS",
