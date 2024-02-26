@@ -547,6 +547,7 @@ export const singleCustomerHandler = async (req, res) => {
 
 export const startTransactionHandler = async (req, res) => {
   try {
+    console.log("Starting transaction");
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
