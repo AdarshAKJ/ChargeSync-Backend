@@ -37,9 +37,12 @@ export const listClientUser = async (req, res) => {
 
     const pagination = setPagination(req.query);
     const users = await ClientUserModel.find(where)
+      .select("-password")
       .sort(pagination.sort)
       .skip(pagination.offset)
       .limit(pagination.limit);
+
+    delete users[0].password;
 
     if (!users) throw new CustomError(`No users found.`);
     let total_count = await ClientUserModel.count(where);
@@ -80,7 +83,7 @@ export const deleteClientUser = async (req, res) => {
   try {
     const { id: userId } = req.params;
     let clientId = req.session.clientId || req.query.clientId;
-    checkClientIdAccess(req.session, where.clientId);
+    checkClientIdAccess(req.session, clientId.clientId);
 
     const user = await ClientUserModel.findOne({
       _id: userId,

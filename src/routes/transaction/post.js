@@ -21,7 +21,7 @@ export const listTransactions = async (req, res) => {
     checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
-      isDeleted: false,
+      // isDeleted: false,
       clientId: req.session.clientId || req.body.clientId,
     };
 
@@ -90,10 +90,6 @@ export const listTransactions = async (req, res) => {
             },
           ],
         },
-      },
-
-      {
-        $unwind: "$chargerConnectorsData",
       },
       {
         $sort: pagination.sort,
