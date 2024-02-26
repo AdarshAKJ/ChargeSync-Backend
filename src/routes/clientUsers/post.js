@@ -99,18 +99,17 @@ export const updateClientUser = async (req, res) => {
       ...req.body,
       ...req.params,
     });
+    checkClientIdAccess(req.session, req.body.clientId);
+
     const userId = req.params.id;
 
     const user = await ClientUserModel.findOne({
       _id: userId,
       phoneNumber: req.body.phoneNumber,
       email: req.body.email,
-      password: req.body.password,
       isDeleted: false,
-      clientId: req.session.clientId || req.query.clientId,
+      clientId: req.session.clientId || req.body.clientId,
     });
-
-    checkClientIdAccess(req.session, where.clientId);
 
     if (!user)
       throw new CustomError(

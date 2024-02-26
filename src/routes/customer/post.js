@@ -11,7 +11,11 @@ import CustomerModel from "../../models/customer";
 import WalletModel from "../../models/wallet";
 import { StatusCodes } from "http-status-codes";
 import { CustomError } from "../../helpers/custome.error";
-import { getCurrentUnix, setPagination } from "../../commons/common-functions";
+import {
+  getCurrentUnix,
+  hashPassword,
+  setPagination,
+} from "../../commons/common-functions";
 
 export const createCustomerHandler = async (req, res) => {
   try {
@@ -24,7 +28,7 @@ export const createCustomerHandler = async (req, res) => {
         { clientId: req.body.clientId },
         {
           $or: [
-            { email: req.body.email },
+            { email: req.body.email.toLowerCase() },
             {
               mobileNumber: req.body.mobileNumber,
               countryCode: req.body.countryCode,
@@ -41,11 +45,14 @@ export const createCustomerHandler = async (req, res) => {
 
     let customerData = await CustomerModel.create({
       ...req.body,
+      email: req.body.email.toLowerCase(),
+      password: await hashPassword(req.body.password),
       created_by: req.session._id,
       updated_by: req.session._id,
       created_at: getCurrentUnix(),
       updated_at: getCurrentUnix(),
     });
+
     let walletData = await WalletModel.create({
       clientId: req.body.clientId,
       userId: customerData._id,
@@ -169,7 +176,7 @@ export const listCustomerHandler = async (req, res) => {
 
     let where = {
       isDeleted: false,
-      clientId: req.session.clientId || req.query.clientId,
+      clientId: req.session.clientId || req.body.clientId,
     };
     if (req.query?.search) {
       where = {
@@ -235,7 +242,7 @@ export const singleCustomerHandler = async (req, res) => {
       clientId: req.session.clientId || req.query.clientId,
     };
 
-    const customer = await CustomerModel.find(where);
+    const customer = await CustomerModel.find(where).lean().exec();
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(

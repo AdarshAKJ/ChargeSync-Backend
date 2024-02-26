@@ -1,6 +1,10 @@
+import { StatusCodes } from "http-status-codes";
 import { singleTransactionLogsValidation } from "../../helpers/validations/transactionLogs";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 import TransactionLogsModel from "../../models/transactionLogs";
+import { CustomError } from "../../helpers/custome.error";
+import { responseGenerators } from "../../lib/utils";
+import { ValidationError } from "webpack";
 
 export const singleTransactionLog = async (req, res) => {
   try {
@@ -11,8 +15,7 @@ export const singleTransactionLog = async (req, res) => {
     checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
-      _id: req.params.id,
-      isDeleted: false,
+      transactionId: req.params.id,
     };
 
     const aggregationPipeline = [
@@ -42,7 +45,7 @@ export const singleTransactionLog = async (req, res) => {
       {
         $lookup: {
           from: "chargerConnectors",
-          localField: "$transactionsData.connectorId",
+          localField: "transactionsData.connectorId",
           foreignField: "_id",
           as: "chargerConnectorsData",
           pipeline: [

@@ -14,7 +14,7 @@ export const createVehicleValidation = Joi.object({
   isDeleted: Joi.boolean().default(false),
 });
 export const updateVehicleValidation = {
-  id: Joi.string().required(),
+  id: Joi.string().trim().required(),
   clientId: Joi.string().trim().required(),
   userId: Joi.string().trim().required(),
   name: Joi.string().trim().required(),
@@ -28,6 +28,11 @@ export const updateVehicleValidation = {
   isDeleted: Joi.boolean().default(false),
 };
 export const listVehicleValidation = {
+  clientId: Joi.string().trim().required(),
+  userId: Joi.string().trim().required(),
+};
+export const singleVehicleValidation = {
+  id: Joi.string().trim().required(),
   clientId: Joi.string().trim().required(),
   userId: Joi.string().trim().required(),
 };

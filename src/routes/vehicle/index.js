@@ -3,6 +3,7 @@ import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin
 import {
   createVehicleHandler,
   listVehicleHandler,
+  singleVehicleHandler,
   updateVehicleHandler,
 } from "./post";
 
@@ -25,8 +26,8 @@ vehicleRouter.post(
 );
 vehicleRouter.post(
   "/single-customer/:id",
-  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"])
-  //   singleVehicleHandler
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  singleVehicleHandler
 );
 
 export default vehicleRouter;

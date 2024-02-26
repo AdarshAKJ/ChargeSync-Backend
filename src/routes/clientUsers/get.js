@@ -41,6 +41,8 @@ export const listClientUser = async (req, res) => {
       .skip(pagination.offset)
       .limit(pagination.limit);
 
+    delete users[0].password;
+
     if (!users) throw new CustomError(`No users found.`);
     let total_count = await ClientUserModel.count(where);
 

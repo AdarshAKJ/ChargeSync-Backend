@@ -4,6 +4,7 @@ import { CustomError } from "../../helpers/custome.error";
 import {
   createVehicleValidation,
   listVehicleValidation,
+  singleVehicleValidation,
   updateVehicleValidation,
 } from "../../helpers/validations/vehicle.validation";
 import { responseGenerators } from "../../lib/utils";
@@ -145,17 +146,90 @@ export const updateVehicleHandler = async (req, res) => {
 
 export const listVehicleHandler = async (req, res) => {
   try {
-    await listVehicleValidation.validateAsync({
-      ...req.body,
-      ...req.params,
-    });
+    await listVehicleValidation.validateAsync(req.body);
     checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
       isDeleted: false,
       clientId: req.body.clientId,
       userId: req.body.userId,
-      vehicleNumber: req.body.vehicleNumber,
+    };
+    if (req.query?.search) {
+      where = {
+        ...where,
+        name: new RegExp(req.query?.search.toString(), "i"),
+      };
+    }
+    if (req.query?.vehicleType) {
+      where = {
+        ...where,
+        vehicleType: new RegExp(req.query?.vehicleType.toString(), "i"),
+      };
+    }
+    if (req.query?.vehicleNumber) {
+      where = {
+        ...where,
+        vehicleNumber: new RegExp(req.query?.vehicleNumber.toString(), "i"),
+      };
+    }
+
+    const pagination = setPagination(req.query);
+    const vehicles = await VehicleModel.find(where)
+      .sort(pagination.sort)
+      .skip(pagination.offset)
+      .limit(pagination.limit)
+      .lean()
+      .exec();
+
+    let total_count = await VehicleModel.count(where);
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          paginatedData: vehicles,
+          totalCount: total_count,
+          itemsPerPage: pagination.limit,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+export const singleVehicleHandler = async (req, res) => {
+  try {
+    await singleVehicleValidation.validateAsync({
+      ...req.body,
+      ...req.params,
+    });
+    checkClientIdAccess(req.session, req.body.clientId);
+
+    let where = {
+      _id: req.params.id,
+      isDeleted: false,
+      clientId: req.body.clientId,
+      userId: req.body.userId,
     };
     if (req.body?.search) {
       where = {

@@ -89,7 +89,7 @@ app.use("/api/charger", chargerRouter);
 app.use("/api/transaction", transactionRouter);
 app.use("/api/transaction-logs", transactionLogRouter);
 app.use("/api/maintenance", maintenanceRouter);
-app.use("/api/customer", customerRouter);
+app.use("/api/customer", customerRouter); //not completed
 app.use("/api/vehicle", vehicleRouter);
 
 app.use(express.json());
