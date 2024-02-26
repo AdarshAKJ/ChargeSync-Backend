@@ -6,7 +6,9 @@ const TransactionSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  occpTransactionId: { type: String, required: true },
   clientId: { type: String, required: true, trim: true }, //database
+  customerId: { type: String, required: true },
   serialNumber: { type: String, required: true }, //database
   connectorId: { type: String, required: true }, //database
   status: {
@@ -22,19 +24,32 @@ const TransactionSchema = new mongoose.Schema({
       "ConcurrentTx",
       "Completed",
       "Failed",
+      "Interrupted",
     ],
     default: "Pending",
   },
   vehicleId: { type: String, required: true },
   perUnitCharges: { type: Number, required: true },
   startMeterReading: { type: Number }, //in "Wh"
+  expectedEndMeterReading: { type: Number },
   endMeterReading: { type: Number },
   amount: { type: Number },
   tax: { type: Number },
   totalCost: { type: Number },
   failedReason: { type: String, trim: true },
-
+  requestedWatts: { type: Number },
+  requiredTime: { type: Number },
   idTag: { type: String, trim: true, index: true },
+  currentMeterReading: { type: Number },
+  currentMeterReadingTime: { type: String },
+  secondMeterReading: { type: Number },
+  secondMeterReadingTime: { type: String },
+  requestInput: {
+    type: String,
+    trim: true,
+    enum: ["WATT", "TIME"],
+    default: "WATT",
+  },
   created_by: { type: String },
   updated_by: { type: String },
   created_at: { type: String },

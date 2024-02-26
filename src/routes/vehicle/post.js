@@ -21,7 +21,7 @@ export const createVehicleHandler = async (req, res) => {
       $and: [
         { isDeleted: false },
         { clientId: req.body.clientId },
-        { userId: req.body.userId },
+        { customerId: req.body.customerId },
         { vehicleNumber: req.body.vehicleNumber },
       ],
     });
@@ -89,7 +89,7 @@ export const updateVehicleHandler = async (req, res) => {
         { _id: { $ne: req.params.id } },
         { isDeleted: false },
         { clientId: req.body.clientId },
-        { userId: req.body.userId },
+        { customerId: req.body.customerId },
         { vehicleNumber: req.body.vehicleNumber },
       ],
     });
@@ -152,7 +152,7 @@ export const listVehicleHandler = async (req, res) => {
     let where = {
       isDeleted: false,
       clientId: req.body.clientId,
-      userId: req.body.userId,
+      customerId: req.body.customerId,
     };
     if (req.query?.search) {
       where = {
@@ -229,9 +229,9 @@ export const singleVehicleHandler = async (req, res) => {
       _id: req.params.id,
       isDeleted: false,
       clientId: req.body.clientId,
-      userId: req.body.userId,
+      customerId: req.body.customerId,
     };
-    const vehicle = await VehicleModel.find(where).lean().exec();
+    const vehicle = await VehicleModel.findOne(where).lean().exec();
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(

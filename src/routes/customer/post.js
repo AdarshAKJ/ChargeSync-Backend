@@ -56,7 +56,7 @@ export const createCustomerHandler = async (req, res) => {
 
     let walletData = await WalletModel.create({
       clientId: req.body.clientId,
-      userId: customerData._id,
+      customerId: customerData._id,
       amount: 0,
       created_by: req.session._id,
       updated_by: req.session._id,
@@ -120,7 +120,7 @@ export const updateCustomerHandler = async (req, res) => {
           $or: [
             { email: req.body.email },
             {
-              mobileNumber: req.body.mobileNumber,
+              phoneNumber: req.body.phoneNumber,
               countryCode: req.body.countryCode,
             },
           ],
@@ -184,7 +184,14 @@ export const listCustomerHandler = async (req, res) => {
     if (req.query?.search) {
       where = {
         ...where,
-        search: new RegExp(req.query?.search.toString(), "i"),
+        ...{
+          $or: [
+            { fname: new RegExp(req.query.search.toString(), "i") },
+            { lname: new RegExp(req.query.search.toString(), "i") },
+            { phoneNumber: new RegExp(req.query.search.toString(), "i") },
+            { email: new RegExp(req.query.search.toString(), "i") },
+          ],
+        },
       };
     }
 
@@ -249,7 +256,7 @@ export const singleCustomerHandler = async (req, res) => {
       clientId: req.session.clientId || req.query.clientId,
     };
 
-    const customer = await CustomerModel.find(where)
+    const customer = await CustomerModel.findOne(where)
       .select("-password")
       .lean()
       .exec();

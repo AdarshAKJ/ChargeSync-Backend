@@ -2,7 +2,7 @@ import Joi from "joi";
 
 export const createVehicleValidation = Joi.object({
   clientId: Joi.string().trim().required(),
-  userId: Joi.string().trim().required(),
+  customerId: Joi.string().trim().required(),
   name: Joi.string().trim().required(),
   description: Joi.string().allow("").trim(),
   vehicleNumber: Joi.string().trim().required(),
@@ -16,7 +16,7 @@ export const createVehicleValidation = Joi.object({
 export const updateVehicleValidation = Joi.object({
   id: Joi.string().trim().required(),
   clientId: Joi.string().trim().required(),
-  userId: Joi.string().trim().required(),
+  customerId: Joi.string().trim().required(),
   name: Joi.string().trim().required(),
   description: Joi.string().allow("").trim(),
   vehicleNumber: Joi.string().trim().required(),
@@ -28,10 +28,10 @@ export const updateVehicleValidation = Joi.object({
 });
 export const listVehicleValidation = Joi.object({
   clientId: Joi.string().trim().required(),
-  userId: Joi.string().trim().required(),
+  customerId: Joi.string().trim().required(),
 });
 export const singleVehicleValidation = Joi.object({
   id: Joi.string().trim().required(),
   clientId: Joi.string().trim().required(),
-  userId: Joi.string().trim().required(),
+  customerId: Joi.string().trim().required(),
 });
