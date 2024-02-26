@@ -63,6 +63,7 @@ export const createCustomerHandler = async (req, res) => {
       created_at: getCurrentUnix(),
       updated_at: getCurrentUnix(),
     });
+
     if (!walletData)
       throw new CustomError(
         `We are encountering some errors from our side. Please try again later.`
@@ -109,6 +110,7 @@ export const updateCustomerHandler = async (req, res) => {
     checkClientIdAccess(req.session, req.body.clientId);
 
     let isAvailable;
+
     isAvailable = await CustomerModel.findOne({
       $and: [
         { isDeleted: false },

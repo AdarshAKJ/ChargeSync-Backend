@@ -25,7 +25,6 @@ export const updateVehicleValidation = Joi.object({
   updated_by: Joi.string().allow("").trim(),
   created_at: Joi.string().allow("").trim(),
   updated_at: Joi.string().allow("").trim(),
-  isDeleted: Joi.boolean().default(false),
 });
 export const listVehicleValidation = Joi.object({
   clientId: Joi.string().trim().required(),
