@@ -14,3 +14,13 @@ export const maintenanceValidation = Joi.object({
   created_at: Joi.string(),
   updated_at: Joi.string(),
 });
+
+export const UpdateMaintenanceValidation = Joi.object({
+  name: Joi.string(),
+  description: Joi.string(),
+  startDate: Joi.string(),
+  endDate: Joi.string(),
+  status: Joi.string()
+    .valid("UP-TO-COME", "ACTIVE", "COMPLETED")
+    .default("UP-TO-COME"),
+});

@@ -48,3 +48,51 @@ export const createMaintenanceHandler = async (req, res) => {
       );
   }
 };
+
+
+export const updateMaintenanceHandler = async (req, res) => {
+  try {
+    await maintenanceValidation.validateAsync(req.body);
+
+    const maintenanceId = req.params.id;
+
+    const existingMaintenance = await MaintenanceModel.findOne({_id:maintenanceId});
+
+    if (!existingMaintenance) {
+      return res.status(StatusCodes.NOT_FOUND).send(
+        responseGenerators({}, StatusCodes.NOT_FOUND, "Maintenance record not found", 1)
+      );
+    }
+    let keys = [];
+
+    for (let key in req.body){
+      keys.push(key);
+    }
+
+    for(let key of keys){
+      existingMaintenance[key]= req.body[key];
+    }
+    
+    const updatedMaintenance = await existingMaintenance.save();
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        { ...updatedMaintenance.toJSON() },
+        StatusCodes.OK,
+        "Maintenance record updated successfully",
+        0
+      )
+    );
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(
+      responseGenerators(
+        {},
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        "Internal Server Error",
+        1
+      )
+    );
+  }
+};
+
