@@ -17,9 +17,9 @@ export const listmaintenanceHandler = async (req, res) => {
             responseGenerators(
                 {
                     maintenancelist,
-                    currentPage: page,
-                    totalPages: Math.ceil(maintenancelist.length / limit),
-                    totalRecords: maintenancelist.length
+                    paginatedData: page,
+                    totalCount: Math.ceil(maintenancelist.length / limit),
+                    itemsPerPage: maintenancelist.length
                 },
                 StatusCodes.OK,
                 "Maintenance records fetched successfully",
