@@ -1,32 +1,20 @@
 import express from "express";
-import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 import {
   createVehicleHandler,
   listVehicleHandler,
   singleVehicleHandler,
   updateVehicleHandler,
 } from "./post";
+import { authenticateCustomer } from "../../middleware/authenticateCustomer";
 
 const vehicleRouter = express.Router();
 
-vehicleRouter.post(
-  "/create",
-  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
-  createVehicleHandler
-);
-vehicleRouter.post(
-  "/update/:id",
-  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
-  updateVehicleHandler
-);
-vehicleRouter.post(
-  "/list",
-  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
-  listVehicleHandler
-);
+vehicleRouter.post("/create", authenticateCustomer, createVehicleHandler);
+vehicleRouter.post("/update/:id", authenticateCustomer, updateVehicleHandler);
+vehicleRouter.post("/list", authenticateCustomer, listVehicleHandler);
 vehicleRouter.post(
   "/single-customer/:id",
-  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  authenticateCustomer,
   singleVehicleHandler
 );
 
