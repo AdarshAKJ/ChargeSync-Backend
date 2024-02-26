@@ -4,6 +4,7 @@ import {
   listCustomerValidation,
   signupOrLoginOTPVerificationValidation,
   singleCustomerValidation,
+  startTransactionValidation,
   updateCustomerValidation,
 } from "../../helpers/validations/customer.validation";
 import { responseGenerators } from "../../lib/utils";
@@ -24,6 +25,7 @@ import {
 } from "../../commons/common-functions";
 import { getJwt } from "../../helpers/Jwt.helper";
 import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
+
 // create user and provide OTP, if exist then provide OTP
 export const createCustomerHandler = async (req, res) => {
   try {
@@ -523,55 +525,6 @@ export const singleCustomerHandler = async (req, res) => {
         0
       )
     );
-  } catch (error) {
-    if (error instanceof ValidationError || error instanceof CustomError) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(
-          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-        );
-    }
-    console.log(JSON.stringify(error));
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        responseGenerators(
-          {},
-          StatusCodes.INTERNAL_SERVER_ERROR,
-          "Internal Server Error",
-          1
-        )
-      );
-  }
-};
-
-export const startTransactionHandler = async (req, res) => {
-  try {
-    console.log("Starting transaction");
-  } catch (error) {
-    if (error instanceof ValidationError || error instanceof CustomError) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(
-          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-        );
-    }
-    console.log(JSON.stringify(error));
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        responseGenerators(
-          {},
-          StatusCodes.INTERNAL_SERVER_ERROR,
-          "Internal Server Error",
-          1
-        )
-      );
-  }
-};
-
-export const stopTransactionHandler = async (req, res) => {
-  try {
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
