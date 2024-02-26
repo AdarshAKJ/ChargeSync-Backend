@@ -1,18 +1,17 @@
 import { StatusCodes } from "http-status-codes";
 import MaintenanceModel from "../../models/maintenance";
 import { responseGenerators } from "../../lib/utils";
+import { setPagination } from "../../commons/common-functions";
 
 export const listmaintenanceHandler = async (req, res) => {
-    // Extract pagination parameters from request query
-    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
-    const limit = parseInt(req.query.limit) || 10; // Default to limit 10 if not provided
 
     try {
-        const skip = (page - 1) * limit;
+      const pagination = setPagination(req.query);
 
         const maintenancelist = await MaintenanceModel.find({ isDeleted: false })
-            .skip(skip)
-            .limit(limit);
+            .sort(pagination.sort)
+            .skip(pagination.offset)
+            .limit(pagination.limit);
 
         return res.status(StatusCodes.OK).send(
             responseGenerators(
