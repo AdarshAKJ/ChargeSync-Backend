@@ -43,3 +43,19 @@ export const singleChargerValidation = Joi.object({
 export const getChargerCountValidation = Joi.object({
   clientId: Joi.string().required(),
 });
+export const getSerialNumberqValidation = Joi.object({
+  clientId: Joi.string().required(),
+  stationId: Joi.string().required(),
+  serialNumber: Joi.string().required(),
+  name: Joi.string().required(),
+  connectorCount: Joi.number().required(),
+  connectorDetails: Joi.array()
+    .items(
+      Joi.object({
+        connectorId: Joi.string().required(),
+        pricePerUnit: Joi.number().required(),
+      })
+    )
+    .unique((a, b) => a.connectorId === b.connectorId)
+    .required(),
+});
