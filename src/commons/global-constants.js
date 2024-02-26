@@ -80,6 +80,7 @@ export const CHAT_MESSAGE = {
 };
 
 export const OTP = {
+  SUCCESS: "OTP sent successfully",
   NO_OTP: `No Pending OTP Found.`,
   INVALID_OTP: `Invalid OTP.`,
   USED_OTP: `OTP has already been used.`,
@@ -152,3 +153,7 @@ export const REGISTER = {
 };
 
 export const defaultProfileURL = "";
+
+export const CUSTOMER_MESSAGE = {
+  LOGIN_SUCCESS: "Login success",
+};

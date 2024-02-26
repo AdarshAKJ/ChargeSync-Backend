@@ -1,11 +1,7 @@
 import express from "express";
 
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
-import {
-  createChargerHandler,
-  getSerialNumberHandler,
-  updateChargerHandler,
-} from "./post";
+import { createChargerHandler, getSerialNumberHandler } from "./post";
 
 const chargerRouter = express.Router();
 
@@ -21,16 +17,27 @@ chargerRouter.post(
   getSerialNumberHandler
 );
 
-chargerRouter.post(
-  "/update:id",
-  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
-  updateChargerHandler
-);
-
-// update post
-// delete get
+// update
+// delete
 // list filter by status by station and pagination
-// single charger.
+chargerRouter.post(
+  "/list",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  listChargerHandler
+); // Done
+
+// single charger
+chargerRouter.post(
+  "/single-charger/:id",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  singleChargerHandler
+); // DONE
+
 // get charging count
+chargerRouter.post(
+  "/charging-count",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  getChargerCountHandler
+); // DONE
 
 export default chargerRouter;

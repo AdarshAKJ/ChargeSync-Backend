@@ -15,16 +15,17 @@ const ChargerSchema = new mongoose.Schema({
   status: {
     type: String,
     required: true,
-    enum: ["ACTIVE", "INACTIVE", "READY"],
-    default: "READY",
+    enum: ["ONLINE", "OFFLINE", "CONFIGURING"],
+    default: "CONFIGURING",
   },
+  maxCapacity: { type: Number },
   connectorCount: { type: Number },
   chargerKey: { type: String, required: true },
-
   created_by: { type: String },
   updated_by: { type: String },
   created_at: { type: String },
   updated_at: { type: String },
+  isDeleted: { type: Boolean, default: false },
 });
 
 const ChargerModel = mongoose.model("charger", ChargerSchema);

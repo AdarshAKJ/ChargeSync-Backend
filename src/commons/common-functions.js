@@ -105,6 +105,13 @@ export const generateApiKey = (length = 32) => {
   return buffer.toString("base64");
 };
 
+export const generateUniqueKey = (length = 24) => {
+  return crypto
+    .randomBytes(Math.ceil(length / 2))
+    .toString("hex")
+    .slice(0, length);
+};
+
 export const generatePassword = async () => {
   return new Promise((resolve) => {
     const length = 8; // Length of the generated password
@@ -159,4 +166,16 @@ export const decryptData = (encryptedText) => {
   let decrypted = decipher.update(encryptedText, "hex", "utf8");
   decrypted += decipher.final("utf8");
   return decrypted;
+};
+
+export const getUnixEndTime = (unixData) => {
+  return dayjs.unix(unixData).endOf("day").unix(unixData).toString();
+};
+
+export const dateToUnix = (dateString) => {
+  return dayjs(dateString).unix().toString();
+};
+
+export const getUnixStartTime = (unixData) => {
+  return dayjs.unix(unixData).startOf("day").unix(unixData).toString();
 };

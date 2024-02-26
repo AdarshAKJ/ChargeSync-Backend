@@ -11,3 +11,4 @@ export const checkClientIdAccess = (session, clientId) => {
     throw new CustomError(`Access to ${session.clientId} denied`);
   }
 };
+
