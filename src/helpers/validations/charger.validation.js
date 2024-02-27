@@ -23,7 +23,7 @@ export const updateChargerValidation = Joi.object({
   maxCapacity: Joi.number().optional(),
 });
 
-export const getSerialNumberqValidation = Joi.object({
+export const getSerialNumberValidation = Joi.object({
   clientId: Joi.string().required(),
 });
 

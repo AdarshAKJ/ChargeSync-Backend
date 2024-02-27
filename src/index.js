@@ -18,6 +18,7 @@ import transactionLogRouter from "./routes/transactionLogs";
 import maintenanceRouter from "./routes/maintenance";
 import customerRouter from "./routes/customer";
 import vehicleRouter from "./routes/vehicle";
+import walletRouter from "./routes/wallet";
 
 const app = express();
 const server = new http.Server(app);
@@ -85,12 +86,14 @@ app.use("/api/admin", adminRoute);
 app.use("/api/client-user", clientUserRouter);
 app.use("/api/client", clientRouter);
 app.use("/api/charger-station", chargerStationRouter);
-app.use("/api/charger", chargerRouter);
+//app.use("/api/charger", chargerRouter);
 app.use("/api/transaction", transactionRouter);
 app.use("/api/transaction-logs", transactionLogRouter);
 app.use("/api/maintenance", maintenanceRouter);
 app.use("/api/customer", customerRouter);
 app.use("/api/vehicle", vehicleRouter);
+app.use("/api/wallet-transactions", walletRouter);
+
 
 app.use(express.json());
 
