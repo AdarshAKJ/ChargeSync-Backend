@@ -4,7 +4,6 @@ import {
   listCustomerValidation,
   signupOrLoginOTPVerificationValidation,
   singleCustomerValidation,
-  startTransactionValidation,
   updateCustomerValidation,
 } from "../../helpers/validations/customer.validation";
 import { responseGenerators } from "../../lib/utils";
