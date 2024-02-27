@@ -179,3 +179,7 @@ export const dateToUnix = (dateString) => {
 export const getUnixStartTime = (unixData) => {
   return dayjs.unix(unixData).startOf("day").unix(unixData).toString();
 };
+
+export const delay = (ms) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};

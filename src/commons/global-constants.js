@@ -157,3 +157,18 @@ export const defaultProfileURL = "";
 export const CUSTOMER_MESSAGE = {
   LOGIN_SUCCESS: "Login success",
 };
+
+export const DEFAULT_HEADERS = {
+  "Content-Type": "application/json",
+};
+
+export const CONNECTOR_MESSAGE = {
+  NOT_FOUND: "Connector not found.",
+  NOT_ACTIVE: "Connector is not active.",
+  ALREADY_INUSE: "Connection is already in use.",
+  WATT_OR_TIME_MISSING: "Please provide requestedWatts or requiredTime",
+};
+
+export const MENTANENCE_MESSAGE = {
+  UNDER_MENTANANCE: "Sorry, We are under maintenance till ",
+};

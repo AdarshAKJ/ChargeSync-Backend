@@ -15,6 +15,7 @@ transactionRouter.post(
   onlyAdminAndClientWithRoles(["ADMIN", "ACCOUNT"]),
   listTransactions
 );
+
 transactionRouter.post(
   "/single-transaction/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "ACCOUNT"]),

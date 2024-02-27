@@ -4,6 +4,7 @@ import { StatusCodes } from "http-status-codes";
 import { responseGenerators } from "../../lib/utils";
 import {
   dateToUnix,
+  delay,
   getCurrentUnix,
   getUnixEndTime,
   getUnixStartTime,
@@ -15,12 +16,22 @@ import {
   singleTransactionValidation,
 } from "../../helpers/validations/transaction.validation";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
-import { startTransactionValidation } from "../../helpers/validations/customer.validation";
+import {
+  startTransactionValidation,
+  stopTransactionValidation,
+} from "../../helpers/validations/customer.validation";
 import VehicleModel from "../../models/vehicle";
 import ChargerConnectorModel from "../../models/chargerConnector";
 import ChargerModel from "../../models/charger";
 import WalletModel from "../../models/wallet";
 import WalletTransactionModel from "../../models/walletTransaction";
+import { callAPI } from "../../helpers/api";
+import {
+  CONNECTOR_MESSAGE,
+  MENTANENCE_MESSAGE,
+} from "../../commons/global-constants";
+
+import MaintenanceModel from "../../models/maintenance";
 
 export const listTransactions = async (req, res) => {
   try {
@@ -225,10 +236,25 @@ export const singleTransaction = async (req, res) => {
 
 export const startTransactionHandler = async (req, res) => {
   try {
-    await startTransactionValidation(req, res);
+    await startTransactionValidation(req.body);
 
-    let { serialNumber, connectorId, vehicleId, requestedWatts, requestTime } =
+    let { serialNumber, connectorId, vehicleId, requestedWatts, requiredTime } =
       req.body;
+
+    // maintenance check.
+    let maintenanceData = await MaintenanceModel.findOne({ status: "ACTIVE" });
+    if (maintenanceData) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators(
+            {},
+            StatusCodes.BAD_REQUEST,
+            `${MENTANENCE_MESSAGE.UNDER_MENTANANCE}${maintenanceData.endDate}`,
+            1
+          )
+        );
+    }
 
     // check vehicle exists
     let isVehicle = await VehicleModel.findOne({
@@ -291,11 +317,7 @@ export const startTransactionHandler = async (req, res) => {
       walletBalance.updated_at = getCurrentUnix();
       walletBalance.updated_by = req.session._id;
       await walletBalance.save();
-
-      // call the live status for charger.
-      // call the transaction
-      // send the response
-    } else if (requestTime) {
+    } else if (requiredTime) {
       console.log("requestTime");
       throw new CustomError("Currently we are not supporting requestTime type");
     } else {
@@ -303,6 +325,75 @@ export const startTransactionHandler = async (req, res) => {
         "Please provide a valid requestedWatts or  requestTime"
       );
     }
+
+    // call the live status for charger.
+    let chargerStatusData = await callAPI(
+      "POST",
+      process.env.CHARGER_STATUS_API_URL,
+      {
+        connectorId: connectorId, // database id
+        serialNumber: serialNumber,
+        ocppConnectorId: connectorData.chargerId,
+      },
+      {
+        "private-api-key": process.env.OCPP_API_KEY,
+      }
+    );
+
+    // API success
+    if (!chargerStatusData?.status) {
+      throw new CustomError(`Charger is offline`);
+    }
+
+    await delay(5000);
+
+    // check for connector status
+    let updatedConnectorData = await ChargerConnectorModel.findOne({
+      chargerId: chargerData._id,
+      connectorId: Number(connectorId),
+    })
+      .select("status errorCode")
+      .lean()
+      .exec();
+
+    // check the charger connector status
+    if (
+      updatedConnectorData.status != "Available" ||
+      updatedConnectorData.errorCode != "NoError"
+    ) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators(
+            {},
+            StatusCodes.BAD_REQUEST,
+            CONNECTOR_MESSAGE.NOT_ACTIVE,
+            1
+          )
+        );
+    }
+    // call the transaction
+    let transactionData = await callAPI(
+      "POST",
+      process.env.START_TRANSACTION_API_URL,
+      {
+        serialNumber: serialNumber,
+        customerId: req.session._id,
+        vehicleId: vehicleId,
+        connectorId: connectorId,
+        connectorOCPPId: connectorData.chargerId,
+        clientId: req.session.clientId,
+        requestedWatts: requestedWatts,
+        requiredTime: requiredTime,
+        pricePerUnit: connectorData.pricePerUnit,
+      },
+      {
+        "private-api-key": process.env.OCPP_API_KEY,
+      }
+    );
+    return res
+      .status(StatusCodes.OK)
+      .send(responseGenerators(transactionData, StatusCodes.OK, "SUCCESS", 0));
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
@@ -327,6 +418,24 @@ export const startTransactionHandler = async (req, res) => {
 
 export const stopTransactionHandler = async (req, res) => {
   try {
+    await stopTransactionValidation(req.body);
+    let { serialNumber, transactionId } = req.body;
+
+    // call the live status for charger.
+    let stopTransaction = await callAPI(
+      "POST",
+      process.env.STOP_TRANSACTION_API_URL,
+      {
+        transactionId,
+        serialNumber,
+      },
+      {
+        "private-api-key": process.env.OCPP_API_KEY,
+      }
+    );
+    return res
+      .status(StatusCodes.OK)
+      .send(responseGenerators(stopTransaction, StatusCodes.OK, "SUCCESS", 0));
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
