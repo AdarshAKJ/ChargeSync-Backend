@@ -7,7 +7,7 @@ import {
 } from "./post";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 import { authenticateCustomer } from "../../middleware/authenticateCustomer";
-import { authenticateCustomer } from "../../middleware/authenticateCustomer";
+// import { authenticateCustomer } from "../../middleware/authenticateCustomer";
 
 const transactionRouter = express.Router();
 
@@ -24,8 +24,8 @@ transactionRouter.post(
 );
 transactionRouter.post(
   "/customer-transactions/:id",
-  authenticateCustomer,
-  customerTransactionsHandler
+  authenticateCustomer
+  // customerTransactionsHandler
 );
 
 // start transaction
