@@ -86,7 +86,7 @@ app.use("/api/admin", adminRoute);
 app.use("/api/client-user", clientUserRouter);
 app.use("/api/client", clientRouter);
 app.use("/api/charger-station", chargerStationRouter);
-//app.use("/api/charger", chargerRouter);
+app.use("/api/charger", chargerRouter);
 app.use("/api/transaction", transactionRouter);
 app.use("/api/transaction-logs", transactionLogRouter);
 app.use("/api/maintenance", maintenanceRouter);
