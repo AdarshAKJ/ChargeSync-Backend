@@ -14,8 +14,6 @@ import {
   singleTransactionValidation,
 } from "../../helpers/validations/transaction.validation";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
-import { startTransactionValidation } from "../../helpers/validations/customer.validation";
-import VehicleModel from "../../models/vehicle";
 
 export const listTransactions = async (req, res) => {
   try {
@@ -196,86 +194,6 @@ export const singleTransaction = async (req, res) => {
         0
       )
     );
-  } catch (error) {
-    if (error instanceof ValidationError || error instanceof CustomError) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(
-          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-        );
-    }
-    console.log(JSON.stringify(error));
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        responseGenerators(
-          {},
-          StatusCodes.INTERNAL_SERVER_ERROR,
-          "Internal Server Error",
-          1
-        )
-      );
-  }
-};
-
-export const startTransactionHandler = async (req, res) => {
-  try {
-    await startTransactionValidation(req, res);
-
-    let {
-      serialNumber,
-      connectorId,
-      vehicleId,
-      clientId,
-      requestedWatts,
-      requestTime,
-    } = req.body;
-
-    let isVehicle = await VehicleModel.findOne({
-      _id: vehicleId,
-      clientId: clientId,
-      customerId: req.session._id,
-    });
-
-    if (!isVehicle) throw new CustomError("Please provide a valid vehicle Id");
-
-    if (requestedWatts) {
-      // calculate the  amount
-      // let amount = (requestedWatts /1000) *
-      // deduce the amount
-      // call the transaction
-      // send the response
-    } else if (requestTime) {
-      console.log("requestTime");
-    } else {
-      throw new CustomError(
-        "Please provide a valid requestedWatts or  requestTime"
-      );
-    }
-  } catch (error) {
-    if (error instanceof ValidationError || error instanceof CustomError) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(
-          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-        );
-    }
-    console.log(JSON.stringify(error));
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        responseGenerators(
-          {},
-          StatusCodes.INTERNAL_SERVER_ERROR,
-          "Internal Server Error",
-          1
-        )
-      );
-  }
-};
-
-export const stopTransactionHandler = async (req, res) => {
-  try {
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res

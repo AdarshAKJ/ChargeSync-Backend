@@ -7,6 +7,7 @@ import {
 } from "./post";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 import { authenticateCustomer } from "../../middleware/authenticateCustomer";
+import { authenticateCustomer } from "../../middleware/authenticateCustomer";
 
 const transactionRouter = express.Router();
 
@@ -15,10 +16,16 @@ transactionRouter.post(
   onlyAdminAndClientWithRoles(["ADMIN", "ACCOUNT"]),
   listTransactions
 );
+
 transactionRouter.post(
   "/single-transaction/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "ACCOUNT"]),
   singleTransaction
+);
+transactionRouter.post(
+  "/customer-transactions/:id",
+  authenticateCustomer,
+  customerTransactionsHandler
 );
 
 // start transaction

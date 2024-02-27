@@ -23,7 +23,6 @@ export const updateCustomerValidation = Joi.object({
   fname: Joi.string().required(),
   lname: Joi.string().required(),
   loginBy: Joi.string().optional().allow("EMAIL", "PHONE"),
-  isVerified: Joi.boolean().required(),
   email: Joi.string().email().optional().allow(null),
   phoneNumber: Joi.string().optional().allow(null),
   address: Joi.object().optional().allow(null),
@@ -35,9 +34,11 @@ export const updateCustomerValidation = Joi.object({
   updated_at: Joi.string(),
   isDeleted: Joi.boolean().default(false),
 });
+
 export const listCustomerValidation = Joi.object({
   clientId: Joi.string().required(),
 });
+
 export const singleCustomerValidation = Joi.object({
   id: Joi.string().required(),
   clientId: Joi.string().required(),

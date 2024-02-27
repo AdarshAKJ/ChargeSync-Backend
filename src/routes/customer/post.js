@@ -219,17 +219,22 @@ export const signupOrLoginOTPVerificationHandler = async (req, res) => {
       let customerData = await CustomerModel.findOne({ email: req.body.email });
       if (!customerData) throw new CustomError("Couldn't find customer");
       const purpose = "SIGNUP-LOGIN";
-      let otpSecret = customerData.otpSecret.find((e) => e.purpose == purpose);
+      let otpSecret = customerData.otpSecret.filter(
+        (e) => e.purpose == purpose
+      );
+
+      otpSecret =
+        otpSecret && otpSecret.length ? otpSecret[otpSecret.length - 1] : {};
 
       if (!otpSecret)
         throw new CustomError("No pending OTP found for customer.");
-      let isValid = verifyTotp(otpSecret, req.body.otp);
+      let isValid = verifyTotp(otpSecret?.secret, req.body.otp);
       // let isValid = true;
       if (isValid) {
         await CustomerModel.findOneAndUpdate(
           { _id: customerData._id },
           {
-            $pull: { otpSecret: { purpose } },
+            otpSecret: [],
             isVerified: true,
           }
         );
@@ -286,7 +291,8 @@ export const signupOrLoginOTPVerificationHandler = async (req, res) => {
 
       if (!otpSecret)
         throw new CustomError("No pending OTP found for customer.");
-      let isValid = verifyTotp(otpSecret, req.body.otp);
+      let isValid = verifyTotp(otpSecret.secret, req.body.otp);
+      // let isValid = true;
 
       if (isValid) {
         await CustomerModel.findOneAndUpdate(
@@ -366,47 +372,62 @@ export const updateCustomerHandler = async (req, res) => {
       ...req.params,
     });
     checkClientIdAccess(req.session, req.body.clientId);
-    if (!req.body.isVerified)
+    if (!req.session.isVerified)
       throw new CustomError(`Please verify your account`);
     let isAvailable;
 
-    isAvailable = await CustomerModel.findOne({
-      $and: [
-        { isDeleted: false },
-        { clientId: req.body.clientId },
-        { _id: { $ne: req.params.id } },
-        {
-          $or: [
-            { email: req.body.email },
-            {
-              phoneNumber: req.body.phoneNumber,
-              countryCode: req.body.countryCode,
-            },
-          ],
-        },
-      ],
-    });
+    if (req.session.loginBy === "EMAIL") {
+      isAvailable = await CustomerModel.findOne({
+        $and: [
+          { isDeleted: false },
+          { clientId: req.body.clientId },
+          { _id: { $ne: req.params.id } },
+          { email: req.body.email },
+        ],
+      });
+    } else if (req.session.loginBy === "PHONE") {
+      isAvailable = await CustomerModel.findOne({
+        $and: [
+          { isDeleted: false },
+          { clientId: req.body.clientId },
+          { _id: { $ne: req.params.id } },
+          { phone: req.body.phoneNumber },
+          { countryCode: req.body.countryCode },
+        ],
+      });
+    } else {
+      throw new CustomError(`Please provide email or Mobile Number`);
+    }
 
     if (isAvailable) throw new CustomError(`Customer is already available`);
 
+    // find customer and update customer
     let customerData = await CustomerModel.findOneAndUpdate(
       { _id: req.params.id },
-      { isDeleted: false },
       {
-        ...req.body,
-        updated_at: getCurrentUnix(),
-        updated_by: req.session._id,
-      }
+        $set: {
+          isDeleted: false,
+          updated_at: getCurrentUnix(),
+          updated_by: req.session._id,
+
+          ...req.body,
+        },
+      },
+      { new: true } // This option returns the modified document
     );
-    customerData = customerData.toJSON();
+
+    // customerData = customerData.toJSON();
 
     if (customerData.password) {
       delete customerData.password;
     }
+    customerData.save();
 
     return res
       .status(StatusCodes.OK)
-      .send(responseGenerators(customerData, StatusCodes.OK, "SUCCESS", 0));
+      .send(
+        responseGenerators(customerData.toJSON(), StatusCodes.OK, "SUCCESS", 0)
+      );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
