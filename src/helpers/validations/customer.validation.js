@@ -48,7 +48,11 @@ export const startTransactionValidation = Joi.object({
   serialNumber: Joi.string().required(),
   connectorId: Joi.string().required(),
   vehicleId: Joi.string().required(),
-  clientId: Joi.string().required(),
   requestedWatts: Joi.number().integer().optional(),
-  requestTime: Joi.number().integer().optional(),
+  requiredTime: Joi.number().integer().optional(),
+});
+
+export const stopTransactionValidation = Joi.object({
+  serialNumber: Joi.string().required(),
+  transactionId: Joi.string().required(),
 });

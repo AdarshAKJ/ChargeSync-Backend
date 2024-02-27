@@ -4,4 +4,4 @@ logs
 .vscode
 .vercel
 dist
-package-lock.josn
+package-lock.json
