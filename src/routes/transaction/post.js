@@ -4,6 +4,7 @@ import { StatusCodes } from "http-status-codes";
 import { responseGenerators } from "../../lib/utils";
 import {
   dateToUnix,
+  getCurrentUnix,
   getUnixEndTime,
   getUnixStartTime,
   setPagination,
@@ -16,6 +17,10 @@ import {
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 import { startTransactionValidation } from "../../helpers/validations/customer.validation";
 import VehicleModel from "../../models/vehicle";
+import ChargerConnectorModel from "../../models/chargerConnector";
+import ChargerModel from "../../models/charger";
+import WalletModel from "../../models/wallet";
+import WalletTransactionModel from "../../models/walletTransaction";
 
 export const listTransactions = async (req, res) => {
   try {
@@ -222,31 +227,77 @@ export const startTransactionHandler = async (req, res) => {
   try {
     await startTransactionValidation(req, res);
 
-    let {
-      serialNumber,
-      connectorId,
-      vehicleId,
-      clientId,
-      requestedWatts,
-      requestTime,
-    } = req.body;
+    let { serialNumber, connectorId, vehicleId, requestedWatts, requestTime } =
+      req.body;
 
+    // check vehicle exists
     let isVehicle = await VehicleModel.findOne({
       _id: vehicleId,
-      clientId: clientId,
+      clientId: req.session.clientId,
       customerId: req.session._id,
     });
 
     if (!isVehicle) throw new CustomError("Please provide a valid vehicle Id");
 
+    // check charger exits
+    let chargerData = await ChargerModel.findOne({
+      serialNumber: serialNumber,
+      clientId: req.session.clientId,
+    });
+
+    if (!chargerData)
+      throw new CustomError("Please provide a valid serialNumber");
+
+    // check connector exists
+    let connectorData = await ChargerConnectorModel.findOne({
+      _id: connectorId,
+      clientId: req.session.clientId,
+    });
+
+    if (!connectorData)
+      throw new CustomError("Please provide a valid connector id");
+
     if (requestedWatts) {
       // calculate the  amount
-      // let amount = (requestedWatts /1000) *
+      let amount = (requestedWatts / 1000) * connectorData.pricePerUnit;
+
+      // check wallet balance greater or equal to the amount.
+      let walletBalance = await WalletModel.findOne({
+        customerId: req.session._id,
+      });
+
+      if (!walletBalance || +walletBalance.amount < +amount)
+        throw new CustomError("insufficient wallet balance");
+
+      let preBalance = +walletBalance.amount;
       // deduce the amount
+      walletBalance.amount = +walletBalance.amount - +amount;
+      // add the wallet history
+      await WalletTransactionModel.create({
+        clientId: req.session.clientId,
+        customerId: req.session._id,
+        preBalance: preBalance,
+        effectedBalance: +walletBalance.amount,
+        amount: +amount,
+        type: "DEBITED",
+        reason: `Transaction started for ${amount}`,
+        source: "WALLET",
+        created_at: getCurrentUnix(),
+        updated_at: getCurrentUnix(),
+        created_by: req.session._id,
+        updated_by: req.session._id,
+      });
+
+      walletBalance.updated_at = getCurrentUnix();
+      walletBalance.updated_by = req.session._id;
+      await walletBalance.save();
+
+      // call the live status for charger.
       // call the transaction
       // send the response
     } else if (requestTime) {
       console.log("requestTime");
+      throw new CustomError("Currently we are not supporting requestTime type");
     } else {
       throw new CustomError(
         "Please provide a valid requestedWatts or  requestTime"
