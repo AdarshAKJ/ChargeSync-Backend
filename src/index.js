@@ -18,6 +18,7 @@ import transactionLogRouter from "./routes/transactionLogs";
 import maintenanceRouter from "./routes/maintenance";
 import customerRouter from "./routes/customer";
 import vehicleRouter from "./routes/vehicle";
+import walletRouter from "./routes/wallet";
 
 const app = express();
 const server = new http.Server(app);
@@ -91,6 +92,8 @@ app.use("/api/transaction-logs", transactionLogRouter);
 app.use("/api/maintenance", maintenanceRouter);
 app.use("/api/customer", customerRouter);
 app.use("/api/vehicle", vehicleRouter);
+app.use("/api/wallet-transactions", walletRouter);
+
 
 app.use(express.json());
 

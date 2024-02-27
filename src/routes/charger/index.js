@@ -1,7 +1,7 @@
 import express from "express";
 
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
-import { createChargerHandler, getSerialNumberHandler } from "./post";
+import { createChargerHandler, getChargerCountHandler, getSerialNumberHandler, listChargerHandler, singleChargerHandler } from "./post";
 
 const chargerRouter = express.Router();
 
@@ -26,7 +26,7 @@ chargerRouter.post(
   // listChargerHandler
 ); // Done
 
-// single charger
+//single charger
 chargerRouter.post(
   "/single-charger/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"])

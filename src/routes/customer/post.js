@@ -4,7 +4,6 @@ import {
   listCustomerValidation,
   signupOrLoginOTPVerificationValidation,
   singleCustomerValidation,
-  startTransactionValidation,
   updateCustomerValidation,
 } from "../../helpers/validations/customer.validation";
 import { responseGenerators } from "../../lib/utils";
@@ -110,7 +109,8 @@ export const createCustomerHandler = async (req, res) => {
           role: "CUSTOMER",
         });
 
-        delete customerTokenData.password;
+        delete customerTokenData?.password;
+        delete customerTokenData?.otpSecret;
 
         return res.status(StatusCodes.OK).send(
           responseGenerators(
@@ -210,6 +210,7 @@ export const createCustomerHandler = async (req, res) => {
   }
 };
 
+// customer OTP verification
 export const signupOrLoginOTPVerificationHandler = async (req, res) => {
   try {
     await signupOrLoginOTPVerificationValidation.validateAsync(req.body);
@@ -223,12 +224,9 @@ export const signupOrLoginOTPVerificationHandler = async (req, res) => {
         (e) => e.purpose == purpose
       );
 
-      otpSecret =
-        otpSecret && otpSecret.length ? otpSecret[otpSecret.length - 1] : {};
-
-      if (!otpSecret)
+      if (!otpSecret || !otpSecret.length)
         throw new CustomError("No pending OTP found for customer.");
-      let isValid = verifyTotp(otpSecret?.secret, req.body.otp);
+      let isValid = verifyTotp(otpSecret.reverse()[0].secret, req.body.otp);
       // let isValid = true;
       if (isValid) {
         await CustomerModel.findOneAndUpdate(
@@ -252,7 +250,8 @@ export const signupOrLoginOTPVerificationHandler = async (req, res) => {
           role: "CUSTOMER",
         });
 
-        delete customerTokenData.password;
+        delete customerTokenData?.password;
+        delete customerTokenData?.otpSecret;
 
         return res.status(StatusCodes.OK).send(
           responseGenerators(
@@ -287,12 +286,13 @@ export const signupOrLoginOTPVerificationHandler = async (req, res) => {
       });
       if (!customerData) throw new CustomError("Couldn't find customer");
       const purpose = "SIGNUP-LOGIN";
-      let otpSecret = customerData.otpSecret.find((e) => e.purpose == purpose);
+      let otpSecret = customerData.otpSecret.filter(
+        (e) => e.purpose == purpose
+      );
 
-      if (!otpSecret)
+      if (!otpSecret || !otpSecret.length)
         throw new CustomError("No pending OTP found for customer.");
-      let isValid = verifyTotp(otpSecret.secret, req.body.otp);
-      // let isValid = true;
+      let isValid = verifyTotp(otpSecret.reverse()[0].secret, req.body.otp);
 
       if (isValid) {
         await CustomerModel.findOneAndUpdate(
@@ -317,6 +317,8 @@ export const signupOrLoginOTPVerificationHandler = async (req, res) => {
           role: "CUSTOMER",
         });
 
+        delete customerTokenData?.password;
+        delete customerTokenData?.otpSecret;
         return res.status(StatusCodes.OK).send(
           responseGenerators(
             {
@@ -571,7 +573,6 @@ export const singleCustomerHandler = async (req, res) => {
   }
 };
 
-
 export const startTransactionHandler = async (req, res) => {
   try {
     console.log("Starting transaction");
@@ -621,4 +622,3 @@ export const stopTransactionHandler = async (req, res) => {
       );
   }
 };
-

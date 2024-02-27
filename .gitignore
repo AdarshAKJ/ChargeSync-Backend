@@ -4,3 +4,4 @@ logs
 .vscode
 .vercel
 dist
+package-lock.josn
