@@ -4,6 +4,7 @@ import { verifyJwt } from "../helpers/Jwt.helper";
 import { responseGenerators } from "../lib/utils";
 import { TokenExpiredError } from "jsonwebtoken";
 import CustomerModel from "../models/customer";
+import { decryptData } from "../commons/common-functions";
 // import { CustomError } from "../helpers/custome.error";
 
 export const authenticateCustomer = async (req, res, next) => {
@@ -21,8 +22,18 @@ export const authenticateCustomer = async (req, res, next) => {
           )
         );
     }
+    // decryptData authorization
+    let jwtToken = decryptData(authorization);
+    if (!jwtToken) {
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .send(
+          responseGenerators({}, StatusCodes.UNAUTHORIZED, `Access denied`, 1)
+        );
+    }
     // Verify JWT token
-    const tokenData = await verifyJwt(authorization);
+    const tokenData = await verifyJwt(jwtToken);
+
     let user = await CustomerModel.findOne({
       _id: tokenData.id,
       isVerified: true,

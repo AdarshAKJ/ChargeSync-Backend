@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import server from "./src";
-import { generateUniqueKey } from "./src/commons/common-functions";
 import { logsError } from "./src/lib/utils";
 import { mongooseConnection } from "./src/mongodb";
 

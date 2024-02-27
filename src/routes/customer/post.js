@@ -30,31 +30,33 @@ import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
 export const createCustomerHandler = async (req, res) => {
   try {
     await createCustomerValidation.validateAsync(req.body);
-    checkClientIdAccess(req.session, req.body.clientId);
 
     if (req.body.loginBy == "EMAIL") {
       if (!req.body.password)
         throw new CustomError(`Please provide valid password.`);
-      const customerData = await CustomerModel.findOne({
+
+      let customerData;
+
+      customerData = await CustomerModel.findOne({
         email: req.body.email.toLowerCase(),
         clientId: req.body.clientId,
         isDeleted: false,
       });
 
-      if ((customerData && !customerData.isVerified) || !customerData) {
-        if (!customerData?.isVerified) {
+      if (!customerData || (customerData && !customerData.isVerified)) {
+        if (customerData && !customerData.isVerified) {
           await CustomerModel.deleteOne({
             _id: customerData._id,
           });
         }
 
         //create customer
-        let customerData = await CustomerModel.create({
+        customerData = await CustomerModel.create({
           ...req.body,
           email: req.body.email.toLowerCase(),
           password: await hashPassword(req.body.password),
-          created_by: req.session._id,
-          updated_by: req.session._id,
+          created_by: req.body._id,
+          updated_by: req.body._id,
           created_at: getCurrentUnix(),
           updated_at: getCurrentUnix(),
         });
@@ -108,7 +110,8 @@ export const createCustomerHandler = async (req, res) => {
           role: "CUSTOMER",
         });
 
-        delete customerTokenData.password;
+        delete customerTokenData?.password;
+        delete customerTokenData?.otpSecret;
 
         return res.status(StatusCodes.OK).send(
           responseGenerators(
@@ -134,8 +137,8 @@ export const createCustomerHandler = async (req, res) => {
       if (!customerData) {
         customerData = await CustomerModel.create({
           ...req.body,
-          created_by: req.session._id,
-          updated_by: req.session._id,
+          created_by: req.body._id,
+          updated_by: req.body._id,
           created_at: getCurrentUnix(),
           updated_at: getCurrentUnix(),
         });
@@ -157,8 +160,8 @@ export const createCustomerHandler = async (req, res) => {
           clientId: req.body.clientId,
           customerId: customerData._id,
           amount: 0,
-          created_by: req.session._id,
-          updated_by: req.session._id,
+          created_by: req.body._id,
+          updated_by: req.body._id,
           created_at: getCurrentUnix(),
           updated_at: getCurrentUnix(),
         });
@@ -208,26 +211,29 @@ export const createCustomerHandler = async (req, res) => {
   }
 };
 
+// customer OTP verification
 export const signupOrLoginOTPVerificationHandler = async (req, res) => {
   try {
-    await signupOrLoginOTPVerificationValidation.validateAsync(req, res);
+    await signupOrLoginOTPVerificationValidation.validateAsync(req.body);
 
     // if email  exits
     if (req.body.email) {
       let customerData = await CustomerModel.findOne({ email: req.body.email });
       if (!customerData) throw new CustomError("Couldn't find customer");
       const purpose = "SIGNUP-LOGIN";
-      let otpSecret = customerData.otpSecret.find((e) => e.purpose == purpose);
+      let otpSecret = customerData.otpSecret.filter(
+        (e) => e.purpose == purpose
+      );
 
-      if (!otpSecret)
+      if (!otpSecret || !otpSecret.length)
         throw new CustomError("No pending OTP found for customer.");
-      let isValid = verifyTotp(otpSecret, req.body.otp);
-
+      let isValid = verifyTotp(otpSecret.reverse()[0].secret, req.body.otp);
+      // let isValid = true;
       if (isValid) {
         await CustomerModel.findOneAndUpdate(
           { _id: customerData._id },
           {
-            $pull: { otpSecret: { purpose } },
+            otpSecret: [],
             isVerified: true,
           }
         );
@@ -245,7 +251,8 @@ export const signupOrLoginOTPVerificationHandler = async (req, res) => {
           role: "CUSTOMER",
         });
 
-        delete customerTokenData.password;
+        delete customerTokenData?.password;
+        delete customerTokenData?.otpSecret;
 
         return res.status(StatusCodes.OK).send(
           responseGenerators(
@@ -280,11 +287,13 @@ export const signupOrLoginOTPVerificationHandler = async (req, res) => {
       });
       if (!customerData) throw new CustomError("Couldn't find customer");
       const purpose = "SIGNUP-LOGIN";
-      let otpSecret = customerData.otpSecret.find((e) => e.purpose == purpose);
+      let otpSecret = customerData.otpSecret.filter(
+        (e) => e.purpose == purpose
+      );
 
-      if (!otpSecret)
+      if (!otpSecret || !otpSecret.length)
         throw new CustomError("No pending OTP found for customer.");
-      let isValid = verifyTotp(otpSecret, req.body.otp);
+      let isValid = verifyTotp(otpSecret.reverse()[0].secret, req.body.otp);
 
       if (isValid) {
         await CustomerModel.findOneAndUpdate(
@@ -309,6 +318,8 @@ export const signupOrLoginOTPVerificationHandler = async (req, res) => {
           role: "CUSTOMER",
         });
 
+        delete customerTokenData?.password;
+        delete customerTokenData?.otpSecret;
         return res.status(StatusCodes.OK).send(
           responseGenerators(
             {
@@ -364,7 +375,8 @@ export const updateCustomerHandler = async (req, res) => {
       ...req.params,
     });
     checkClientIdAccess(req.session, req.body.clientId);
-
+    if (!req.body.isVerified)
+      throw new CustomError(`Please verify your account`);
     let isAvailable;
 
     isAvailable = await CustomerModel.findOne({
@@ -525,6 +537,56 @@ export const singleCustomerHandler = async (req, res) => {
         0
       )
     );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+export const startTransactionHandler = async (req, res) => {
+  try {
+    console.log("Starting transaction");
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+export const stopTransactionHandler = async (req, res) => {
+  try {
+    console.log("stop transaction");
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res

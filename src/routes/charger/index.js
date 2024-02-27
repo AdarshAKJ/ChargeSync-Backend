@@ -22,22 +22,22 @@ chargerRouter.post(
 // list filter by status by station and pagination
 chargerRouter.post(
   "/list",
-  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
-  listChargerHandler
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"])
+  // listChargerHandler
 ); // Done
 
 //single charger
 chargerRouter.post(
   "/single-charger/:id",
-  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
-  singleChargerHandler
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"])
+  // singleChargerHandler
 ); // DONE
 
 // get charging count
 chargerRouter.post(
   "/charging-count",
-  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
-  getChargerCountHandler
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"])
+  // getChargerCountHandler
 ); // DONE
 
 export default chargerRouter;
