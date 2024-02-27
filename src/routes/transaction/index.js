@@ -1,8 +1,12 @@
 import express from "express";
-// import { authenticateUser } from "../../middleware/authorization";
-import { listTransactions, singleTransaction } from "./post";
+import {
+  listTransactions,
+  singleTransaction,
+  startTransactionHandler,
+  stopTransactionHandler,
+} from "./post";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
-// import { onlyAdmin } from "../../middleware/onlyAdmin";
+import { authenticateCustomer } from "../../middleware/authenticateCustomer";
 
 const transactionRouter = express.Router();
 
@@ -16,5 +20,11 @@ transactionRouter.post(
   onlyAdminAndClientWithRoles(["ADMIN", "ACCOUNT"]),
   singleTransaction
 );
+
+// start transaction
+transactionRouter.post("/start", authenticateCustomer, startTransactionHandler);
+
+// stop transaction
+transactionRouter.post("/stop", authenticateCustomer, stopTransactionHandler);
 
 export default transactionRouter;

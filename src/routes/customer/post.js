@@ -4,6 +4,7 @@ import {
   listCustomerValidation,
   signupOrLoginOTPVerificationValidation,
   singleCustomerValidation,
+  startTransactionValidation,
   updateCustomerValidation,
 } from "../../helpers/validations/customer.validation";
 import { responseGenerators } from "../../lib/utils";
@@ -24,6 +25,7 @@ import {
 } from "../../commons/common-functions";
 import { getJwt } from "../../helpers/Jwt.helper";
 import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
+
 // create user and provide OTP, if exist then provide OTP
 export const createCustomerHandler = async (req, res) => {
   try {
@@ -548,6 +550,7 @@ export const singleCustomerHandler = async (req, res) => {
   }
 };
 
+
 export const startTransactionHandler = async (req, res) => {
   try {
     console.log("Starting transaction");
@@ -597,3 +600,4 @@ export const stopTransactionHandler = async (req, res) => {
       );
   }
 };
+

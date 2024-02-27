@@ -4,8 +4,6 @@ import {
   listCustomerHandler,
   signupOrLoginOTPVerificationHandler,
   singleCustomerHandler,
-  startTransactionHandler,
-  stopTransactionHandler,
   updateCustomerHandler,
 } from "./post";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
@@ -28,20 +26,6 @@ customerRouter.post(
   "/single-customer/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   singleCustomerHandler
-);
-
-// start transaction
-customerRouter.post(
-  "/start-transaction",
-  authenticateCustomer,
-  startTransactionHandler
-);
-
-// stop transaction
-customerRouter.post(
-  "/stop-transaction",
-  authenticateCustomer,
-  stopTransactionHandler
 );
 
 export default customerRouter;
