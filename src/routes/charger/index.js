@@ -1,7 +1,7 @@
 import express from "express";
 
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
-import { createChargerHandler, getChargerCountHandler, getSerialNumberHandler, listChargerHandler, singleChargerHandler } from "./post";
+import { createChargerHandler, getSerialNumberHandler } from "./post";
 
 const chargerRouter = express.Router();
 
