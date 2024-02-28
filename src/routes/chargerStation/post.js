@@ -190,6 +190,16 @@ export const listChargerStationHandler = async (req, res) => {
 
     const pagination = setPagination(req.query);
 
+    if (req.query.search) {
+      where = {
+        ...where,
+        station_name: new RegExp(req.query?.search.toString(), "i"),
+        "address.area": new RegExp(req.query?.search.toString(), "i"),
+        "address.city": new RegExp(req.query?.search.toString(), "i"),
+        "address.postal": new RegExp(req.query?.search.toString(), "i"),
+      };
+    }
+
     const stations = await ChargingStationModel.find(where)
       .select("_id station_name address")
       .sort(pagination.sort)
