@@ -19,6 +19,7 @@ import maintenanceRouter from "./routes/maintenance";
 import customerRouter from "./routes/customer";
 import vehicleRouter from "./routes/vehicle";
 import walletRouter from "./routes/wallet";
+import xss from "xss-clean";
 
 const app = express();
 const server = new http.Server(app);
@@ -44,6 +45,7 @@ const limiter = rateLimit({
 
 app.use(limiter);
 app.use(helmet());
+app.use(xss());
 
 app.use((req, res, next) => {
   try {
@@ -93,7 +95,6 @@ app.use("/api/maintenance", maintenanceRouter);
 app.use("/api/customer", customerRouter);
 app.use("/api/vehicle", vehicleRouter);
 app.use("/api/wallet-transactions", walletRouter);
-
 
 app.use(express.json());
 
