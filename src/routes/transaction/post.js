@@ -238,8 +238,7 @@ export const startTransactionHandler = async (req, res) => {
   try {
     await startTransactionValidation(req.body);
 
-    let { serialNumber, connectorId, vehicleId, requestedWatts, requiredTime } =
-      req.body;
+    let { serialNumber, connectorId, vehicleId, requestedWatts } = req.body;
 
     // maintenance check.
     let maintenanceData = await MaintenanceModel.findOne({ status: "ACTIVE" });
@@ -283,48 +282,17 @@ export const startTransactionHandler = async (req, res) => {
     if (!connectorData)
       throw new CustomError("Please provide a valid connector id");
 
-    if (requestedWatts) {
-      // calculate the  amount
-      let amount = (requestedWatts / 1000) * connectorData.pricePerUnit;
+    // calculate the  amount
+    let amount = (requestedWatts / 1000) * connectorData.pricePerUnit;
 
-      // check wallet balance greater or equal to the amount.
-      let walletBalance = await WalletModel.findOne({
-        customerId: req.session._id,
-      });
+    // check wallet balance greater or equal to the amount.
+    let walletBalance = await WalletModel.findOne({
+      customerId: req.session._id,
+    });
 
-      if (!walletBalance || +walletBalance.amount < +amount)
-        throw new CustomError("insufficient wallet balance");
-
-      let preBalance = +walletBalance.amount;
-      // deduce the amount
-      walletBalance.amount = +walletBalance.amount - +amount;
-      // add the wallet history
-      await WalletTransactionModel.create({
-        clientId: req.session.clientId,
-        customerId: req.session._id,
-        preBalance: preBalance,
-        effectedBalance: +walletBalance.amount,
-        amount: +amount,
-        type: "DEBITED",
-        reason: `Transaction started for ${amount}`,
-        source: "WALLET",
-        created_at: getCurrentUnix(),
-        updated_at: getCurrentUnix(),
-        created_by: req.session._id,
-        updated_by: req.session._id,
-      });
-
-      walletBalance.updated_at = getCurrentUnix();
-      walletBalance.updated_by = req.session._id;
-      await walletBalance.save();
-    } else if (requiredTime) {
-      console.log("requestTime");
-      throw new CustomError("Currently we are not supporting requestTime type");
-    } else {
-      throw new CustomError(
-        "Please provide a valid requestedWatts or  requestTime"
-      );
-    }
+    // check for wallet balance insufficient
+    if (!walletBalance || +walletBalance.amount < +amount)
+      throw new CustomError("Insufficient wallet balance");
 
     // call the live status for charger.
     let chargerStatusData = await callAPI(
@@ -384,13 +352,45 @@ export const startTransactionHandler = async (req, res) => {
         connectorOCPPId: connectorData.chargerId,
         clientId: req.session.clientId,
         requestedWatts: requestedWatts,
-        requiredTime: requiredTime,
+        requiredTime: null,
         pricePerUnit: connectorData.pricePerUnit,
       },
       {
         "private-api-key": process.env.OCPP_API_KEY,
       }
     );
+
+    let preBalance = +walletBalance.amount;
+    // deduce the amount
+    walletBalance.amount = +walletBalance.amount - +amount;
+    // add the wallet history
+    let walletTransactionData = await WalletTransactionModel.create({
+      clientId: req.session.clientId,
+      customerId: req.session._id,
+      preBalance: preBalance,
+      effectedBalance: +walletBalance.amount,
+      amount: +amount,
+      type: "DEBITED",
+      reason: `Transaction started for ${amount}`,
+      source: "WALLET",
+      created_at: getCurrentUnix(),
+      updated_at: getCurrentUnix(),
+      created_by: req.session._id,
+      updated_by: req.session._id,
+    });
+
+    // wallet updated for deduction
+    walletBalance.updated_at = getCurrentUnix();
+    walletBalance.updated_by = req.session._id;
+    await walletBalance.save();
+    console.log("Wallet updated for transaction: " + transactionData._id);
+
+    // update transaction for wallet transaction id
+    await TransactionModel.findOneAndUpdate(
+      { _id: transactionData._id },
+      { walletTransactionId: walletTransactionData._id }
+    );
+
     return res
       .status(StatusCodes.OK)
       .send(responseGenerators(transactionData, StatusCodes.OK, "SUCCESS", 0));
