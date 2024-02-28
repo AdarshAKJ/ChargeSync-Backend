@@ -193,10 +193,22 @@ export const listChargerStationHandler = async (req, res) => {
     if (req.query.search) {
       where = {
         ...where,
-        station_name: new RegExp(req.query?.search.toString(), "i"),
-        "address.area": new RegExp(req.query?.search.toString(), "i"),
-        "address.city": new RegExp(req.query?.search.toString(), "i"),
-        "address.postal": new RegExp(req.query?.search.toString(), "i"),
+        ...{
+          $or: [
+            {
+              station_name: new RegExp(req.query.search.toString(), "i"),
+            },
+            // {
+            //   "address.area": new RegExp(req.query.search.toString(), "i"),
+            // },
+            // {
+            //   "address.city": new RegExp(req.query.search.toString(), "i"),
+            // },
+            // {
+            //   "address.postal": new RegExp(req.query.search.toString(), "i"),
+            // },
+          ],
+        },
       };
     }
 
