@@ -5,7 +5,6 @@ import { responseGenerators } from "../lib/utils";
 import { TokenExpiredError } from "jsonwebtoken";
 import CustomerModel from "../models/customer";
 import { decryptData } from "../commons/common-functions";
-// import { CustomError } from "../helpers/custome.error";
 
 export const authenticateCustomer = async (req, res, next) => {
   try {

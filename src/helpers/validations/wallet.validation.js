@@ -1,14 +1,15 @@
-import Joi from 'joi';
+import Joi from "joi";
 
 const walletTransactionValidation = Joi.object({
-  clientId: Joi.string().trim().required(),
-  type: Joi.string().valid('CREDITED', 'DEBITED', 'REFUNDED').required(),
-  source: Joi.string().valid('WALLET', 'RAZORPAY').required(),
-  created_by: Joi.string().trim(),
-  updated_by: Joi.string().trim(),
-  created_at: Joi.string().trim(),
-  updated_at: Joi.string().trim(),
-  isDeleted: Joi.boolean().default(false),
+  clientId: Joi.string().optional().allow("", null),
+  type: Joi.string()
+    .valid("CREDITED", "DEBITED", "REFUNDED")
+    .optional()
+    .allow("", null),
+  source: Joi.string().valid("WALLET", "RAZORPAY").optional().allow("", null),
+  search: Joi.string().optional().valid("", null),
+  limit: Joi.number().optional().allow("", null),
+  offset: Joi.number().optional().allow("", null),
 });
 
 export default walletTransactionValidation;

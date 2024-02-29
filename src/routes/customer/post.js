@@ -522,7 +522,7 @@ export const singleCustomerHandler = async (req, res) => {
         $lookup: {
           from: "wallets",
           localField: "_id",
-          foreignField: "userId",
+          foreignField: "customerId",
           as: "walletData",
         },
       },
