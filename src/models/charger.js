@@ -10,6 +10,12 @@ const ChargerSchema = new mongoose.Schema({
   },
   clientId: { type: String, required: true, trim: true },
   stationId: { type: String, required: true },
+  powerType: {
+    type: String,
+    required: true,
+    enum: ["AC", "DC"],
+    default: "AC",
+  },
   serialNumber: { type: String, required: true, unique: true, index: true },
   name: { type: String, required: true },
   status: {

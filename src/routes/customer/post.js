@@ -367,41 +367,20 @@ export const signupOrLoginOTPVerificationHandler = async (req, res) => {
   }
 };
 
+// update the customer
 export const updateCustomerHandler = async (req, res) => {
   try {
+    // validation
     await updateCustomerValidation.validateAsync({
       ...req.body,
       ...req.params,
     });
-    checkClientIdAccess(req.session, req.body.clientId);
-    if (!req.session.isVerified)
+
+    // not need to check  clientId
+
+    // check for verification
+    if (!req.session?.isVerified)
       throw new CustomError(`Please verify your account`);
-    let isAvailable;
-
-    if (req.session.loginBy === "EMAIL") {
-      isAvailable = await CustomerModel.findOne({
-        $and: [
-          { isDeleted: false },
-          { clientId: req.body.clientId },
-          { _id: { $ne: req.params.id } },
-          { email: req.body.email },
-        ],
-      });
-    } else if (req.session.loginBy === "PHONE") {
-      isAvailable = await CustomerModel.findOne({
-        $and: [
-          { isDeleted: false },
-          { clientId: req.body.clientId },
-          { _id: { $ne: req.params.id } },
-          { phone: req.body.phoneNumber },
-          { countryCode: req.body.countryCode },
-        ],
-      });
-    } else {
-      throw new CustomError(`Please provide email or Mobile Number`);
-    }
-
-    if (isAvailable) throw new CustomError(`Customer is already available`);
 
     // find customer and update customer
     let customerData = await CustomerModel.findOneAndUpdate(
@@ -411,18 +390,14 @@ export const updateCustomerHandler = async (req, res) => {
           isDeleted: false,
           updated_at: getCurrentUnix(),
           updated_by: req.session._id,
-
           ...req.body,
         },
       },
-      { new: true } // This option returns the modified document
+      { new: true }
     );
 
-    // customerData = customerData.toJSON();
-
-    if (customerData.password) {
-      delete customerData.password;
-    }
+    // delete password
+    if (customerData.password) delete customerData.password;
     customerData.save();
 
     return res
@@ -452,6 +427,7 @@ export const updateCustomerHandler = async (req, res) => {
   }
 };
 
+// list customer
 export const listCustomerHandler = async (req, res) => {
   try {
     await listCustomerValidation.validateAsync(req.body);
@@ -522,12 +498,14 @@ export const listCustomerHandler = async (req, res) => {
   }
 };
 
+// get single customer
 export const singleCustomerHandler = async (req, res) => {
   try {
     await singleCustomerValidation.validateAsync({
       ...req.body,
       ...req.params,
     });
+
     checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
@@ -536,15 +514,29 @@ export const singleCustomerHandler = async (req, res) => {
       clientId: req.session.clientId || req.query.clientId,
     };
 
-    const customer = await CustomerModel.findOne(where)
-      .select("-password")
-      .lean()
-      .exec();
+    const aggregationPipeline = [
+      {
+        $match: where,
+      },
+      {
+        $lookup: {
+          from: "wallets",
+          localField: "_id",
+          foreignField: "userId",
+          as: "walletData",
+        },
+      },
+    ];
+
+    const customer = await CustomerModel.aggregate(aggregationPipeline); // password
+
+    if (customer.length) throw new CustomError("Customer not found");
+    delete customer[0]?.password;
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(
         {
-          singleCustomerData: customer,
+          singleCustomerData: customer[0],
         },
         StatusCodes.OK,
         "SUCCESS",
@@ -572,53 +564,3 @@ export const singleCustomerHandler = async (req, res) => {
       );
   }
 };
-
-// export const startTransactionHandler = async (req, res) => {
-//   try {
-//     console.log("Starting transaction");
-//   } catch (error) {
-//     if (error instanceof ValidationError || error instanceof CustomError) {
-//       return res
-//         .status(StatusCodes.BAD_REQUEST)
-//         .send(
-//           responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-//         );
-//     }
-//     console.log(JSON.stringify(error));
-//     return res
-//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-//       .send(
-//         responseGenerators(
-//           {},
-//           StatusCodes.INTERNAL_SERVER_ERROR,
-//           "Internal Server Error",
-//           1
-//         )
-//       );
-//   }
-// };
-
-// export const stopTransactionHandler = async (req, res) => {
-//   try {
-//     console.log("stop transaction");
-//   } catch (error) {
-//     if (error instanceof ValidationError || error instanceof CustomError) {
-//       return res
-//         .status(StatusCodes.BAD_REQUEST)
-//         .send(
-//           responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-//         );
-//     }
-//     console.log(JSON.stringify(error));
-//     return res
-//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-//       .send(
-//         responseGenerators(
-//           {},
-//           StatusCodes.INTERNAL_SERVER_ERROR,
-//           "Internal Server Error",
-//           1
-//         )
-//       );
-//   }
-// };

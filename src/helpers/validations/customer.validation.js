@@ -19,20 +19,10 @@ export const signupOrLoginOTPVerificationValidation = Joi.object({
 
 export const updateCustomerValidation = Joi.object({
   id: Joi.string().required(),
-  clientId: Joi.string().required(),
   fname: Joi.string().required(),
   lname: Joi.string().required(),
-  loginBy: Joi.string().optional().allow("EMAIL", "PHONE"),
-  email: Joi.string().email().optional().allow(null),
-  phoneNumber: Joi.string().optional().allow(null),
   address: Joi.object().optional().allow(null),
   dob: Joi.string().optional().allow(null),
-  countryCode: Joi.string().optional().allow(null),
-  created_by: Joi.string(),
-  updated_by: Joi.string(),
-  created_at: Joi.string(),
-  updated_at: Joi.string(),
-  isDeleted: Joi.boolean().default(false),
 });
 
 export const listCustomerValidation = Joi.object({
