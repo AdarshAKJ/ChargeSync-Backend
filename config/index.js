@@ -32,6 +32,7 @@ const configVariables = {
   MEMBER_LOGIN: config.get("MEMBER_LOGIN"),
   API_KEY: config.get("API_KEY"),
   ENCRYPT_SECRET: config.get("ENCRYPT_SECRET"),
+  IV: config.get("IV"),
 };
 
 export default configVariables;

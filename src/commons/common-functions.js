@@ -7,7 +7,7 @@ import utc from "dayjs/plugin/utc";
 import { nanoid } from "nanoid";
 import { totp } from "otplib";
 import configVariables from "../../config";
-const iv = crypto.randomBytes(16);
+
 const key = configVariables.ENCRYPT_SECRET;
 const keyBuffer = Buffer.from(key, "hex");
 
@@ -152,14 +152,22 @@ export const setPagination = (options) => {
 };
 
 export const encryptData = (text) => {
-  const cipher = crypto.createCipheriv("aes-256-cbc", keyBuffer, iv);
+  const cipher = crypto.createCipheriv(
+    "aes-256-cbc",
+    keyBuffer,
+    Buffer.from(configVariables.IV, "hex")
+  );
   let encrypted = cipher.update(text, "utf8", "hex");
   encrypted += cipher.final("hex");
   return encrypted;
 };
 
 export const decryptData = (encryptedText) => {
-  const decipher = crypto.createDecipheriv("aes-256-cbc", keyBuffer, iv);
+  const decipher = crypto.createDecipheriv(
+    "aes-256-cbc",
+    keyBuffer,
+    Buffer.from(configVariables.IV, "hex")
+  );
   let decrypted = decipher.update(encryptedText, "hex", "utf8");
   decrypted += decipher.final("utf8");
   return decrypted;
