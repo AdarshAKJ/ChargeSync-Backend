@@ -161,12 +161,14 @@ export const listVehicleHandler = async (req, res) => {
       clientId: req.body.clientId,
       customerId: req.body.customerId,
     };
+
     if (req.query?.search) {
       where = {
         ...where,
         name: new RegExp(req.query?.search.toString(), "i"),
       };
     }
+
     if (req.query?.vehicleType) {
       where = {
         ...where,

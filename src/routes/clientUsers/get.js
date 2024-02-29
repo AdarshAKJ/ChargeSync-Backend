@@ -19,9 +19,11 @@ export const listClientUser = async (req, res) => {
       where = {
         ...where,
         ...{
-          fname: new RegExp(req.query?.search.toString(), "i"),
-          lname: new RegExp(req.query?.search.toString(), "i"),
-          email: new RegExp(req.query?.search.toString(), "i"),
+          $or: [
+            { fname: new RegExp(req.query?.search.toString(), "i") },
+            { lname: new RegExp(req.query?.search.toString(), "i") },
+            { email: new RegExp(req.query?.search.toString(), "i") },
+          ],
         },
       };
     }
