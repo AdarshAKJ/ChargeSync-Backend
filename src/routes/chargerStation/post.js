@@ -13,6 +13,7 @@ import {
 import ChargingStationModel from "../../models/chargingStations";
 import { getCurrentUnix, setPagination } from "../../commons/common-functions";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
+import ClientModel from "../../models/client";
 
 // DONE
 export const createChargerStationHandler = async (req, res) => {
@@ -28,6 +29,31 @@ export const createChargerStationHandler = async (req, res) => {
       created_at: getCurrentUnix(),
       updated_at: getCurrentUnix(),
     });
+
+    if (
+      !chargerStationData.own_by ||
+      !chargerStationData.contect_no ||
+      !chargerStationData.contect_email
+    ) {
+      let clientData = await ClientModel.findOne({
+        clientId: req.body.ClientModel,
+        isDeleted: false,
+      });
+
+      if (!chargerStationData.own_by) {
+        chargerStationData.own_by = clientData.contactPerson;
+      }
+
+      if (!chargerStationData.contect_no) {
+        chargerStationData.contect_no = clientData.contactPersonPhoneNumber;
+      }
+
+      if (!chargerStationData.contect_email) {
+        chargerStationData.contect_email = clientData.contactPersonEmailAddress;
+      }
+      await chargerStationData.save();
+    }
+
     return res
       .status(StatusCodes.OK)
       .send(
@@ -222,13 +248,6 @@ export const listChargerStationHandler = async (req, res) => {
       .lean()
       .exec();
     // search name add
-
-    if (req.query?.search) {
-      where = {
-        ...where,
-        station_name: new RegExp(req.query?.search.toString(), "i"),
-      };
-    }
 
     if (!stations) throw new CustomError(`No Station found.`);
     let total_count = await ChargingStationModel.count(where);
