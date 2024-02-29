@@ -6,7 +6,10 @@ import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import { nanoid } from "nanoid";
 import { totp } from "otplib";
-import { default as config, default as configVariables } from "../../config";
+import configVariables from "../../config";
+
+const key = configVariables.ENCRYPT_SECRET;
+const keyBuffer = Buffer.from(key, "hex");
 
 const salt = bcrypt.genSaltSync(10);
 
@@ -16,7 +19,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(isBetween);
 // eslint-disable-next-line no-undef
-let time_zone = config.TIMEZONE;
+let time_zone = configVariables.TIMEZONE;
 export const intrmTokenCache = {};
 export const sessionUser = {};
 export const sessionApp = {};
@@ -149,9 +152,10 @@ export const setPagination = (options) => {
 };
 
 export const encryptData = (text) => {
-  const cipher = crypto.createCipher(
+  const cipher = crypto.createCipheriv(
     "aes-256-cbc",
-    configVariables.ENCRYPT_SECRET
+    keyBuffer,
+    Buffer.from(configVariables.IV, "hex")
   );
   let encrypted = cipher.update(text, "utf8", "hex");
   encrypted += cipher.final("hex");
@@ -159,9 +163,10 @@ export const encryptData = (text) => {
 };
 
 export const decryptData = (encryptedText) => {
-  const decipher = crypto.createDecipher(
+  const decipher = crypto.createDecipheriv(
     "aes-256-cbc",
-    configVariables.ENCRYPT_SECRET
+    keyBuffer,
+    Buffer.from(configVariables.IV, "hex")
   );
   let decrypted = decipher.update(encryptedText, "hex", "utf8");
   decrypted += decipher.final("utf8");
@@ -178,4 +183,8 @@ export const dateToUnix = (dateString) => {
 
 export const getUnixStartTime = (unixData) => {
   return dayjs.unix(unixData).startOf("day").unix(unixData).toString();
+};
+
+export const delay = (ms) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 };

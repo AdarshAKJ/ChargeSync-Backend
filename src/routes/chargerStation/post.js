@@ -13,12 +13,15 @@ import {
 import ChargingStationModel from "../../models/chargingStations";
 import { getCurrentUnix, setPagination } from "../../commons/common-functions";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
+import ClientModel from "../../models/client";
 
 // DONE
 export const createChargerStationHandler = async (req, res) => {
   try {
     await createChargerStationValidation.validateAsync(req.body);
+
     checkClientIdAccess(req.session, req.body.clientId);
+
     let chargerStationData = await ChargingStationModel.create({
       ...req.body,
       created_by: req.session._id,
@@ -26,6 +29,31 @@ export const createChargerStationHandler = async (req, res) => {
       created_at: getCurrentUnix(),
       updated_at: getCurrentUnix(),
     });
+
+    if (
+      !chargerStationData.own_by ||
+      !chargerStationData.contect_no ||
+      !chargerStationData.contect_email
+    ) {
+      let clientData = await ClientModel.findOne({
+        clientId: req.body.ClientModel,
+        isDeleted: false,
+      });
+
+      if (!chargerStationData.own_by) {
+        chargerStationData.own_by = clientData.contactPerson;
+      }
+
+      if (!chargerStationData.contect_no) {
+        chargerStationData.contect_no = clientData.contactPersonPhoneNumber;
+      }
+
+      if (!chargerStationData.contect_email) {
+        chargerStationData.contect_email = clientData.contactPersonEmailAddress;
+      }
+      await chargerStationData.save();
+    }
+
     return res
       .status(StatusCodes.OK)
       .send(
@@ -189,6 +217,28 @@ export const listChargerStationHandler = async (req, res) => {
     };
 
     const pagination = setPagination(req.query);
+
+    if (req.query.search) {
+      where = {
+        ...where,
+        ...{
+          $or: [
+            {
+              station_name: new RegExp(req.query.search.toString(), "i"),
+            },
+            // {
+            //   "address.area": new RegExp(req.query.search.toString(), "i"),
+            // },
+            // {
+            //   "address.city": new RegExp(req.query.search.toString(), "i"),
+            // },
+            // {
+            //   "address.postal": new RegExp(req.query.search.toString(), "i"),
+            // },
+          ],
+        },
+      };
+    }
 
     const stations = await ChargingStationModel.find(where)
       .select("_id station_name address")

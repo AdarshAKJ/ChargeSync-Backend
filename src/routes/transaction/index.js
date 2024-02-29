@@ -1,7 +1,9 @@
 import express from "express";
 import {
+  customerTransactionsHandler,
   listTransactions,
   singleTransaction,
+  singlecustomerTransactionsHandler,
   startTransactionHandler,
   stopTransactionHandler,
 } from "./post";
@@ -15,10 +17,24 @@ transactionRouter.post(
   onlyAdminAndClientWithRoles(["ADMIN", "ACCOUNT"]),
   listTransactions
 );
+
 transactionRouter.post(
   "/single-transaction/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "ACCOUNT"]),
   singleTransaction
+);
+
+// single customer all transactions
+transactionRouter.post(
+  "/customer-transactions",
+  authenticateCustomer,
+  customerTransactionsHandler
+);
+//  singleTransaction by customerId
+transactionRouter.post(
+  "/single-customer-transactions/:id",
+  authenticateCustomer,
+  singlecustomerTransactionsHandler
 );
 
 // start transaction

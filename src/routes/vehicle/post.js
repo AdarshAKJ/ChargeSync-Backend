@@ -99,18 +99,25 @@ export const updateVehicleHandler = async (req, res) => {
         `The Vehicle you are trying to Update is already registered for that user.`
       );
 
-    let vehicleData = await VehicleModel.findOneAndUpdate({
-      ...req.body,
-      created_by: req.session._id,
-      updated_by: req.session._id,
-      created_at: getCurrentUnix(),
-      updated_at: getCurrentUnix(),
-    });
+    let vehicleData = await VehicleModel.findOneAndUpdate(
+      { _id: req.params.id },
+      {
+        $set: {
+          ...req.body,
+          created_by: req.session._id,
+          updated_by: req.session._id,
+          created_at: getCurrentUnix(),
+          updated_at: getCurrentUnix(),
+        },
+      },
+      { new: true } // This option returns the modified document
+    );
 
-    if (!vehicleData)
+    if (!vehicleData) {
       throw new CustomError(
         `We are encountering some errors from our side. Please try again later.`
       );
+    }
 
     return res
       .status(StatusCodes.OK)
@@ -154,12 +161,14 @@ export const listVehicleHandler = async (req, res) => {
       clientId: req.body.clientId,
       customerId: req.body.customerId,
     };
+
     if (req.query?.search) {
       where = {
         ...where,
         name: new RegExp(req.query?.search.toString(), "i"),
       };
     }
+
     if (req.query?.vehicleType) {
       where = {
         ...where,

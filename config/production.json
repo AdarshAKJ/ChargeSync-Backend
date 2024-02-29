@@ -43,5 +43,6 @@
   "STRIPE_SECRET": "sk_test_51N9lXrSCbuNGTpa7epzg8QZvkxbyQzqCHoyRutXB5a1ceHgi8Nx36cl1KHQOzvpsTuaHUvWL3dm5uweJJKEUSgD300Gidx4N6V",
   "MEMBER_LOGIN": "http://localhost:3000/",
   "API_KEY": "dev-media360XjwUYH3MXLZjJL7fczHT0E6RdIJjMZHB1zMfXsiavShKgDvAvPuj",
-  "ENCRYPT_SECRET": "charger_prodcQLApcz6qKI7Nw0YdsxQA8K5MKtreRdZ1LDrdIYUgV6qCIUDqk2juYdSCwk94okbxSASO0guKFhuhTrWje25UuVYxJfzowflsE25ChuWMPUVWQgUbzEF"
+  "ENCRYPT_SECRET": "1e1a2e51d9334cf857c6607f259d3db19dbd6328f0dafffd48ddcd8fe9358e3b",
+  "IV": "38605c68ac582d970971f97dc4c9c86b"
 }

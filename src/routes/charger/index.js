@@ -17,9 +17,6 @@ chargerRouter.post(
   getSerialNumberHandler
 );
 
-// update
-// delete
-// list filter by status by station and pagination
 chargerRouter.post(
   "/list",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
