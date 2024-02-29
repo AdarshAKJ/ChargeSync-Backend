@@ -1,13 +1,14 @@
 import express from "express";
 import {
+  customerTransactionsHandler,
   listTransactions,
   singleTransaction,
+  singlecustomerTransactionsHandler,
   startTransactionHandler,
   stopTransactionHandler,
 } from "./post";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 import { authenticateCustomer } from "../../middleware/authenticateCustomer";
-// import { authenticateCustomer } from "../../middleware/authenticateCustomer";
 
 const transactionRouter = express.Router();
 
@@ -22,10 +23,18 @@ transactionRouter.post(
   onlyAdminAndClientWithRoles(["ADMIN", "ACCOUNT"]),
   singleTransaction
 );
+
+// single customer all transactions
 transactionRouter.post(
-  "/customer-transactions/:id",
-  authenticateCustomer
-  // customerTransactionsHandler
+  "/customer-transactions",
+  authenticateCustomer,
+  customerTransactionsHandler
+);
+//  singleTransaction by customerId
+transactionRouter.post(
+  "/single-customer-transactions/:id",
+  authenticateCustomer,
+  singlecustomerTransactionsHandler
 );
 
 // start transaction

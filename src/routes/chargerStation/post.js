@@ -18,7 +18,9 @@ import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 export const createChargerStationHandler = async (req, res) => {
   try {
     await createChargerStationValidation.validateAsync(req.body);
+
     checkClientIdAccess(req.session, req.body.clientId);
+
     let chargerStationData = await ChargingStationModel.create({
       ...req.body,
       created_by: req.session._id,
@@ -198,6 +200,13 @@ export const listChargerStationHandler = async (req, res) => {
       .lean()
       .exec();
     // search name add
+
+    if (req.query?.search) {
+      where = {
+        ...where,
+        station_name: new RegExp(req.query?.search.toString(), "i"),
+      };
+    }
 
     if (!stations) throw new CustomError(`No Station found.`);
     let total_count = await ChargingStationModel.count(where);

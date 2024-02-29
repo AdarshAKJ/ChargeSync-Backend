@@ -1,9 +1,13 @@
-import Joi from "joi";
 import { ValidationError } from "joi";
 import { CustomError } from "../../helpers/custome.error";
 import { StatusCodes } from "http-status-codes";
 import { responseGenerators } from "../../lib/utils";
-import { createChargerValidation, getChargerCountValidation, getSerialNumberValidation, singleChargerValidation } from "../../helpers/validations/charger.validation";
+import {
+  createChargerValidation,
+  getChargerCountValidation,
+  getSerialNumberValidation,
+  singleChargerValidation,
+} from "../../helpers/validations/charger.validation";
 
 import {
   generateUniqueKey,
@@ -209,10 +213,14 @@ export const getChargerCountHandler = async (req, res) => {
     const client = await ClientModel.findOne({ _id: clientId });
 
     if (!client) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: "Client not found" });
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ error: "Client not found" });
     }
 
-    return res.status(StatusCodes.OK).json({ chargerCount: client.serialNumberCount });
+    return res
+      .status(StatusCodes.OK)
+      .json({ chargerCount: client.serialNumberCount });
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
@@ -237,14 +245,16 @@ export const getChargerCountHandler = async (req, res) => {
 
 export const singleChargerHandler = async (req, res) => {
   try {
-    await singleChargerValidation.validateAsync({...req.body, ...req.params});
+    await singleChargerValidation.validateAsync({ ...req.body, ...req.params });
 
     const { id } = req.params;
 
     const charger = await ChargerModel.findOne({ _id: id });
 
     if (!charger) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: "Charger not found" });
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ error: "Charger not found" });
     }
 
     return res.status(StatusCodes.OK).json({ charger });
