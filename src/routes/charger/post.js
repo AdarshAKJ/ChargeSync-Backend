@@ -2,7 +2,13 @@ import { ValidationError } from "joi";
 import { CustomError } from "../../helpers/custome.error";
 import { StatusCodes } from "http-status-codes";
 import { responseGenerators } from "../../lib/utils";
-import { createChargerValidation, getChargerCountValidation, getSerialNumberValidation, listChargerValidation, singleChargerValidation } from "../../helpers/validations/charger.validation";
+import {
+  createChargerValidation,
+  getChargerCountValidation,
+  getSerialNumberValidation,
+  listChargerValidation,
+  singleChargerValidation,
+} from "../../helpers/validations/charger.validation";
 
 import {
   generateUniqueKey,
@@ -120,14 +126,13 @@ export const createChargerHandler = async (req, res) => {
 
 export const listChargerHandler = async (req, res) => {
   try {
-    
     await listChargerValidation.validateAsync(req.body);
 
     let where = {
       isDeleted: false,
       clientId: req.session.clientId || req.body.clientId,
     };
-    
+
     const { page = 1, limit = 10 } = req.query;
     const pagination = setPagination(page, limit);
 
@@ -136,16 +141,19 @@ export const listChargerHandler = async (req, res) => {
       .limit(pagination.limit)
       .exec();
 
-    return res
-      .status(StatusCodes.OK)
-      .send(
-        responseGenerators(
-          { chargers },
-          StatusCodes.OK,
-          "Chargers fetched successfully",
-          0
-        )
-      );
+    const total_count = await ChargerModel.count(where);
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          paginatedData: chargers,
+          totalCount: total_count,
+          itemsPerPage: pagination.limit,
+        },
+        StatusCodes.OK,
+        "Chargers fetched successfully",
+        0
+      )
+    );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
@@ -177,7 +185,8 @@ export const getSerialNumberHandler = async (req, res) => {
       _id: req.session.clientId || req.body.clientId,
     };
 
-    const client = await ClientModel.findOneAndUpdate(where,
+    const client = await ClientModel.findOneAndUpdate(
+      where,
       { $inc: { serialNumberCount: 1 } },
       { new: true }
     );
@@ -186,14 +195,9 @@ export const getSerialNumberHandler = async (req, res) => {
       return res.status(404).json({ error: "Client not found" });
     }
 
-    return res.status(StatusCodes.OK).send(
-      responseGenerators(
-        null,
-          StatusCodes.OK,
-          "SUCCESS",
-          0
-      )
-  );
+    return res
+      .status(StatusCodes.OK)
+      .send(responseGenerators(null, StatusCodes.OK, "SUCCESS", 0));
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
@@ -260,14 +264,14 @@ export const getChargerCountHandler = async (req, res) => {
 
 export const singleChargerHandler = async (req, res) => {
   try {
-    await singleChargerValidation.validateAsync({...req.body, ...req.params});
+    await singleChargerValidation.validateAsync({ ...req.body, ...req.params });
     checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
       isDeleted: false,
       clientId: req.session.clientId || req.body.clientId,
     };
-    
+
     const charger = await ChargerModel.findOne(where);
 
     if (!charger) {

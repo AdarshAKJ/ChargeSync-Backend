@@ -226,15 +226,15 @@ export const listChargerStationHandler = async (req, res) => {
             {
               station_name: new RegExp(req.query.search.toString(), "i"),
             },
-            // {
-            //   "address.area": new RegExp(req.query.search.toString(), "i"),
-            // },
-            // {
-            //   "address.city": new RegExp(req.query.search.toString(), "i"),
-            // },
-            // {
-            //   "address.postal": new RegExp(req.query.search.toString(), "i"),
-            // },
+            {
+              "address.area": new RegExp(req.query.search.toString(), "i"),
+            },
+            {
+              "address.city": new RegExp(req.query.search.toString(), "i"),
+            },
+            {
+              "address.postal": new RegExp(req.query.search.toString(), "i"),
+            },
           ],
         },
       };
@@ -299,19 +299,47 @@ export const singleChargerStationHandler = async (req, res) => {
     const { id: chargerStationId } = req.params;
     let clientId = req.session.clientId || req.query.clientId;
 
-    const ChargerStation = await ChargingStationModel.findOne({
+    let where = {
       _id: chargerStationId,
       clientId: clientId,
       isDeleted: false,
-    });
+    };
 
-    if (!ChargerStation) throw new CustomError(`No such Charger found.`);
+    const aggregationPipeline = [
+      {
+        $match: where,
+      },
+      {
+        $lookup: {
+          from: "chargers",
+          localField: "_id",
+          foreignField: "stationId",
+          as: "chargerData",
+          pipeline: [
+            {
+              $lookup: {
+                from: "charger-connectors",
+                localField: "_id",
+                foreignField: "chargerId",
+                as: "chargerConnectorData",
+              },
+            },
+          ],
+        },
+      },
+    ];
+
+    const ChargerStation = await ChargingStationModel.aggregate(
+      aggregationPipeline
+    );
+
+    if (!ChargerStation.length) throw new CustomError(`No such Charger found.`);
 
     return res
       .status(StatusCodes.OK)
       .send(
         responseGenerators(
-          { ChargerStationDetails: ChargerStation.toJSON() },
+          { ChargerStationDetails: ChargerStation[0] },
           StatusCodes.OK,
           "SUCCESS",
           0
