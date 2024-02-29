@@ -20,7 +20,6 @@ export const listWalletTransactions = async (req, res) => {
       throw new ValidationError(queryError.details.map(detail => detail.message).join(', '));
     }
 
-    // Validate request body against walletTransactionValidation schema
     await walletTransactionValidation.validateAsync(req.body);
 
     const clientId = req?.session?.clientId;

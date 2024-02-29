@@ -12,7 +12,7 @@ const chargingStationSchema = new mongoose.Schema({
     countryCode: { type: String, required: true },
     coordinates: {
       latitude: { type: String, required: true },
-      longitude: { type: String, required: true },
+      longitude: { type: String, required: true },    
     },
   },
   station_facilities: { type: [] },

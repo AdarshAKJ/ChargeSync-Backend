@@ -3,7 +3,7 @@ import { ValidationError } from "joi";
 import { CustomError } from "../../helpers/custome.error";
 import { StatusCodes } from "http-status-codes";
 import { responseGenerators } from "../../lib/utils";
-import { createChargerValidation, getChargerCountValidation, getSerialNumberValidation, singleChargerValidation } from "../../helpers/validations/charger.validation";
+import { createChargerValidation, getChargerCountValidation, getSerialNumberValidation, listChargerValidation, singleChargerValidation } from "../../helpers/validations/charger.validation";
 
 import {
   generateUniqueKey,
@@ -121,10 +121,18 @@ export const createChargerHandler = async (req, res) => {
 
 export const listChargerHandler = async (req, res) => {
   try {
+    
+    await listChargerValidation.validateAsync(req.body);
+
+    let where = {
+      isDeleted: false,
+      clientId: req.session.clientId || req.body.clientId,
+    };
+    
     const { page = 1, limit = 10 } = req.query;
     const pagination = setPagination(page, limit);
 
-    const chargers = await ChargerModel.find({})
+    const chargers = await ChargerModel.find(where)
       .skip(pagination.skip)
       .limit(pagination.limit)
       .exec();
@@ -165,8 +173,12 @@ export const getSerialNumberHandler = async (req, res) => {
   try {
     await getSerialNumberValidation.validateAsync(req.body);
 
-    const client = await ClientModel.findOneAndUpdate(
-      { _id: req?.body?.clientId },
+    let where = {
+      isDeleted: false,
+      _id: req.session.clientId || req.body.clientId,
+    };
+
+    const client = await ClientModel.findOneAndUpdate(where,
       { $inc: { serialNumberCount: 1 } },
       { new: true }
     );
@@ -175,9 +187,14 @@ export const getSerialNumberHandler = async (req, res) => {
       return res.status(404).json({ error: "Client not found" });
     }
 
-    return res
-      .status(200)
-      .json({ serialNumberCount: client.serialNumberCount });
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        null,
+          StatusCodes.OK,
+          "SUCCESS",
+          0
+      )
+  );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
@@ -204,9 +221,12 @@ export const getChargerCountHandler = async (req, res) => {
   try {
     await getChargerCountValidation.validateAsync(req.body);
 
-    const { clientId } = req.body;
+    let where = {
+      isDeleted: false,
+      _id: req.session.clientId || req.body.clientId,
+    };
 
-    const client = await ClientModel.findOne({ _id: clientId });
+    const client = await ClientModel.findOne(where);
 
     if (!client) {
       return res.status(StatusCodes.NOT_FOUND).json({ error: "Client not found" });
@@ -238,10 +258,14 @@ export const getChargerCountHandler = async (req, res) => {
 export const singleChargerHandler = async (req, res) => {
   try {
     await singleChargerValidation.validateAsync({...req.body, ...req.params});
+    checkClientIdAccess(req.session, req.body.clientId);
 
-    const { id } = req.params;
-
-    const charger = await ChargerModel.findOne({ _id: id });
+    let where = {
+      isDeleted: false,
+      clientId: req.session.clientId || req.body.clientId,
+    };
+    
+    const charger = await ChargerModel.findOne(where);
 
     if (!charger) {
       return res.status(StatusCodes.NOT_FOUND).json({ error: "Charger not found" });
