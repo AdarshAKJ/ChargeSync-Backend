@@ -1,11 +1,11 @@
 import { StatusCodes } from "http-status-codes";
-import Joi from "joi";
 import WalletTransactionModel from "../../models/walletTransaction.js";
 import { responseGenerators } from "../../lib/utils";
 import { CustomError } from "../../helpers/custome.error";
 import walletTransactionValidation from "../../helpers/validations/wallet.validation.js";
 import { ValidationError } from "joi";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess.js";
+
 // list wallet transaction for customer
 export const listWalletCustomerTransactions = async (req, res) => {
   try {
