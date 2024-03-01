@@ -3,78 +3,7 @@ import { ValidationError } from 'webpack';
 import { CustomError } from '../../helpers/custome.error';
 import { StatusCodes } from 'http-status-codes';
 import { responseGenerators } from '../../lib/utils';
-import { messageValidation } from '../../helpers/validations/messages.validation';
-
-/*export const getMessageHandler = async (req, res) => {
-  try {
-    await createClientUserValidation.validateAsync(req.query);
-    const { clientId, page = 1, limit = 10 } = req.query;
-    const options = {
-      page: parseInt(page, 10),
-      limit: parseInt(limit, 10),
-      sort: { created_at: -1 } 
-    };
-    const messages = await MessageModel.paginate({ clientId }, options);
-    res.json(messages);
-  }
-   catch (error) {
-    if (error instanceof ValidationError || error instanceof CustomError) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(
-          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-        );
-    }
-    console.log(JSON.stringify(error));
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        responseGenerators(
-          {},
-          StatusCodes.INTERNAL_SERVER_ERROR,
-          "Internal Server Error",
-          1
-        )
-      );
-  }
-};
-
-export const readMessageHandler = async (req, res) => {
-  try {
-    await createClientUserValidation.validateAsync(req.params);
-    const { messageId } = req.params._id;
-    const message = await MessageModel.findByIdAndUpdate(
-      messageId,
-      { isRead: true },
-      { new: true }
-    );
-
-    if (!message) {
-      return res.status(404).json({ error: 'Message not found' });
-    }
-    res.json(message);
-
-  } catch (error) {
-    if (error instanceof ValidationError || error instanceof CustomError) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(
-          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-        );
-    }
-    console.log(JSON.stringify(error));
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        responseGenerators(
-          {},
-          StatusCodes.INTERNAL_SERVER_ERROR,
-          "Internal Server Error",
-          1
-        )
-      );
-  }
-};*/
+import { cidmessageValidation, messageValidation } from '../../helpers/validations/messages.validation';
 
 
 export const readUpdateMessageHandler = async (req, res) => {
@@ -120,6 +49,7 @@ export const readUpdateMessageHandler = async (req, res) => {
 
 export const listUnreadMessagesHandler = async (req, res) => {
   try {
+    await cidmessageValidation.validateAsync(req.body);
     const { clientId, page = 1, limit = 10 } = req.query;
     const options = {
       page: parseInt(page, 10),
