@@ -3,7 +3,7 @@ import { ValidationError } from 'webpack';
 import { CustomError } from '../../helpers/custome.error';
 import { StatusCodes } from 'http-status-codes';
 import { responseGenerators } from '../../lib/utils';
-import Joi from 'joi';
+import { messageValidation } from '../../helpers/validations/messages.validation';
 
 /*export const getMessageHandler = async (req, res) => {
   try {
@@ -79,21 +79,10 @@ export const readMessageHandler = async (req, res) => {
 
 export const readUpdateMessageHandler = async (req, res) => {
   try {
-    const schema = Joi.object({
-      clientId: Joi.string().required(),
-      messageIds: Joi.array().items(Joi.string()).min(1).max(100).required()
-    });
-
-    const { error, value } = schema.validate({
-      clientId: req.session.clientId,
-      messageIds: req.body.messageIds
-    });
-
-    if (error) {
-      throw new CustomError(error.message);
-    }
-
-    const { clientId, messageIds } = value;
+    await messageValidation.validateAsync(req.body);
+      
+    const clientId = req?.session?.clientId;
+    const messageIds = req?.body?.messageIds;
 
     const messages = await MessageModel.find({ _id: { $in: messageIds }, clientId });
 
