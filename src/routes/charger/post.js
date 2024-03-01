@@ -53,7 +53,8 @@ export const createChargerHandler = async (req, res) => {
       serialNumber: req.body.serialNumber,
       name: req.body.name,
       connectorCount: req.body.connectorCount,
-      maxCapacity: req.body.maxCapacity,
+      maxCapacity: +req.body.maxCapacity,
+      powerType: req.body.powerType,
       chargerKey: generateUniqueKey(),
       created_by: req.session._id,
       updated_by: req.session._id,
@@ -70,7 +71,8 @@ export const createChargerHandler = async (req, res) => {
         serialNumber: req.body.serialNumber,
         chargerId: chargerData._id,
         connectorId: iterator.connectorId,
-        pricePerUnit: iterator.pricePerUnit,
+        pricePerUnit: +iterator.pricePerUnit,
+        connectorType: iterator.connectorType,
         created_by: req.session._id,
         updated_by: req.session._id,
         created_at: getCurrentUnix(),
@@ -117,13 +119,7 @@ export const createChargerHandler = async (req, res) => {
   }
 };
 
-// try catch
-// check validation  only client id with joi
-// check client access
-// get charger count from client model
-// increment it by one
-// and send back the response with  and charger count
-
+// list charger
 export const listChargerHandler = async (req, res) => {
   try {
     await listChargerValidation.validateAsync(req.body);
@@ -139,6 +135,7 @@ export const listChargerHandler = async (req, res) => {
     const chargers = await ChargerModel.find(where)
       .skip(pagination.skip)
       .limit(pagination.limit)
+      .sort(pagination.sort)
       .exec();
 
     const total_count = await ChargerModel.count(where);
@@ -176,6 +173,7 @@ export const listChargerHandler = async (req, res) => {
   }
 };
 
+// get serial number
 export const getSerialNumberHandler = async (req, res) => {
   try {
     await getSerialNumberValidation.validateAsync(req.body);
@@ -220,6 +218,7 @@ export const getSerialNumberHandler = async (req, res) => {
   }
 };
 
+// get charger count
 export const getChargerCountHandler = async (req, res) => {
   try {
     await getChargerCountValidation.validateAsync(req.body);
@@ -262,6 +261,7 @@ export const getChargerCountHandler = async (req, res) => {
   }
 };
 
+/// get single charger.
 export const singleChargerHandler = async (req, res) => {
   try {
     await singleChargerValidation.validateAsync({ ...req.body, ...req.params });

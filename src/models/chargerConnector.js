@@ -12,6 +12,7 @@ const ChargerConnectorSchema = new mongoose.Schema({
   stationId: { type: String, required: true },
   chargerId: { type: String, required: true },
   connectorId: { type: String, required: true },
+  connectorType: { type: String, required: true },
   pricePerUnit: { type: Number, required: true }, // kwH
   status: {
     type: String,

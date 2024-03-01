@@ -324,6 +324,9 @@ export const singleChargerStationHandler = async (req, res) => {
                 as: "chargerConnectorData",
               },
             },
+            {
+              $sort: { created_at: -1 },
+            },
           ],
         },
       },

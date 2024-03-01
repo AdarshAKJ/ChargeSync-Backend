@@ -3,25 +3,23 @@ import { getCurrentUnix, setPagination } from "../../commons/common-functions";
 import { CustomError } from "../../helpers/custome.error";
 import {
   createVehicleValidation,
-  listVehicleValidation,
   singleVehicleValidation,
   updateVehicleValidation,
 } from "../../helpers/validations/vehicle.validation";
 import { responseGenerators } from "../../lib/utils";
-import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 import VehicleModel from "../../models/vehicle";
 import { ValidationError } from "webpack";
 
+// add  vehicle
 export const createVehicleHandler = async (req, res) => {
   try {
     await createVehicleValidation.validateAsync(req.body);
-    checkClientIdAccess(req.session, req.body.clientId);
 
     const isAvailable = await VehicleModel.findOne({
       $and: [
         { isDeleted: false },
-        { clientId: req.body.clientId },
-        { customerId: req.body.customerId },
+        { clientId: req.session.clientId },
+        { customerId: req.session._id },
         { vehicleNumber: req.body.vehicleNumber },
       ],
     });
@@ -76,20 +74,20 @@ export const createVehicleHandler = async (req, res) => {
   }
 };
 
+// update vehicle
 export const updateVehicleHandler = async (req, res) => {
   try {
     await updateVehicleValidation.validateAsync({
       ...req.body,
       ...req.params,
     });
-    checkClientIdAccess(req.session, req.body.clientId);
 
     const isAvailable = await VehicleModel.findOne({
       $and: [
         { _id: { $ne: req.params.id } },
         { isDeleted: false },
-        { clientId: req.body.clientId },
-        { customerId: req.body.customerId },
+        { clientId: req.session.clientId },
+        { customerId: req.session._id },
         { vehicleNumber: req.body.vehicleNumber },
       ],
     });
@@ -151,38 +149,32 @@ export const updateVehicleHandler = async (req, res) => {
   }
 };
 
+// list vehicles
 export const listVehicleHandler = async (req, res) => {
   try {
-    await listVehicleValidation.validateAsync(req.body);
-    checkClientIdAccess(req.session, req.body.clientId);
-
     let where = {
       isDeleted: false,
-      clientId: req.body.clientId,
-      customerId: req.body.customerId,
+      clientId: req.session.clientId,
+      customerId: req.session._id,
     };
 
     if (req.query?.search) {
       where = {
         ...where,
-        name: new RegExp(req.query?.search.toString(), "i"),
-      };
-    }
-
-    if (req.query?.vehicleType) {
-      where = {
-        ...where,
-        vehicleType: new RegExp(req.query?.vehicleType.toString(), "i"),
-      };
-    }
-    if (req.query?.vehicleNumber) {
-      where = {
-        ...where,
-        vehicleNumber: new RegExp(req.query?.vehicleNumber.toString(), "i"),
+        ...{
+          $or: [
+            { name: new RegExp(req.query?.search.toString(), "i") },
+            {
+              vehicleNumber: new RegExp(req.query?.search.toString(), "i"),
+            },
+            { vehicleType: new RegExp(req.query?.search.toString(), "i") },
+          ],
+        },
       };
     }
 
     const pagination = setPagination(req.query);
+
     const vehicles = await VehicleModel.find(where)
       .sort(pagination.sort)
       .skip(pagination.offset)
@@ -226,19 +218,18 @@ export const listVehicleHandler = async (req, res) => {
   }
 };
 
+// get single vehicle
 export const singleVehicleHandler = async (req, res) => {
   try {
     await singleVehicleValidation.validateAsync({
-      ...req.body,
       ...req.params,
     });
-    checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
       _id: req.params.id,
       isDeleted: false,
-      clientId: req.body.clientId,
-      customerId: req.body.customerId,
+      clientId: req.session.clientId,
+      customerId: req.session._id,
     };
     const vehicle = await VehicleModel.findOne(where).lean().exec();
 
