@@ -20,6 +20,7 @@ import customerRouter from "./routes/customer";
 import vehicleRouter from "./routes/vehicle";
 import walletRouter from "./routes/wallet";
 import xss from "xss-clean";
+import messageRouter from "./routes/messages";
 
 const app = express();
 const server = new http.Server(app);
@@ -95,6 +96,7 @@ app.use("/api/maintenance", maintenanceRouter);
 app.use("/api/customer", customerRouter);
 app.use("/api/vehicle", vehicleRouter);
 app.use("/api/wallet-transactions", walletRouter);
+app.use("/api/messageRouter", messageRouter);
 
 app.use(express.json());
 
