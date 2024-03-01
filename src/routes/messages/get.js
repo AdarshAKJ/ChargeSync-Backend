@@ -1,12 +1,9 @@
-import express from 'express';
 import MessageModel from '../../models/messages';
 import { ValidationError } from 'webpack';
 import { CustomError } from '../../helpers/custome.error';
 import { StatusCodes } from 'http-status-codes';
 import { responseGenerators } from '../../lib/utils';
 import Joi from 'joi';
-
-const router = express.Router();
 
 /*export const getMessageHandler = async (req, res) => {
   try {
@@ -191,5 +188,3 @@ export const listUnreadMessagesHandler = async (req, res) => {
   }
 };
   
-
-export default router;

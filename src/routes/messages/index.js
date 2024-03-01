@@ -7,7 +7,7 @@ const messageRouter = express.Router();
 
 
 
-messageRouter.get("/readUpdateMessage", onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]), readUpdateMessageHandler);
+messageRouter.post("/readUpdateMessage", onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),readUpdateMessageHandler);
 //messageRouter.put("/readmessage/:id",readMessageHandler);
 messageRouter.get("/listMessage",onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),listUnreadMessagesHandler);
 
