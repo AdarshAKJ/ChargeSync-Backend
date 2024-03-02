@@ -12,6 +12,7 @@ const CustomerSchema = new mongoose.Schema({
   fname: { type: String, trim: true },
   lname: { type: String, trim: true },
   email: { type: String, trim: true },
+  isBlocked: { type: Boolean, default: false },
   password: { type: String },
   phoneNumber: { type: String },
   address: { type: Object, trim: true },

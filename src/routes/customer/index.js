@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  blockCustomerHandler,
   createCustomerHandler,
   getChargerSelectHandler,
   getCustomerSelectHandler,
@@ -7,6 +8,8 @@ import {
   listCustomerHandler,
   signupOrLoginOTPVerificationHandler,
   singleCustomerHandler,
+  toggleBlockUnblockHandler,
+  unblockCustomerHandler,
   updateCustomerHandler,
 } from "./post";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
@@ -32,14 +35,12 @@ customerRouter.post(
   listCustomerHandler
 );
 
-//single customer details
 customerRouter.post(
   "/single-customer/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   singleCustomerHandler
 );
 
-//
 // get-customer-select
 customerRouter.post(
   "/get-customer-select",
@@ -56,9 +57,15 @@ customerRouter.post(
 
 // get-station-select
 customerRouter.post(
-  "/get-station-selectid",
+  "/get-station-select",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   getStationSelectHandler
+);
+
+customerRouter.post(
+  "/toggle-block-unblock/:id",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  toggleBlockUnblockHandler
 );
 
 export default customerRouter;
