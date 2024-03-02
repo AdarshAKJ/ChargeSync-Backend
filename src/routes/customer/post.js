@@ -575,7 +575,7 @@ export const toggleBlockUnblockHandler = async (req, res) => {
             throw new CustomError('Please provide a valid ID');
         
 
-        if (status !== 'blocked' && status !== 'unblocked') 
+        if (status !== 'true' && status !== 'false') 
             throw new CustomError('Invalid status provided');
         
 
@@ -591,7 +591,6 @@ export const toggleBlockUnblockHandler = async (req, res) => {
 
         res.status(StatusCodes.OK).json({ 
             message: `Customer ${updatedCustomer.isBlocked ? 'blocked' : 'unblocked'} successfully`, 
-            customer: updatedCustomer 
         });
     } catch (error) {
       if (error instanceof ValidationError || error instanceof CustomError) {
