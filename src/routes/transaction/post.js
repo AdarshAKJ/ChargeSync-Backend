@@ -92,6 +92,21 @@ export const listTransactions = async (req, res) => {
       },
       {
         $lookup: {
+          from: "charging-stations",
+          localField: "stationId",
+          foreignField: "_id",
+          as: "stationData",
+          pipeline: [
+            {
+              $project: {
+                station_name: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
           from: "chargerConnectors",
           localField: "connectorId",
           foreignField: "_id",
@@ -107,19 +122,31 @@ export const listTransactions = async (req, res) => {
       },
       {
         $lookup: {
-          from: "chargers",
-          localField: "serialNumber",
-          foreignField: "serialNumber",
-          as: "chargersData",
+          from: "customers",
+          localField: "customerId",
+          foreignField: "_id",
+          as: "customerData",
           pipeline: [
             {
               $project: {
-                stationId: 1,
+                phoneNumber: 1,
+                email: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: "vehicles",
+          localField: "vehicleId",
+          foreignField: "_id",
+          as: "vehicleData",
+          pipeline: [
+            {
+              $project: {
                 name: 1,
-                status: 1,
-                maxCapacity: 1,
-                connectorCount: 1,
-                chargerKey: 1,
+                vehicleNumber: 1,
               },
             },
           ],
@@ -500,6 +527,7 @@ export const startTransactionHandler = async (req, res) => {
         requestedWatts: requestedWatts,
         requiredTime: null,
         pricePerUnit: connectorData.pricePerUnit,
+        stationId: connectorData.stationId,
       },
       {
         "private-api-key": process.env.OCPP_API_KEY,

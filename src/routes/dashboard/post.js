@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import { responseGenerators } from "../../lib/utils";
-import { ValidationError } from "webpack";
+import { ValidationError } from "joi";
 import { CustomError } from "../../helpers/custome.error";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 import ChargerModel from "../../models/charger";

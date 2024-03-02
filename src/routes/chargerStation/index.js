@@ -7,6 +7,7 @@ import {
   getChargerStationCountHandler,
   listChargerStationHandler,
   singleChargerStationHandler,
+  getStationSelectHandler,
 } from "./post";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 
@@ -54,4 +55,10 @@ chargerStationRouter.post(
   getChargerStationCountHandler
 ); // DONE
 
+// get-station-select
+chargerStationRouter.post(
+  "/get-station-select",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  getStationSelectHandler
+);
 export default chargerStationRouter;

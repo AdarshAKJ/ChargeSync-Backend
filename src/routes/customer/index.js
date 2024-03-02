@@ -1,9 +1,7 @@
 import express from "express";
 import {
   createCustomerHandler,
-  getChargerSelectHandler,
   getCustomerSelectHandler,
-  getStationSelectHandler,
   listCustomerHandler,
   signupOrLoginOTPVerificationHandler,
   singleCustomerHandler,
@@ -44,20 +42,6 @@ customerRouter.post(
   "/get-customer-select",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   getCustomerSelectHandler
-);
-
-// get-charger-select
-customerRouter.post(
-  "/get-charger-select",
-  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
-  getChargerSelectHandler
-);
-
-// get-station-select
-customerRouter.post(
-  "/get-station-select",
-  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
-  getStationSelectHandler
 );
 
 customerRouter.post(

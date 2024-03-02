@@ -14,6 +14,7 @@ import ChargingStationModel from "../../models/chargingStations";
 import { getCurrentUnix, setPagination } from "../../commons/common-functions";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 import ClientModel from "../../models/client";
+import { getStationSelectValidation } from "../../helpers/validations/customer.validation";
 
 // DONE
 export const createChargerStationHandler = async (req, res) => {
@@ -398,6 +399,69 @@ export const getChargerStationCountHandler = async (req, res) => {
           0
         )
       );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+// get-station-select
+export const getStationSelectHandler = async (req, res) => {
+  try {
+    await getStationSelectValidation.validateAsync(req.body);
+
+    checkClientIdAccess(req.session, req.body.clientId);
+
+    let where = {
+      isDeleted: false,
+      clientId: req.session.clientId || req.query.clientId,
+    };
+
+    if (req.query?.search) {
+      where = {
+        ...where,
+        station_name: new RegExp(req.query?.search.toString(), "i"),
+      };
+    }
+
+    const pagination = setPagination(req.query);
+
+    const station = await ChargingStationModel.find(where)
+      .select("_id station_name")
+      .sort(pagination.sort)
+      .skip(pagination.offset)
+      .limit(pagination.limit)
+      .lean()
+      .exec();
+
+    if (!station) throw new CustomError("Station not found");
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          selectedStation: station,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res

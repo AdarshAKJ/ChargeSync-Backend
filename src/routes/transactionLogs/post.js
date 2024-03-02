@@ -4,7 +4,7 @@ import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 import TransactionLogsModel from "../../models/transactionLogs";
 import { CustomError } from "../../helpers/custome.error";
 import { responseGenerators } from "../../lib/utils";
-import { ValidationError } from "webpack";
+import { ValidationError } from "joi";
 
 export const singleTransactionLog = async (req, res) => {
   try {

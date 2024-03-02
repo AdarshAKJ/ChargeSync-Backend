@@ -1,4 +1,4 @@
-import { ValidationError } from "webpack";
+import { ValidationError } from "joi";
 import { CustomError } from "../../helpers/custome.error";
 import { responseGenerators } from "../../lib/utils";
 
