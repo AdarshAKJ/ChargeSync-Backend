@@ -32,8 +32,8 @@ export const createChargerStationHandler = async (req, res) => {
 
     if (
       !chargerStationData.own_by ||
-      !chargerStationData.contect_no ||
-      !chargerStationData.contect_email
+      !chargerStationData.contact_no ||
+      !chargerStationData.contact_email
     ) {
       let clientData = await ClientModel.findOne({
         clientId: req.body.ClientModel,
@@ -44,12 +44,12 @@ export const createChargerStationHandler = async (req, res) => {
         chargerStationData.own_by = clientData.contactPerson;
       }
 
-      if (!chargerStationData.contect_no) {
-        chargerStationData.contect_no = clientData.contactPersonPhoneNumber;
+      if (!chargerStationData.contact_no) {
+        chargerStationData.contact_no = clientData.contactPersonPhoneNumber;
       }
 
-      if (!chargerStationData.contect_email) {
-        chargerStationData.contect_email = clientData.contactPersonEmailAddress;
+      if (!chargerStationData.contact_email) {
+        chargerStationData.contact_email = clientData.contactPersonEmailAddress;
       }
       await chargerStationData.save();
     }
