@@ -1,5 +1,4 @@
 import { StatusCodes } from "http-status-codes";
-import Joi from "joi";
 import WalletTransactionModel from "../../models/walletTransaction.js";
 import { responseGenerators } from "../../lib/utils";
 import { CustomError } from "../../helpers/custome.error";

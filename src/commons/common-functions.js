@@ -28,6 +28,12 @@ export const add10MinToUnxi = (currentUnix) => {
   return dayjs.unix(currentUnix).add(10, "minutes").unix().toString();
 };
 
+export const getMonthStartData = () => {
+  let tData = dayjs();
+  const startOfMonth = tData.startOf("month");
+  return startOfMonth.unix().toString();
+};
+
 export const add7DayToUnxi = (currentUnix) => {
   return dayjs.unix(currentUnix).add(7, "days").unix().toString();
 };
@@ -145,7 +151,7 @@ export const setPagination = (options) => {
     sort.created_at = -1;
   }
 
-  const limit = +options.limit ? +options.limit : 10;
+  const limit = +options?.limit ? +options?.limit : 10;
   const offset =
     ((+options.offset ? +options.offset : 1) - 1) * (+limit ? +limit : 10);
   return { sort, offset, limit };

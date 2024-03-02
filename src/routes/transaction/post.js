@@ -41,7 +41,6 @@ export const listTransactions = async (req, res) => {
     checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
-      // isDeleted: false,
       clientId: req.session.clientId || req.body.clientId,
     };
 
@@ -50,13 +49,6 @@ export const listTransactions = async (req, res) => {
       where = {
         ...where,
         status: new RegExp(req.query?.status.toString(), "i"),
-      };
-    }
-
-    if (req.query?.connectorId) {
-      where = {
-        ...where,
-        connectorId: new RegExp(req.query.connectorId.toString(), "i"),
       };
     }
 

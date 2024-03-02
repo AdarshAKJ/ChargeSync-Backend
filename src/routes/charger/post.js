@@ -4,10 +4,13 @@ import { StatusCodes } from "http-status-codes";
 import { responseGenerators } from "../../lib/utils";
 import {
   createChargerValidation,
+  deleteChargerValidation,
   getChargerCountValidation,
   getSerialNumberValidation,
   listChargerValidation,
   singleChargerValidation,
+  updateChargerValidation,
+  updateConnectorPricePerUnitValidation,
 } from "../../helpers/validations/charger.validation";
 
 import {
@@ -281,6 +284,199 @@ export const singleChargerHandler = async (req, res) => {
     }
 
     return res.status(StatusCodes.OK).json({ charger });
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+export const deleteChargerHandler = async (req, res) => {
+  try {
+    await deleteChargerValidation.validateAsync({
+      ...req.body,
+      ...req.params,
+    });
+
+    checkClientIdAccess(req.session, req.body.clientId);
+
+    const chargerId = req.params.id;
+
+    const Charger = await ChargerModel.findOne({
+      _id: chargerId,
+      clientId: req.body.clientId,
+      isDeleted: false,
+    });
+
+    if (!Charger)
+      throw new CustomError(`No such charger is registered with us.`);
+
+    if (Charger.status === "ONLINE")
+      throw new CustomError(
+        `Charger cannot be deleted while it is still connected. Please disconnect the charger before attempting to delete.`
+      );
+
+    Charger.isDeleted = true;
+
+    await Charger.save();
+
+    return res
+      .status(StatusCodes.OK)
+      .send(responseGenerators({}, StatusCodes.OK, "SUCCESS", 0));
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+// update charger
+export const updateChargerHandler = async (req, res) => {
+  try {
+    await updateChargerValidation.validateAsync({
+      ...req.body,
+      ...req.params,
+    });
+    const chargerId = req.params.id;
+
+    checkClientIdAccess(req.session, req.body.clientId);
+
+    const charger = await ChargerModel.findOne({
+      _id: chargerId,
+      clientId: req.body.clientId,
+      isDeleted: false,
+    });
+
+    if (!charger)
+      throw new CustomError(
+        `The charger you are trying to update is deleted or does not exist.`
+      );
+
+    if (charger.status === "ONLINE")
+      throw new CustomError(
+        `Charger cannot be update while it is still connected. Please disconnect the charger before attempting to update.`
+      );
+
+    let keys = [];
+    for (let key in req.body) {
+      keys.push(key);
+    }
+
+    for (let i = 0; i < keys.length; ++i) {
+      charger[keys[i]] = req.body[keys[i]];
+    }
+
+    charger.updated_at = getCurrentUnix();
+    charger.updated_by = req.session._id;
+
+    await charger.save();
+
+    return res
+      .status(StatusCodes.OK)
+      .send(
+        responseGenerators(
+          { ...charger.toJSON() },
+          StatusCodes.OK,
+          "SUCCESS",
+          0
+        )
+      );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+export const updateConnectorPricePerUnitHandler = async (req, res) => {
+  try {
+    await updateConnectorPricePerUnitValidation.validateAsync(req.body);
+
+    let charger = await ChargerModel.findOne({
+      _id: req.body.chargerId,
+      clientId: req.session.clientId,
+      isDeleted: false,
+    });
+
+    if (!charger)
+      throw new CustomError(
+        `The charger you are trying to update is deleted or does not exist.`
+      );
+
+    if (charger.status === "ONLINE")
+      throw new CustomError(
+        `Charger cannot be update while it is still connected. Please disconnect the charger before attempting to update.`
+      );
+
+    for (const iterator of req.body.connectorDetails) {
+      let connectorData = await ChargerConnectorModel.findOneAndUpdate(
+        { _id: iterator.connectorId },
+        {
+          connectorType: iterator.connectorType,
+          pricePerUnit: +iterator.pricePerUnit,
+        },
+        { new: true }
+      );
+
+      if (!connectorData)
+        throw new CustomError(`Connector for given charger not found.`);
+    }
+
+    return res
+      .status(StatusCodes.OK)
+      .send(
+        responseGenerators(
+          null,
+          StatusCodes.OK,
+          "Connector updated successfully",
+          0
+        )
+      );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res

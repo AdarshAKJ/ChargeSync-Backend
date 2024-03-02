@@ -49,7 +49,7 @@ chargerStationRouter.post(
 
 // get chargingStation count
 chargerStationRouter.post(
-  "/chargingStation-count",
+  "/charging-station-count",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   getChargerStationCountHandler
 ); // DONE

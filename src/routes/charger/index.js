@@ -1,7 +1,16 @@
 import express from "express";
 
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
-import { createChargerHandler, getChargerCountHandler, getSerialNumberHandler, listChargerHandler, singleChargerHandler } from "./post";
+import {
+  createChargerHandler,
+  deleteChargerHandler,
+  getChargerCountHandler,
+  getSerialNumberHandler,
+  listChargerHandler,
+  singleChargerHandler,
+  updateChargerHandler,
+  updateConnectorPricePerUnitHandler,
+} from "./post";
 
 const chargerRouter = express.Router();
 
@@ -36,5 +45,26 @@ chargerRouter.post(
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   getChargerCountHandler
 ); // DONE
+
+// delete
+chargerRouter.post(
+  "/delete/:id",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  deleteChargerHandler
+); // DONE
+
+// update
+chargerRouter.post(
+  "/update/:id",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  updateChargerHandler
+);
+
+// connector price update
+chargerRouter.post(
+  "/connector-price-update",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  updateConnectorPricePerUnitHandler
+);
 
 export default chargerRouter;
