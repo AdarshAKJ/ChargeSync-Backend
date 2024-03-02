@@ -1,6 +1,5 @@
 import express from "express";
 import {
-  blockCustomerHandler,
   createCustomerHandler,
   getChargerSelectHandler,
   getCustomerSelectHandler,
@@ -9,7 +8,6 @@ import {
   signupOrLoginOTPVerificationHandler,
   singleCustomerHandler,
   toggleBlockUnblockHandler,
-  unblockCustomerHandler,
   updateCustomerHandler,
 } from "./post";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";

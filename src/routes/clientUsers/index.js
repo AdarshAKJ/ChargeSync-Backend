@@ -1,7 +1,11 @@
 import express from "express";
-// import { authenticateUser } from "../../middleware/authorization";
-import { deleteClientUser,listClientUser } from "./get";
-import { createClientUser, getSingleClientUser, loginClientUser, updateClientUser } from "./post";
+import {
+  createClientUser,
+  loginClientUser,
+  updateClientUser,
+  deleteClientUser,
+  listClientUser,
+} from "./post";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 
 const clientUserRouter = express.Router();
@@ -15,12 +19,6 @@ clientUserRouter.post(
 ); // DONE
 
 clientUserRouter.post(
-  "/single-client-user/:id",
-  onlyAdminAndClientWithRoles(["ADMIN"]),
-  getSingleClientUser
-); //DONE
-
-clientUserRouter.get(
   "/list",
   onlyAdminAndClientWithRoles(["ADMIN"]),
   listClientUser
@@ -32,7 +30,7 @@ clientUserRouter.post(
   updateClientUser
 ); //DONE
 
-clientUserRouter.get(
+clientUserRouter.post(
   "/delete/:id",
   onlyAdminAndClientWithRoles(["ADMIN"]),
   deleteClientUser
