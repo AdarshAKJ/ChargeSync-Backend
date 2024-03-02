@@ -1,7 +1,11 @@
 import express from "express";
-import { listWalletCustomerTransactions, listWalletTransactions } from "./get";
+import {
+  listAdminWalletTransactions,
+  listWalletCustomerTransactions,
+} from "./get";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 import { authenticateCustomer } from "../../middleware/authenticateCustomer";
+import { getCustomerSelectHandler } from "./post";
 const walletRouter = express.Router();
 
 // For customers
@@ -13,9 +17,16 @@ walletRouter.post(
 
 // For Admin or Operators
 walletRouter.post(
-  "/list",
+  "/list-admin",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
-  listWalletTransactions
+  listAdminWalletTransactions
+);
+
+// get-customer-select
+walletRouter.post(
+  "/get-customer-select",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  getCustomerSelectHandler
 );
 
 export default walletRouter;
