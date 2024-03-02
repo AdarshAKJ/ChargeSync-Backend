@@ -91,20 +91,18 @@ export const listAdminWalletTransactions = async (req, res) => {
 
     let total_count = await WalletTransactionModel.count(filters);
 
-    return res
-      .status(StatusCodes.OK)
-      .send(
-        responseGenerators(
-          {
-            paginatedData: walletTransactions,
-            totalCount: total_count,
-            itemsPerPage: pagination.limit,
-          },
-          StatusCodes.OK,
-          "Success",
-          0
-        )
-      );
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          paginatedData: walletTransactions,
+          totalCount: total_count,
+          itemsPerPage: pagination.limit,
+        },
+        StatusCodes.OK,
+        "Success",
+        0
+      )
+    );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res

@@ -43,7 +43,7 @@ chargerStationRouter.post(
 
 // single charger.
 chargerStationRouter.post(
-  "/single-chargingStation/:id",
+  "/single-charging-station/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   singleChargerStationHandler
 ); // DONE

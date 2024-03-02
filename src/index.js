@@ -21,6 +21,7 @@ import vehicleRouter from "./routes/vehicle";
 import walletRouter from "./routes/wallet";
 import messageRouter from "./routes/messages";
 import dashboardRouter from "./routes/dashboard";
+// import { addWalletTransaction } from "./scripts/walletTransactions";
 
 const app = express();
 const server = new http.Server(app);
@@ -94,7 +95,7 @@ app.use("/api/transaction-logs", transactionLogRouter);
 app.use("/api/maintenance", maintenanceRouter);
 app.use("/api/customer", customerRouter);
 app.use("/api/vehicle", vehicleRouter);
-app.use("/api/wallet-transactions", walletRouter);
+app.use("/api/wallet", walletRouter);
 app.use("/api/message", messageRouter);
 app.use("/api/dashboard", dashboardRouter);
 
@@ -119,4 +120,7 @@ app.use((error, req, res) => {
     );
 });
 
+//==================================================  Script =========================================//
+// addWalletTransaction();
+//==================================================  Script =========================================//
 export default server;

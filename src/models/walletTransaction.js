@@ -19,7 +19,11 @@ const WalletTransactionSchema = new mongoose.Schema({
     enum: ["CREDITED", "DEBITED", "REFUNDED"],
   },
   reason: { type: String, trim: true },
-  source: { type: String, required: true, enum: ["WALLET", "RAZORPAY"] },
+  source: {
+    type: String,
+    required: true,
+    enum: ["WALLET", "RAZORPAY", "OTHER"],
+  },
   created_by: { type: String },
   updated_by: { type: String },
   created_at: { type: String },

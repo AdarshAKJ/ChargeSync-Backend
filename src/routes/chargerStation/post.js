@@ -320,6 +320,9 @@ export const singleChargerStationHandler = async (req, res) => {
           as: "chargerData",
           pipeline: [
             {
+              $match: { isDeleted: false },
+            },
+            {
               $lookup: {
                 from: "charger-connectors",
                 localField: "_id",
