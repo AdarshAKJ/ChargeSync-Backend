@@ -14,8 +14,8 @@ export const createChargerStationValidation = Joi.object({
     }),
   }),
   own_by: Joi.string().optional().allow(null),
-  contect_no: Joi.string().optional().allow(null),
-  contect_email: Joi.string().optional().allow(null),
+  contact_no: Joi.string().optional().allow(null),
+  contact_email: Joi.string().optional().allow(null),
   station_facilities: Joi.array().optional().allow(null),
   station_images: Joi.array().optional().allow(null),
 });
@@ -35,8 +35,8 @@ export const updateChargerStationValidation = Joi.object({
     }),
   }),
   own_by: Joi.string().optional().allow(null),
-  contect_no: Joi.string().optional().allow(null),
-  contect_email: Joi.string().optional().allow(null),
+  contact_no: Joi.string().optional().allow(null),
+  contact_email: Joi.string().optional().allow(null),
   station_facilities: Joi.array().optional().allow(null),
   station_images: Joi.array().optional().allow(null),
 });
