@@ -216,6 +216,7 @@ export const listChargerStationHandler = async (req, res) => {
       clientId: req.session.clientId || req.query.clientId,
     };
 
+    console.log(req.query);
     const pagination = setPagination(req.query);
 
     if (req.query.search) {
@@ -242,9 +243,10 @@ export const listChargerStationHandler = async (req, res) => {
 
     const stations = await ChargingStationModel.find(where)
       .select("_id station_name address")
+      .limit(pagination.limit)
       .sort(pagination.sort)
       .skip(pagination.offset)
-      .limit(pagination.limit)
+
       .lean()
       .exec();
     // search name add

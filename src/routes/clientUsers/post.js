@@ -41,7 +41,7 @@ export const createClientUser = async (req, res) => {
 
     if (isAvailable)
       throw new CustomError(
-        `The user you are trying to create is already registered with given Email or Phone Number.`
+        `user already exits with given Email or Phone Number.`
       );
 
     let data = {
@@ -103,10 +103,17 @@ export const updateClientUser = async (req, res) => {
 
     const userId = req.params.id;
 
+    let isDuplicateEmail = await ClientUserModel.findOne({
+      _id: { $ne: userId },
+      email: req.body.email,
+      isDeleted: false,
+      clientId: req.session.clientId || req.body.clientId,
+    });
+
+    if (isDuplicateEmail) throw new CustomError(`Email already  exists`);
+
     const user = await ClientUserModel.findOne({
       _id: userId,
-      phoneNumber: req.body.phoneNumber,
-      email: req.body.email,
       isDeleted: false,
       clientId: req.session.clientId || req.body.clientId,
     });

@@ -2,6 +2,9 @@ import express from "express";
 import {
   blockCustomerHandler,
   createCustomerHandler,
+  getChargerSelectHandler,
+  getCustomerSelectHandler,
+  getStationSelectHandler,
   listCustomerHandler,
   signupOrLoginOTPVerificationHandler,
   singleCustomerHandler,
@@ -36,6 +39,27 @@ customerRouter.post(
   "/single-customer/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   singleCustomerHandler
+);
+
+// get-customer-select
+customerRouter.post(
+  "/get-customer-select",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  getCustomerSelectHandler
+);
+
+// get-charger-select
+customerRouter.post(
+  "/get-charger-select",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  getChargerSelectHandler
+);
+
+// get-station-select
+customerRouter.post(
+  "/get-station-select",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  getStationSelectHandler
 );
 
 customerRouter.post(
