@@ -14,7 +14,8 @@ export const createChargerValidation = Joi.object({
         pricePerUnit: Joi.number().required(),
       })
     )
-    .min(1),
+    .min(1)
+    .max(4),
   maxCapacity: Joi.number()
     .optional()
     .allow("1.1", "3.3", "7.4", "7.7", "10", "15", "22", "30", "60"),
@@ -26,7 +27,6 @@ export const updateChargerValidation = Joi.object({
   stationId: Joi.string().required(),
   name: Joi.string().required(),
   powerType: Joi.string().required().allow("AC", "DC"),
-  connectorCount: Joi.number().optional(),
   maxCapacity: Joi.number()
     .optional()
     .allow("1.1", "3.3", "7.4", "7.7", "10", "15", "22", "30", "60"),
@@ -63,5 +63,6 @@ export const updateConnectorPricePerUnitValidation = Joi.object({
         pricePerUnit: Joi.number().required(),
       })
     )
-    .min(1),
+    .min(1)
+    .max(4),
 });

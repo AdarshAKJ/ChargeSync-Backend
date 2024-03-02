@@ -52,13 +52,6 @@ export const listTransactions = async (req, res) => {
       };
     }
 
-    if (req.query?.connectorId) {
-      where = {
-        ...where,
-        connectorId: new RegExp(req.query.connectorId.toString(), "i"),
-      };
-    }
-
     if (req?.query?.startDate) {
       where.createdAt = {
         $gte: getUnixStartTime(dateToUnix(req.query.startDate)),

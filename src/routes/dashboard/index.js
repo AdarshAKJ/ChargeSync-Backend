@@ -1,9 +1,13 @@
 import express from "express";
-import { authenticateCustomer } from "../../middleware/authenticateCustomer";
-import { dashboard } from "./post";
+import { dashboardHandler } from "./post";
+import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 const dashboardRouter = express.Router();
 
 // For customers
-dashboardRouter.post("/", authenticateCustomer, dashboard);
+dashboardRouter.post(
+  "/",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  dashboardHandler
+);
 
 export default dashboardRouter;

@@ -2,15 +2,70 @@ import { StatusCodes } from "http-status-codes";
 import { responseGenerators } from "../../lib/utils";
 import { ValidationError } from "webpack";
 import { CustomError } from "../../helpers/custome.error";
-import dashboardValidation from "../../helpers/validations/dashboardValidation";
+import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
+import ChargerModel from "../../models/charger";
+import TransactionModel from "../../models/transaction";
+import ChargerConnectorModel from "../../models/chargerConnector";
+// import { getMonthStartData } from "../../commons/common-functions";
 
-export const dashboard = async (req, res) => {
+export const dashboardHandler = async (req, res) => {
   try {
-    await dashboardValidation.validateAsync(req.body);
+    checkClientIdAccess(
+      req.session,
+      req?.body?.clientId || req.session.clientId
+    );
+
+    // let monthStartData = getMonthStartData();
+
+    let responseData = {
+      chargerCount: 0,
+      transactionCount: 0,
+      revenueCount: 0,
+      activeChargingCount: 0,
+    };
+
+    // charger count
+    responseData.chargerCount = await ChargerModel.countDocuments({
+      clientId: req.session.clientId,
+      isDeleted: false,
+      // created_at: { $gte: monthStartData },
+    });
+
+    // transaction count
+    responseData.transactionCount = await TransactionModel.countDocuments({
+      clientId: req.session.clientId,
+      // created_at: { $gte: monthStartData },
+    });
+
+    // revenue amount
+    responseData.revenueCount = await TransactionModel.aggregate([
+      {
+        $match: {
+          clientId: req.session.clientId,
+          // created_at: { $gte: monthStartData },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalCost: { $sum: "$totalCost" },
+        },
+      },
+    ]);
+    responseData.revenueCount = responseData.revenueCount[0].totalCost;
+
+    // Active charging.
+    responseData.activeChargingCount =
+      await ChargerConnectorModel.countDocuments({
+        clientId: req.session.clientId,
+        status: "Charging",
+        isDeleted: false,
+        // created_at: { $gte: monthStartData },
+      });
 
     return res
       .status(StatusCodes.OK)
-      .send(responseGenerators({}, StatusCodes.OK, "Success", 0));
+      .send(responseGenerators(responseData, StatusCodes.OK, "Success", 0));
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res

@@ -361,6 +361,7 @@ export const deleteChargerHandler = async (req, res) => {
   }
 };
 
+// update charger
 export const updateChargerHandler = async (req, res) => {
   try {
     await updateChargerValidation.validateAsync({
