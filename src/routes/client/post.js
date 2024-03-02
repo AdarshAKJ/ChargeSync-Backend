@@ -142,42 +142,5 @@ export const updateClient = async (req, res) => {
 };
 
 
-export const getSingleClientHandler = async (req, res) => {
-  try {
-    const clientId = req.params.id;
 
-    const client = await ClientModel.findOne({
-      _id: clientId,
-      isDeleted: false,
-    });
-
-    if (!client) {
-      throw new CustomError("Client not found");
-    }
-
-    return res.status(StatusCodes.OK).json({
-      message: "Client retrieved successfully",
-      client,
-    });
-  }  catch (error) {
-    if (error instanceof ValidationError || error instanceof CustomError) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(
-          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-        );
-    }
-    console.log(JSON.stringify(error));
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        responseGenerators(
-          {},
-          StatusCodes.INTERNAL_SERVER_ERROR,
-          "Internal Server Error",
-          1
-        )
-      );
-  }
-};
 
