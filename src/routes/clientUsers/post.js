@@ -216,3 +216,39 @@ export const loginClientUser = async (req, res) => {
       );
   }
 };
+
+export const getSingleClientUser = async (req, res) => {
+  try {
+    let clientId = req?.session?.clientId ||req?.body?.clientId
+    checkClientIdAccess(req.session, clientId);
+    const { id } = req.params;
+
+    const clientUser = await ClientUserModel.findOne({
+      _id: id,
+      clientId: clientId,
+      isDeleted: false
+    }).select("-password");
+
+    if (!clientUser) {
+      throw new CustomError("Client user not found");
+    }
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        clientUser,
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      ))
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1));
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, "Internal Server Error", 1));
+  }
+};
