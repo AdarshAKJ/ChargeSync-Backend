@@ -187,10 +187,8 @@ export const getSerialNumberHandler = async (req, res) => {
       _id: req.session.clientId || req.body.clientId,
     };
 
-    const client = await ClientModel.findOneAndUpdate(
-      where,
-      { $inc: { serialNumberCount: 1 } },
-      { new: true }
+    const client = await ClientModel.find(where).select(
+      "prefix serialNumberCount"
     );
 
     if (!client) {
@@ -199,7 +197,7 @@ export const getSerialNumberHandler = async (req, res) => {
 
     return res
       .status(StatusCodes.OK)
-      .send(responseGenerators(null, StatusCodes.OK, "SUCCESS", 0));
+      .send(responseGenerators(client, StatusCodes.OK, "SUCCESS", 0));
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
