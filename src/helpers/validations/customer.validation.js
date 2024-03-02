@@ -46,3 +46,13 @@ export const stopTransactionValidation = Joi.object({
   serialNumber: Joi.string().required(),
   transactionId: Joi.string().required(),
 });
+
+export const getCustomerSelectValidation = Joi.object({
+  clientId: Joi.string().optional().allow(null),
+});
+export const getChargerSelectValidation = Joi.object({
+  clientId: Joi.string().optional().allow(null),
+});
+export const getStationSelectValidation = Joi.object({
+  clientId: Joi.string().optional().allow(null),
+});

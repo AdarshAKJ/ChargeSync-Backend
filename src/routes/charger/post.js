@@ -136,6 +136,7 @@ export const listChargerHandler = async (req, res) => {
     const pagination = setPagination(page, limit);
 
     const chargers = await ChargerModel.find(where)
+      .sort(pagination.sort)
       .skip(pagination.skip)
       .limit(pagination.limit)
       .sort(pagination.sort)

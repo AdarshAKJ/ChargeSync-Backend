@@ -41,7 +41,6 @@ export const listTransactions = async (req, res) => {
     checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
-      // isDeleted: false,
       clientId: req.session.clientId || req.body.clientId,
     };
 
