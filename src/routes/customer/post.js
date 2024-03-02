@@ -29,7 +29,6 @@ import { getJwt } from "../../helpers/Jwt.helper";
 import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
 import ChargerModel from "../../models/charger";
 import ChargingStationModel from "../../models/chargingStations";
-import TransactionModel from "../../models/transaction";
 
 // create user and provide OTP, if exist then provide OTP
 export const createCustomerHandler = async (req, res) => {
@@ -660,7 +659,7 @@ export const getChargerSelectHandler = async (req, res) => {
     const pagination = setPagination(req.query);
 
     const charger = await ChargerModel.find(where)
-      .select("_id name")
+      .select("serialNumber name")
       .sort(pagination.sort)
       .skip(pagination.offset)
       .limit(pagination.limit)
