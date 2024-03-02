@@ -1,11 +1,10 @@
 import express from "express";
-// import { authenticateUser } from "../../middleware/authorization";
-import { listClientUser } from "./get";
 import {
   createClientUser,
   loginClientUser,
   updateClientUser,
   deleteClientUser,
+  listClientUser,
 } from "./post";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 
@@ -19,7 +18,7 @@ clientUserRouter.post(
   createClientUser
 ); // DONE
 
-clientUserRouter.get(
+clientUserRouter.post(
   "/list",
   onlyAdminAndClientWithRoles(["ADMIN"]),
   listClientUser
