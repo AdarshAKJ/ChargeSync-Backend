@@ -62,6 +62,28 @@ export const listTransactions = async (req, res) => {
         $lte: getUnixEndTime(dateToUnix(req.query.endDate)),
       };
     }
+
+    if (req.body?.key) {
+      if (!req.body?.id) throw new CustomError(`Please Provide id.`);
+
+      if (req.body.key === "CUSTOMER") {
+        where = {
+          ...where,
+          customerId: req.body.id,
+        };
+      } else if (req.body.key === "CHARGER") {
+        where = {
+          ...where,
+          serialNumber: req.body.idid,
+        };
+      } else if (req.body.key === "STATION") {
+        where = {
+          ...where,
+          stationId: req.body.id,
+        };
+      }
+    }
+
     const pagination = setPagination(req.query);
 
     const aggregationPipeline = [

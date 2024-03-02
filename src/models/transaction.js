@@ -9,6 +9,7 @@ const TransactionSchema = new mongoose.Schema({
   occpTransactionId: { type: String, required: true },
   clientId: { type: String, required: true, trim: true }, //database
   customerId: { type: String, required: true },
+  stationId: { type: String, required: true },
   serialNumber: { type: String, required: true }, //database
   connectorId: { type: String, required: true }, //database
   status: {
