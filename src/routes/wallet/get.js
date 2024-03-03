@@ -95,6 +95,7 @@ export const listAdminWalletTransactions = async (req, res) => {
           pipeline: [
             {
               $project: {
+                _id: 1,
                 fname: 1,
                 lname: 1,
               },
