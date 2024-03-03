@@ -18,6 +18,7 @@ export const sendNotification = async (
       message: msg,
       isPreserved,
       created_at: getCurrentUnix(),
+      updated_at: getCurrentUnix(),
     });
   } catch (e) {
     console.log(e);
