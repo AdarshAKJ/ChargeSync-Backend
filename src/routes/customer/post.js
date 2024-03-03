@@ -727,8 +727,6 @@ export const getStationSelectHandler = async (req, res) => {
       .lean()
       .exec();
 
-    if (!station) throw new CustomError("Station not found");
-
     return res.status(StatusCodes.OK).send(
       responseGenerators(
         {

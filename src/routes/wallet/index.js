@@ -13,7 +13,7 @@ walletRouter.post(
 
 // For Admin or Operators
 walletRouter.post(
-  "/list-Admin",
+  "/list-admin",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   listWalletTransactions
 );
