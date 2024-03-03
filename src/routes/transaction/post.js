@@ -647,9 +647,18 @@ export const stopTransactionHandler = async (req, res) => {
         "private-api-key": process.env.OCPP_API_KEY,
       }
     );
+
+    // notifications for transaction stop // TO DO
     return res
       .status(StatusCodes.OK)
-      .send(responseGenerators(stopTransaction, StatusCodes.OK, "SUCCESS", 0));
+      .send(
+        responseGenerators(
+          stopTransaction?.data?.data,
+          StatusCodes.OK,
+          "SUCCESS",
+          0
+        )
+      );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
