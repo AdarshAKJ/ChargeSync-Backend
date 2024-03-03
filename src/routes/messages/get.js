@@ -14,16 +14,18 @@ export const readUpdateMessageHandler = async (req, res) => {
     //validation
     await messageValidation.validateAsync(req.body);
 
-    const clientId = req?.session?.clientId;
+    const {clientId} = req.body || req.session;
     const messageIds = req?.body?.messageIds;
 
     // find all messages
     const messages = await MessageModel.find({
       _id: { $in: messageIds },
-      clientId,
+      clientId: clientId,
     });
 
-    // if messages count miss match
+    // res.json({messages})
+
+   // if messages count miss match
     if (messages.length !== messageIds.length) {
       throw new CustomError(`Some messages not found.`);
     }
@@ -31,7 +33,7 @@ export const readUpdateMessageHandler = async (req, res) => {
     // update message
     await MessageModel.updateMany(
       { _id: { $in: messageIds } },
-      { $set: { isRead: true } }
+      { $set: { isRead: true } } 
     );
 
     return res
