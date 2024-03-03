@@ -3,7 +3,8 @@ import Joi from "joi";
 export const createChargerValidation = Joi.object({
   clientId: Joi.string().required(),
   stationId: Joi.string().required(),
-  serialNumber: Joi.string().required(),
+  serialNumber: Joi.number().required(),
+  prefix: Joi.string().required(),
   name: Joi.string().required(),
   powerType: Joi.string().required().allow("AC", "DC"),
   connectorDetails: Joi.array()

@@ -130,6 +130,9 @@ export const listTransactions = async (req, res) => {
           pipeline: [
             {
               $project: {
+                _id: 1,
+                fname: 1,
+                lname: 1,
                 phoneNumber: 1,
                 email: 1,
               },
@@ -567,7 +570,9 @@ export const startTransactionHandler = async (req, res) => {
 
     return res
       .status(StatusCodes.OK)
-      .send(responseGenerators(transactionData, StatusCodes.OK, "SUCCESS", 0));
+      .send(
+        responseGenerators(transactionData.data, StatusCodes.OK, "SUCCESS", 0)
+      );
   } catch (error) {
     if (
       error instanceof ValidationError ||

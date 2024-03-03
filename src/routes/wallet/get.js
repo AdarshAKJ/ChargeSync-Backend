@@ -82,12 +82,35 @@ export const listAdminWalletTransactions = async (req, res) => {
 
     const pagination = setPagination(req.query);
 
-    const walletTransactions = await WalletTransactionModel.find(filters)
+    const aggregationPipeline = [
+      {
+        $match: filters,
+      },
+      {
+        $lookup: {
+          from: "customers",
+          localField: "customerId",
+          foreignField: "_id",
+          as: "customerData",
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                fname: 1,
+                lname: 1,
+              },
+            },
+          ],
+        },
+      },
+    ];
+
+    const walletTransactions = await WalletTransactionModel.find(
+      aggregationPipeline
+    )
       .sort(pagination.sort)
       .skip(pagination.offset)
-      .limit(pagination.limit)
-      .lean()
-      .exec();
+      .limit(pagination.limit);
 
     let total_count = await WalletTransactionModel.count(filters);
 

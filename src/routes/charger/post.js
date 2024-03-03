@@ -30,23 +30,25 @@ export const createChargerHandler = async (req, res) => {
     await createChargerValidation.validateAsync(req.body);
     checkClientIdAccess(req.session, req.body.clientId);
 
-    let { serialNumber } = req.body;
+    let { serialNumber, prefix } = req.body;
 
     let isExits = await ChargerModel.findOne({
-      serialNumber: serialNumber,
+      serialNumber: prefix + serialNumber,
       isDeleted: false,
     });
 
     if (isExits) {
       let number = Number(serialNumber);
-      let clientData = ClientModel.findOne({ _id: req.body.clientId }).select(
-        "serialNumberCount"
-      );
-      if (clientData && clientData.serialNumberCount == number) {
-        await ClientModel.findOneAndUpdate(
-          { _id: req.body.clientId },
-          { $inc: { serialNumberCount: 1 } }
+      if (!isNaN) {
+        let clientData = ClientModel.findOne({ _id: req.body.clientId }).select(
+          "serialNumberCount"
         );
+        if (clientData && clientData.serialNumberCount == number) {
+          await ClientModel.findOneAndUpdate(
+            { _id: req.body.clientId },
+            { $inc: { serialNumberCount: 1 } }
+          );
+        }
       }
       throw new CustomError(`Charger with given serial number already exists.`);
     }
@@ -54,7 +56,7 @@ export const createChargerHandler = async (req, res) => {
     let chargerData = await ChargerModel.create({
       clientId: req.body.clientId,
       stationId: req.body.stationId,
-      serialNumber: req.body.serialNumber,
+      serialNumber: prefix + serialNumber,
       name: req.body.name,
       connectorCount: req.body.connectorCount,
       maxCapacity: +req.body.maxCapacity,
@@ -72,7 +74,7 @@ export const createChargerHandler = async (req, res) => {
       connectorData.push({
         clientId: req.body.clientId,
         stationId: req.body.stationId,
-        serialNumber: req.body.serialNumber,
+        // serialNumber: req.body.serialNumber,
         chargerId: chargerData._id,
         connectorId: iterator.connectorId,
         pricePerUnit: +iterator.pricePerUnit,
