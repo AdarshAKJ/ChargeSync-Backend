@@ -21,7 +21,7 @@ import vehicleRouter from "./routes/vehicle";
 import walletRouter from "./routes/wallet";
 import messageRouter from "./routes/messages";
 import dashboardRouter from "./routes/dashboard";
-import { addMessage } from "./scripts/messagelist";
+//import { addMessage } from "./scripts/messagelist";
 // import { addWalletTransaction } from "./scripts/walletTransactions";
 
 const app = express();
