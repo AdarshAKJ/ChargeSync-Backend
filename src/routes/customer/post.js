@@ -1,7 +1,9 @@
 import { ValidationError } from "joi";
 import {
   createCustomerValidation,
+  getChargerSelectValidation,
   getCustomerSelectValidation,
+  getStationSelectValidation,
   listCustomerValidation,
   signupOrLoginOTPVerificationValidation,
   singleCustomerValidation,
@@ -25,6 +27,8 @@ import {
 } from "../../commons/common-functions";
 import { getJwt } from "../../helpers/Jwt.helper";
 import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
+import ChargerModel from "../../models/charger";
+import ChargingStationModel from "../../models/chargingStations";
 
 // create user and provide OTP, if exist then provide OTP
 export const createCustomerHandler = async (req, res) => {
@@ -638,7 +642,7 @@ export const getCustomerSelectHandler = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
+
 // get-charger-select
 export const getChargerSelectHandler = async (req, res) => {
   try {
@@ -761,8 +765,6 @@ export const getStationSelectHandler = async (req, res) => {
   }
 };
 
-=======
->>>>>>> 884d17bae2de13d24e2ba2cd22f0e25032cb0f91
 // Customer Block/UnBlock
 export const toggleBlockUnblockHandler = async (req, res) => {
   try {

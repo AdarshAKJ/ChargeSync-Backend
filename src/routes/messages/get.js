@@ -69,7 +69,7 @@ export const readUpdateMessageHandler = async (req, res) => {
 export const listUnreadMessagesHandler = async (req, res) => {
   try {
     await cidMessageValidation.validateAsync(req.body);
-    const { clientId } = req.query;
+    const { clientId } = req.body;
     let paginatedData = setPagination(req.query);
     const where = { clientId, isRead: false };
     const messages = await MessageModel.find(where)

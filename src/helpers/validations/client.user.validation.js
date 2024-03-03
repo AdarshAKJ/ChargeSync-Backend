@@ -55,6 +55,10 @@ export const deleteClientUserValidation = Joi.object({
   clientId: Joi.string().required(),
 });
 
+export const singleClientUserValidation = Joi.object({
+  clientId: Joi.string().required(),
+});
+
 export const listClientUserValidation = Joi.object({
   clientId: Joi.string().required(),
 });
