@@ -10,6 +10,7 @@ const TransactionSchema = new mongoose.Schema({
   clientId: { type: String, required: true, trim: true }, //database
   customerId: { type: String, required: true },
   stationId: { type: String, required: true },
+  walletTransactionId: { type: String },
   serialNumber: { type: String, required: true }, //database
   connectorId: { type: String, required: true }, //database
   status: {
@@ -51,6 +52,7 @@ const TransactionSchema = new mongoose.Schema({
     enum: ["WATT", "TIME"],
     default: "WATT",
   },
+  deductedAmount: { type: Number },
   created_by: { type: String },
   updated_by: { type: String },
   created_at: { type: String },

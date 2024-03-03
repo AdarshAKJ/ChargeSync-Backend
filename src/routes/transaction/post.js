@@ -548,7 +548,7 @@ export const startTransactionHandler = async (req, res) => {
       effectedBalance: +walletBalance.amount,
       amount: +amount,
       type: "DEBITED",
-      reason: `Transaction started for ${amount}`,
+      reason: `Transaction deducted for transaction :- ${transactionData?.data?.transactionId}`,
       source: "WALLET",
       created_at: getCurrentUnix(),
       updated_at: getCurrentUnix(),
@@ -560,12 +560,14 @@ export const startTransactionHandler = async (req, res) => {
     walletBalance.updated_at = getCurrentUnix();
     walletBalance.updated_by = req.session._id;
     await walletBalance.save();
-    console.log("Wallet updated for transaction: " + transactionData._id);
+    console.log(
+      "Wallet updated for transaction: " + transactionData?.data?.transactionId
+    );
 
     // update transaction for wallet transaction id
     await TransactionModel.findOneAndUpdate(
-      { _id: transactionData._id },
-      { walletTransactionId: walletTransactionData._id }
+      { _id: transactionData.data._id },
+      { walletTransactionId: walletTransactionData._id, deductedAmount: amount }
     );
 
     return res
