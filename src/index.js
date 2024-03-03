@@ -21,6 +21,7 @@ import vehicleRouter from "./routes/vehicle";
 import walletRouter from "./routes/wallet";
 import messageRouter from "./routes/messages";
 import dashboardRouter from "./routes/dashboard";
+import { addMessage } from "./scripts/messagelist";
 // import { addWalletTransaction } from "./scripts/walletTransactions";
 
 const app = express();
@@ -122,5 +123,6 @@ app.use((error, req, res) => {
 
 //==================================================  Script =========================================//
 // addWalletTransaction();
+//addMessage();
 //==================================================  Script =========================================//
 export default server;
