@@ -51,10 +51,15 @@ export const createChargerHandler = async (req, res) => {
       throw new CustomError(`Charger with given serial number already exists.`);
     }
 
+    const formattedNumber = String(serialNumber).padStart(3, "0");
+
+    // Concatenate the company string and the formatted number
+    const newserialNumber = `${req.body.prefix}${formattedNumber}`;
+
     let chargerData = await ChargerModel.create({
       clientId: req.body.clientId,
       stationId: req.body.stationId,
-      serialNumber: req.body.serialNumber,
+      serialNumber: newserialNumber,
       name: req.body.name,
       connectorCount: req.body.connectorCount,
       maxCapacity: +req.body.maxCapacity,
@@ -72,7 +77,7 @@ export const createChargerHandler = async (req, res) => {
       connectorData.push({
         clientId: req.body.clientId,
         stationId: req.body.stationId,
-        serialNumber: req.body.serialNumber,
+        // serialNumber: req.body.serialNumber,
         chargerId: chargerData._id,
         connectorId: iterator.connectorId,
         pricePerUnit: +iterator.pricePerUnit,

@@ -229,7 +229,10 @@ export const loginClientUser = async (req, res) => {
 
 export const deleteClientUser = async (req, res) => {
   try {
-    await deleteClientUserValidation.validateAsync(req.body);
+    await deleteClientUserValidation.validateAsync({
+      ...req.body,
+      ...req.params,
+    });
     const { id: userId } = req.params;
     let clientId = req.session.clientId || req.query.clientId;
     checkClientIdAccess(req.session, req.body.clientId);
