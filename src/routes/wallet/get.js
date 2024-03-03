@@ -2,14 +2,18 @@ import { StatusCodes } from "http-status-codes";
 import WalletTransactionModel from "../../models/walletTransaction.js";
 import { responseGenerators } from "../../lib/utils";
 import { CustomError } from "../../helpers/custome.error";
-import walletTransactionValidation from "../../helpers/validations/wallet.validation.js";
+import {
+  listAdminWalletTransactionsValidation,
+  listWalletCustomerTransactionsValidation,
+} from "../../helpers/validations/wallet.validation.js";
 import { ValidationError } from "joi";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess.js";
+import { setPagination } from "../../commons/common-functions.js";
 
 // list wallet transaction for customer
 export const listWalletCustomerTransactions = async (req, res) => {
   try {
-    await walletTransactionValidation.validateAsync(req.body);
+    await listWalletCustomerTransactionsValidation.validateAsync(req.body);
 
     const clientId = req?.session?.clientId;
 
@@ -52,29 +56,53 @@ export const listWalletCustomerTransactions = async (req, res) => {
 };
 
 // list wallet transaction for admin
-export const listWalletTransactions = async (req, res) => {
+export const listAdminWalletTransactions = async (req, res) => {
   try {
-    await walletTransactionValidation.validateAsync(req.body);
+    await listAdminWalletTransactionsValidation.validateAsync(req.body);
 
     const clientId = req?.body?.clientId || req?.session?.clientId;
 
     checkClientIdAccess(req.session, req.body.clientId);
 
-    const filters = {
+    let filters = {
       ...(clientId && { clientId }),
       ...(req.query.type && { type: req.query.type }),
       ...(req.query.source && { source: req.query.source }),
     };
 
+    if (req.body?.key) {
+      if (!req.body?.id) throw new CustomError(`Please Provide id.`);
+      if (req.body.key === "CUSTOMER") {
+        filters = {
+          ...filters,
+          customerId: req.body.id,
+        };
+      }
+    }
+
+    const pagination = setPagination(req.query);
+
     const walletTransactions = await WalletTransactionModel.find(filters)
+      .sort(pagination.sort)
+      .skip(pagination.offset)
+      .limit(pagination.limit)
       .lean()
       .exec();
 
-    return res
-      .status(StatusCodes.OK)
-      .send(
-        responseGenerators({ walletTransactions }, StatusCodes.OK, "Success", 0)
-      );
+    let total_count = await WalletTransactionModel.count(filters);
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          paginatedData: walletTransactions,
+          totalCount: total_count,
+          itemsPerPage: pagination.limit,
+        },
+        StatusCodes.OK,
+        "Success",
+        0
+      )
+    );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res

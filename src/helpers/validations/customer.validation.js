@@ -7,10 +7,10 @@ export const createCustomerValidation = Joi.object({
   phoneNumber: Joi.string().optional().allow(null),
   countryCode: Joi.string().optional().allow(null),
   loginBy: Joi.string().optional().allow("EMAIL", "PHONE"),
-  isDeleted: Joi.boolean().default(false),
 });
 
 export const signupOrLoginOTPVerificationValidation = Joi.object({
+  clientId: Joi.string().required(),
   email: Joi.string().email().optional().allow(null),
   phoneNumber: Joi.string().optional().allow(null),
   countryCode: Joi.string().optional().allow(null),

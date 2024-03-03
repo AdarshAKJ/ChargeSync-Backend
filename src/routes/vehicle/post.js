@@ -8,7 +8,7 @@ import {
 } from "../../helpers/validations/vehicle.validation";
 import { responseGenerators } from "../../lib/utils";
 import VehicleModel from "../../models/vehicle";
-import { ValidationError } from "webpack";
+import { ValidationError } from "joi";
 
 // add  vehicle
 export const createVehicleHandler = async (req, res) => {

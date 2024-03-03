@@ -1,15 +1,11 @@
 import express from "express";
 import {
-  blockCustomerHandler,
   createCustomerHandler,
-  getChargerSelectHandler,
   getCustomerSelectHandler,
-  getStationSelectHandler,
   listCustomerHandler,
   signupOrLoginOTPVerificationHandler,
   singleCustomerHandler,
   toggleBlockUnblockHandler,
-  unblockCustomerHandler,
   updateCustomerHandler,
 } from "./post";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
@@ -46,20 +42,6 @@ customerRouter.post(
   "/get-customer-select",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   getCustomerSelectHandler
-);
-
-// get-charger-select
-customerRouter.post(
-  "/get-charger-select",
-  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
-  getChargerSelectHandler
-);
-
-// get-station-select
-customerRouter.post(
-  "/get-station-select",
-  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
-  getStationSelectHandler
 );
 
 customerRouter.post(

@@ -1,4 +1,4 @@
-import { ValidationError } from "webpack";
+import { ValidationError } from "joi";
 import { CustomError } from "../../helpers/custome.error";
 import { StatusCodes } from "http-status-codes";
 import { responseGenerators } from "../../lib/utils";
@@ -49,40 +49,50 @@ export const createMaintenanceHandler = async (req, res) => {
   }
 };
 
-
 export const updateMaintenanceHandler = async (req, res) => {
   try {
     await maintenanceValidation.validateAsync(req.body);
 
     const maintenanceId = req.params.id;
 
-    const existingMaintenance = await MaintenanceModel.findOne({_id:maintenanceId});
+    const existingMaintenance = await MaintenanceModel.findOne({
+      _id: maintenanceId,
+    });
 
     if (!existingMaintenance) {
-      return res.status(StatusCodes.NOT_FOUND).send(
-        responseGenerators({}, StatusCodes.NOT_FOUND, "Maintenance record not found", 1)
-      );
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .send(
+          responseGenerators(
+            {},
+            StatusCodes.NOT_FOUND,
+            "Maintenance record not found",
+            1
+          )
+        );
     }
     let keys = [];
 
-    for (let key in req.body){
+    for (let key in req.body) {
       keys.push(key);
     }
 
-    for(let key of keys){
-      existingMaintenance[key]= req.body[key];
+    for (let key of keys) {
+      existingMaintenance[key] = req.body[key];
     }
-    
+
     await existingMaintenance.save();
 
-    return res.status(StatusCodes.OK).send(
-      responseGenerators(
-        null,
-        StatusCodes.OK,
-        "Maintenance record updated successfully",
-        0
-      )
-    );
+    return res
+      .status(StatusCodes.OK)
+      .send(
+        responseGenerators(
+          null,
+          StatusCodes.OK,
+          "Maintenance record updated successfully",
+          0
+        )
+      );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
@@ -104,4 +114,3 @@ export const updateMaintenanceHandler = async (req, res) => {
       );
   }
 };
-

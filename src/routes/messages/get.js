@@ -1,5 +1,5 @@
 import MessageModel from "../../models/messages";
-import { ValidationError } from "webpack";
+import { ValidationError } from "joi";
 import { CustomError } from "../../helpers/custome.error";
 import { StatusCodes } from "http-status-codes";
 import { responseGenerators } from "../../lib/utils";

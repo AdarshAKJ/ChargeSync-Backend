@@ -1,9 +1,7 @@
-import { ValidationError } from "webpack";
+import { ValidationError } from "joi";
 import {
   createCustomerValidation,
-  getChargerSelectValidation,
   getCustomerSelectValidation,
-  getStationSelectValidation,
   listCustomerValidation,
   signupOrLoginOTPVerificationValidation,
   singleCustomerValidation,
@@ -27,8 +25,6 @@ import {
 } from "../../commons/common-functions";
 import { getJwt } from "../../helpers/Jwt.helper";
 import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
-import ChargerModel from "../../models/charger";
-import ChargingStationModel from "../../models/chargingStations";
 
 // create user and provide OTP, if exist then provide OTP
 export const createCustomerHandler = async (req, res) => {
@@ -222,7 +218,10 @@ export const signupOrLoginOTPVerificationHandler = async (req, res) => {
 
     // if email  exits
     if (req.body.email) {
-      let customerData = await CustomerModel.findOne({ email: req.body.email });
+      let customerData = await CustomerModel.findOne({
+        email: req.body.email,
+        clientId: req.body.clientId,
+      });
       if (!customerData) throw new CustomError("Couldn't find customer");
       const purpose = "SIGNUP-LOGIN";
       let otpSecret = customerData.otpSecret.filter(
@@ -288,6 +287,7 @@ export const signupOrLoginOTPVerificationHandler = async (req, res) => {
       let customerData = await CustomerModel.findOne({
         phoneNumber: req.body.phoneNumber,
         countryCode: req.body.countryCode,
+        clientId: req.body.clientId,
       });
       if (!customerData) throw new CustomError("Couldn't find customer");
       const purpose = "SIGNUP-LOGIN";
@@ -577,6 +577,7 @@ export const getCustomerSelectHandler = async (req, res) => {
     await getCustomerSelectValidation.validateAsync(req.body);
 
     let where = {
+      fname: { $exists: true },
       isDeleted: false,
       clientId: req?.session?.clientId || req?.body?.clientId,
     };
@@ -637,6 +638,7 @@ export const getCustomerSelectHandler = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
 // get-charger-select
 export const getChargerSelectHandler = async (req, res) => {
   try {
@@ -759,6 +761,8 @@ export const getStationSelectHandler = async (req, res) => {
   }
 };
 
+=======
+>>>>>>> 884d17bae2de13d24e2ba2cd22f0e25032cb0f91
 // Customer Block/UnBlock
 export const toggleBlockUnblockHandler = async (req, res) => {
   try {

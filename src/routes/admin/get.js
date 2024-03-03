@@ -1,5 +1,5 @@
 // List Admin
-import { ValidationError } from "webpack";
+import { ValidationError } from "joi";
 import { StatusCodes } from "http-status-codes";
 import { CustomError } from "../../helpers/custome.error";
 import AdminModel from "../../models/admin";

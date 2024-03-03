@@ -1,7 +1,11 @@
 import express from "express";
-import { listWalletCustomerTransactions, listWalletTransactions } from "./get";
+import {
+  listAdminWalletTransactions,
+  listWalletCustomerTransactions,
+} from "./get";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 import { authenticateCustomer } from "../../middleware/authenticateCustomer";
+
 const walletRouter = express.Router();
 
 // For customers
@@ -15,7 +19,7 @@ walletRouter.post(
 walletRouter.post(
   "/list-admin",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
-  listWalletTransactions
+  listAdminWalletTransactions
 );
 
 export default walletRouter;

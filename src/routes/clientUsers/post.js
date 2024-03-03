@@ -5,10 +5,13 @@ import {
   encryptData,
   getCurrentUnix,
   hashPassword,
+  setPagination,
 } from "../../commons/common-functions";
 import { CustomError } from "../../helpers/custome.error";
 import {
   createClientUserValidation,
+  deleteClientUserValidation,
+  listClientUserValidation,
   loginClientUserValidation,
   updateClientUserValidation,
 } from "../../helpers/validations/client.user.validation";
@@ -224,38 +227,123 @@ export const loginClientUser = async (req, res) => {
   }
 };
 
-export const getSingleClientUser = async (req, res) => {
+export const deleteClientUser = async (req, res) => {
   try {
-    let clientId = req?.session?.clientId ||req?.body?.clientId
-    checkClientIdAccess(req.session, clientId);
-    const { id } = req.params;
+    await deleteClientUserValidation.validateAsync(req.body);
+    const { id: userId } = req.params;
+    let clientId = req.session.clientId || req.query.clientId;
+    checkClientIdAccess(req.session, req.body.clientId);
 
-    const clientUser = await ClientUserModel.findOne({
-      _id: id,
+    const user = await ClientUserModel.findOne({
+      _id: userId,
       clientId: clientId,
-      isDeleted: false
-    }).select("-password");
+      isDeleted: false,
+    });
 
-    if (!clientUser) {
-      throw new CustomError("Client user not found");
-    }
+    if (!user) throw new CustomError(`No such user is registered with us.`);
 
-    return res.status(StatusCodes.OK).send(
-      responseGenerators(
-        clientUser,
-        StatusCodes.OK,
-        "SUCCESS",
-        0
-      ))
+    user.isDeleted = true;
+
+    await user.save();
+
+    return res
+      .status(StatusCodes.OK)
+      .send(responseGenerators({}, StatusCodes.OK, "SUCCESS", 0));
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
         .status(StatusCodes.BAD_REQUEST)
-        .send(responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1));
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
     }
     console.log(JSON.stringify(error));
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(responseGenerators({}, StatusCodes.INTERNAL_SERVER_ERROR, "Internal Server Error", 1));
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+export const listClientUser = async (req, res) => {
+  try {
+    await listClientUserValidation.validateAsync(req.body);
+
+    let where = {
+      isDeleted: false,
+      clientId: req.session.clientId || req.body.clientId,
+    };
+
+    checkClientIdAccess(req.session, where.clientId);
+
+    if (req.query?.search) {
+      where = {
+        ...where,
+        ...{
+          $or: [
+            { fname: new RegExp(req.query?.search.toString(), "i") },
+            { lname: new RegExp(req.query?.search.toString(), "i") },
+            { email: new RegExp(req.query?.search.toString(), "i") },
+          ],
+        },
+      };
+    }
+
+    if (req.query?.role) {
+      where = {
+        ...where,
+        ...{
+          roleId: new RegExp(req.query?.role.toString(), "i"),
+        },
+      };
+    }
+
+    const pagination = setPagination(req.query);
+    const users = await ClientUserModel.find(where)
+      .select("-password")
+      .sort(pagination.sort)
+      .skip(pagination.offset)
+      .limit(pagination.limit);
+
+    delete users[0].password;
+
+    if (!users) throw new CustomError(`No users found.`);
+    let total_count = await ClientUserModel.count(where);
+
+    return res
+      .status(StatusCodes.OK)
+      .send(
+        responseGenerators(
+          { paginatedData: users, totalCount: total_count },
+          StatusCodes.OK,
+          "SUCCESS",
+          0
+        )
+      );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
   }
 };

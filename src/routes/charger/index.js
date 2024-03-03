@@ -5,6 +5,7 @@ import {
   createChargerHandler,
   deleteChargerHandler,
   getChargerCountHandler,
+  getChargerSelectHandler,
   getSerialNumberHandler,
   listChargerHandler,
   singleChargerHandler,
@@ -65,6 +66,13 @@ chargerRouter.post(
   "/connector-price-update",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   updateConnectorPricePerUnitHandler
+);
+
+// get-charger-select
+chargerRouter.post(
+  "/get-charger-select",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  getChargerSelectHandler
 );
 
 export default chargerRouter;
