@@ -74,7 +74,7 @@ export const listTransactions = async (req, res) => {
       } else if (req.body.key === "CHARGER") {
         where = {
           ...where,
-          serialNumber: req.body.idid,
+          serialNumber: req.body.id,
         };
       } else if (req.body.key === "STATION") {
         where = {
