@@ -7,14 +7,14 @@ import {
   cidMessageValidation,
   messageValidation,
 } from "../../helpers/validations/messages.validation";
-import { setPagination } from "../../commons/common-functions";
+import { getCurrentUnix, setPagination } from "../../commons/common-functions";
 
 export const readUpdateMessageHandler = async (req, res) => {
   try {
     //validation
     await messageValidation.validateAsync(req.body);
 
-    const {clientId} = req.body || req.session;
+    const { clientId } = req.body || req.session;
     const messageIds = req?.body?.messageIds;
 
     // find all messages
@@ -25,7 +25,7 @@ export const readUpdateMessageHandler = async (req, res) => {
 
     // res.json({messages})
 
-   // if messages count miss match
+    // if messages count miss match
     if (messages.length !== messageIds.length) {
       throw new CustomError(`Some messages not found.`);
     }
@@ -33,7 +33,7 @@ export const readUpdateMessageHandler = async (req, res) => {
     // update message
     await MessageModel.updateMany(
       { _id: { $in: messageIds } },
-      { $set: { isRead: true } } 
+      { $set: { isRead: true, updated_at: getCurrentUnix() } }
     );
 
     return res

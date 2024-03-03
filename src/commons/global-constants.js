@@ -172,3 +172,17 @@ export const CONNECTOR_MESSAGE = {
 export const MENTANENCE_MESSAGE = {
   UNDER_MENTANANCE: "Sorry, We are under maintenance till ",
 };
+
+export const NOTIFICATION_MESSAGE = {
+  chargerOfflineWhileTransaction: function (chargerId) {
+    return `Customer trying to start the transaction  but, ${chargerId} is offline.`;
+  },
+  transactionStarted: function (transactionId) {
+    return `Transaction started for ${transactionId}.`;
+  },
+};
+
+export const NOTIFICATION_TITLE = {
+  chargerOffline: "Charger offline",
+  transactionStarted: "Transaction started notification",
+};

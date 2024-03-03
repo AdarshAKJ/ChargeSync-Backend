@@ -31,10 +31,13 @@ import { callAPI } from "../../helpers/api";
 import {
   CONNECTOR_MESSAGE,
   MENTANENCE_MESSAGE,
+  NOTIFICATION_MESSAGE,
+  NOTIFICATION_TITLE,
 } from "../../commons/global-constants";
 
 import MaintenanceModel from "../../models/maintenance";
 import { AxiosError } from "axios";
+import { sendNotification } from "../messages/common";
 
 export const listTransactions = async (req, res) => {
   try {
@@ -487,6 +490,11 @@ export const startTransactionHandler = async (req, res) => {
 
     // API success
     if (chargerStatusData?.code != 200) {
+      sendNotification(
+        NOTIFICATION_TITLE.chargerOffline,
+        NOTIFICATION_MESSAGE.chargerOfflineWhileTransaction(serialNumber),
+        req.session.clientId
+      );
       throw new CustomError(`Charger is offline`);
     }
 
@@ -570,6 +578,14 @@ export const startTransactionHandler = async (req, res) => {
       { walletTransactionId: walletTransactionData._id, deductedAmount: amount }
     );
 
+    // Transaction started notification
+    sendNotification(
+      NOTIFICATION_TITLE.transactionStarted,
+      NOTIFICATION_MESSAGE.transactionStarted(
+        transactionData?.data?.transactionId
+      ),
+      req.session.clientId
+    );
     return res
       .status(StatusCodes.OK)
       .send(
@@ -631,9 +647,18 @@ export const stopTransactionHandler = async (req, res) => {
         "private-api-key": process.env.OCPP_API_KEY,
       }
     );
+
+    // notifications for transaction stop // TO DO
     return res
       .status(StatusCodes.OK)
-      .send(responseGenerators(stopTransaction, StatusCodes.OK, "SUCCESS", 0));
+      .send(
+        responseGenerators(
+          stopTransaction?.data?.data,
+          StatusCodes.OK,
+          "SUCCESS",
+          0
+        )
+      );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
