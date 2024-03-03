@@ -9,7 +9,7 @@ export const callAPI = async (method, url, payload, customHeaders = {}) => {
       data: payload,
       headers: { ...DEFAULT_HEADERS, ...customHeaders },
     });
-    return response.data;
+    return response?.data; // data is inside this data
   } catch (error) {
     console.error("Called API Failed", error);
     console.error(error);

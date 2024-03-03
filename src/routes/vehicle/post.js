@@ -31,6 +31,8 @@ export const createVehicleHandler = async (req, res) => {
 
     let vehicleData = await VehicleModel.create({
       ...req.body,
+      customerId: req.session._id,
+      clientId: req.session.clientId,
       created_by: req.session._id,
       updated_by: req.session._id,
       created_at: getCurrentUnix(),

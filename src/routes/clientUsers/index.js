@@ -7,6 +7,7 @@ import {
   listClientUser,
 } from "./post";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
+import { getSingleClientUser } from "./get";
 
 const clientUserRouter = express.Router();
 
@@ -17,6 +18,12 @@ clientUserRouter.post(
   onlyAdminAndClientWithRoles(["ADMIN"]),
   createClientUser
 ); // DONE
+
+clientUserRouter.get(
+  "/single-client-user/:id",
+  onlyAdminAndClientWithRoles(["ADMIN"]),
+  getSingleClientUser
+); //DONE
 
 clientUserRouter.post(
   "/list",

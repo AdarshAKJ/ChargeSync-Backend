@@ -34,6 +34,7 @@ import {
 } from "../../commons/global-constants";
 
 import MaintenanceModel from "../../models/maintenance";
+import { AxiosError } from "axios";
 
 export const listTransactions = async (req, res) => {
   try {
@@ -412,7 +413,7 @@ export const singlecustomerTransactionsHandler = async (req, res) => {
 
 export const startTransactionHandler = async (req, res) => {
   try {
-    await startTransactionValidation(req.body);
+    await startTransactionValidation.validateAsync(req.body);
 
     let { serialNumber, connectorId, vehicleId, requestedWatts } = req.body;
 
@@ -477,7 +478,7 @@ export const startTransactionHandler = async (req, res) => {
       {
         connectorId: connectorId, // database id
         serialNumber: serialNumber,
-        ocppConnectorId: connectorData.chargerId,
+        ocppConnectorId: +connectorData.connectorId,
       },
       {
         "private-api-key": process.env.OCPP_API_KEY,
@@ -485,7 +486,7 @@ export const startTransactionHandler = async (req, res) => {
     );
 
     // API success
-    if (!chargerStatusData?.status) {
+    if (chargerStatusData?.code != 200) {
       throw new CustomError(`Charger is offline`);
     }
 
@@ -493,8 +494,7 @@ export const startTransactionHandler = async (req, res) => {
 
     // check for connector status
     let updatedConnectorData = await ChargerConnectorModel.findOne({
-      chargerId: chargerData._id,
-      connectorId: Number(connectorId),
+      _id: connectorId,
     })
       .select("status errorCode")
       .lean()
@@ -525,7 +525,7 @@ export const startTransactionHandler = async (req, res) => {
         customerId: req.session._id,
         vehicleId: vehicleId,
         connectorId: connectorId,
-        connectorOCPPId: connectorData.chargerId,
+        connectorOCPPId: Number(connectorData.connectorId),
         clientId: req.session.clientId,
         requestedWatts: requestedWatts,
         requiredTime: null,
@@ -548,7 +548,7 @@ export const startTransactionHandler = async (req, res) => {
       effectedBalance: +walletBalance.amount,
       amount: +amount,
       type: "DEBITED",
-      reason: `Transaction started for ${amount}`,
+      reason: `Transaction deducted for transaction :- ${transactionData?.data?.transactionId}`,
       source: "WALLET",
       created_at: getCurrentUnix(),
       updated_at: getCurrentUnix(),
@@ -560,12 +560,14 @@ export const startTransactionHandler = async (req, res) => {
     walletBalance.updated_at = getCurrentUnix();
     walletBalance.updated_by = req.session._id;
     await walletBalance.save();
-    console.log("Wallet updated for transaction: " + transactionData._id);
+    console.log(
+      "Wallet updated for transaction: " + transactionData?.data?.transactionId
+    );
 
     // update transaction for wallet transaction id
     await TransactionModel.findOneAndUpdate(
-      { _id: transactionData._id },
-      { walletTransactionId: walletTransactionData._id }
+      { _id: transactionData.data._id },
+      { walletTransactionId: walletTransactionData._id, deductedAmount: amount }
     );
 
     return res
@@ -574,12 +576,29 @@ export const startTransactionHandler = async (req, res) => {
         responseGenerators(transactionData.data, StatusCodes.OK, "SUCCESS", 0)
       );
   } catch (error) {
-    if (error instanceof ValidationError || error instanceof CustomError) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(
-          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-        );
+    if (
+      error instanceof ValidationError ||
+      error instanceof CustomError ||
+      error instanceof AxiosError
+    ) {
+      if (error instanceof AxiosError) {
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .send(
+            responseGenerators(
+              {},
+              StatusCodes.BAD_REQUEST,
+              error.response.data.message,
+              1
+            )
+          );
+      } else {
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .send(
+            responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+          );
+      }
     }
     console.log(JSON.stringify(error));
     return res
