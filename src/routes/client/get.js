@@ -85,11 +85,12 @@ export const getSingleClientHandler = async (req, res) => {
       throw new CustomError("Client not found");
     }
 
-    return res.status(StatusCodes.OK).json({
-      message: "Client retrieved successfully",
-      client,
-    });
-  }  catch (error) {
+    return res
+      .status(StatusCodes.OK)
+      .send(
+        responseGenerators({ ...client.toJSON() }, StatusCodes.OK, "SUCCESS", 0)
+      );
+  } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
         .status(StatusCodes.BAD_REQUEST)

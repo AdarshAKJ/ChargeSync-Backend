@@ -17,7 +17,9 @@ export const getSingleClientUser = async (req, res) => {
     const user = await ClientUserModel.findOne({
       _id: id,
       isDeleted: false,
-    });
+    })
+      .lean()
+      .exec();
 
     if (!user) {
       throw new CustomError(`User not found.`);
@@ -26,12 +28,7 @@ export const getSingleClientUser = async (req, res) => {
     return res
       .status(StatusCodes.OK)
       .send(
-        responseGenerators(
-          { user },
-          StatusCodes.OK,
-          "User found successfully",
-          0
-        )
+        responseGenerators(user, StatusCodes.OK, "User found successfully", 0)
       );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {

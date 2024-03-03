@@ -31,10 +31,13 @@ import { callAPI } from "../../helpers/api";
 import {
   CONNECTOR_MESSAGE,
   MENTANENCE_MESSAGE,
+  NOTIFICATION_MESSAGE,
+  NOTIFICATION_TITLE,
 } from "../../commons/global-constants";
 
 import MaintenanceModel from "../../models/maintenance";
 import { AxiosError } from "axios";
+import { sendNotification } from "../messages/common";
 
 export const listTransactions = async (req, res) => {
   try {
@@ -487,6 +490,11 @@ export const startTransactionHandler = async (req, res) => {
 
     // API success
     if (chargerStatusData?.code != 200) {
+      sendNotification(
+        NOTIFICATION_TITLE.chargerOffline,
+        NOTIFICATION_MESSAGE.chargerOfflineWhileTransaction(serialNumber),
+        req.session.clientId
+      );
       throw new CustomError(`Charger is offline`);
     }
 
@@ -570,6 +578,14 @@ export const startTransactionHandler = async (req, res) => {
       { walletTransactionId: walletTransactionData._id, deductedAmount: amount }
     );
 
+    // Transaction started notification
+    sendNotification(
+      NOTIFICATION_TITLE.transactionStarted,
+      NOTIFICATION_MESSAGE.transactionStarted(
+        transactionData?.data?.transactionId
+      ),
+      req.session.clientId
+    );
     return res
       .status(StatusCodes.OK)
       .send(

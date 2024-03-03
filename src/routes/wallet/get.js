@@ -105,7 +105,7 @@ export const listAdminWalletTransactions = async (req, res) => {
       },
     ];
 
-    const walletTransactions = await WalletTransactionModel.find(
+    const walletTransactions = await WalletTransactionModel.aggregate(
       aggregationPipeline
     )
       .sort(pagination.sort)
