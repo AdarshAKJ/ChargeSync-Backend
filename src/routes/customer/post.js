@@ -829,7 +829,6 @@ export const toggleBlockUnblockHandler = async (req, res) => {
 // Forget Password API for Customer
 export const forgetPasswordHandler = async (req, res) => {
   try {
-
     await forgotPasswordValidation.validateAsync(req.body);
     const customer = await CustomerModel.findOne({
       email: req.body.email.toLowerCase(),
