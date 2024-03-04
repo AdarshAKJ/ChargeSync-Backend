@@ -1,6 +1,7 @@
 import express from "express";
 import { listUnreadMessagesHandler, readUpdateMessageHandler } from "./get";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
+import { addMessage } from "./post";
 
 const messageRouter = express.Router();
 
@@ -15,5 +16,13 @@ messageRouter.post(
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   readUpdateMessageHandler
 );
+
+//Add Dummy Messages to DataBase
+messageRouter.post(
+  "/add-message",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  addMessage
+);
+
 
 export default messageRouter;

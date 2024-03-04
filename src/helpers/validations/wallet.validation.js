@@ -31,3 +31,14 @@ export const listWalletCustomerTransactionsValidation = Joi.object({
 export const getCustomerSelectValidation = Joi.object({
   clientId: Joi.string().optional().allow(null),
 });
+
+export const addBalanceToWalletValidation = Joi.object({
+  clientId: Joi.string().required(),
+  customerId: Joi.string().required(),
+  amount: Joi.number().required(),
+  search: Joi.string().optional().valid("", null),
+  limit: Joi.number().optional().allow("", null),
+  offset: Joi.number().optional().allow("", null),
+});
+
+
