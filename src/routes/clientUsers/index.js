@@ -19,7 +19,7 @@ clientUserRouter.post(
   createClientUser
 ); // DONE
 
-clientUserRouter.get(
+clientUserRouter.post(
   "/single-client-user/:id",
   onlyAdminAndClientWithRoles(["ADMIN"]),
   getSingleClientUser
