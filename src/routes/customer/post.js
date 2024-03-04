@@ -1,4 +1,18 @@
+import { StatusCodes } from "http-status-codes";
 import { ValidationError } from "joi";
+import {
+  comparePassword,
+  encryptData,
+  generateSecret,
+  generateTOTP,
+  getCurrentUnix,
+  hashPassword,
+  setPagination,
+  verifyTotp,
+} from "../../commons/common-functions";
+import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
+import { getJwt } from "../../helpers/Jwt.helper";
+import { CustomError } from "../../helpers/custome.error";
 import {
   createCustomerValidation,
   getChargerSelectValidation,
@@ -11,24 +25,10 @@ import {
 } from "../../helpers/validations/customer.validation";
 import { responseGenerators } from "../../lib/utils";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
-import CustomerModel from "../../models/customer";
-import WalletModel from "../../models/wallet";
-import { StatusCodes } from "http-status-codes";
-import { CustomError } from "../../helpers/custome.error";
-import {
-  comparePassword,
-  encryptData,
-  generateSecret,
-  generateTOTP,
-  getCurrentUnix,
-  hashPassword,
-  setPagination,
-  verifyTotp,
-} from "../../commons/common-functions";
-import { getJwt } from "../../helpers/Jwt.helper";
-import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
 import ChargerModel from "../../models/charger";
 import ChargingStationModel from "../../models/chargingStations";
+import CustomerModel from "../../models/customer";
+import WalletModel from "../../models/wallet";
 
 // create user and provide OTP, if exist then provide OTP
 export const createCustomerHandler = async (req, res) => {
@@ -581,7 +581,7 @@ export const getCustomerSelectHandler = async (req, res) => {
     await getCustomerSelectValidation.validateAsync(req.body);
 
     let where = {
-      fname: { $exists: true },
+      // fname: { $exists: true },
       isDeleted: false,
       clientId: req?.session?.clientId || req?.body?.clientId,
     };
@@ -603,17 +603,24 @@ export const getCustomerSelectHandler = async (req, res) => {
     const pagination = setPagination(req.query);
 
     const customer = await CustomerModel.find(where)
-      .select("_id fname lname")
+      .select("_id fname lname phoneNumber email")
       .sort(pagination.sort)
       .skip(pagination.offset)
       .limit(pagination.limit)
       .lean()
       .exec();
 
+    const customersWithFullname = customer.map((c) => {
+      if (c.fname || c.lname) {
+        c.fullname = `${c.fname} ${c.lname}`;
+      }
+      return c;
+    });
+
     return res.status(StatusCodes.OK).send(
       responseGenerators(
         {
-          selectedCustomer: customer,
+          selectedCustomer: customersWithFullname,
         },
         StatusCodes.OK,
         "SUCCESS",
@@ -641,7 +648,6 @@ export const getCustomerSelectHandler = async (req, res) => {
       );
   }
 };
-
 
 // get-charger-select
 export const getChargerSelectHandler = async (req, res) => {
