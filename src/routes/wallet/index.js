@@ -1,11 +1,12 @@
 import express from "express";
 import {
+  getCurrentBalance,
   listAdminWalletTransactions,
   listWalletCustomerTransactions,
 } from "./get";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 import { authenticateCustomer } from "../../middleware/authenticateCustomer";
-import { addAmountToWallet, getCurrentBalance } from "./post";
+import { addAmountToWallet} from "./post";
 
 const walletRouter = express.Router();
 
@@ -24,10 +25,12 @@ walletRouter.post(
 );
 
 walletRouter.post("/add-amount",
+authenticateCustomer,
 addAmountToWallet
 );
 
-walletRouter.post("/current-balance",
+walletRouter.get("/current-balance",
+authenticateCustomer,
 getCurrentBalance
 );
 

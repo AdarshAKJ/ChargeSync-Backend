@@ -33,12 +33,7 @@ export const getCustomerSelectValidation = Joi.object({
 });
 
 export const addBalanceToWalletValidation = Joi.object({
-  clientId: Joi.string().required(),
-  customerId: Joi.string().required(),
   amount: Joi.number().required(),
-  search: Joi.string().optional().valid("", null),
-  limit: Joi.number().optional().allow("", null),
-  offset: Joi.number().optional().allow("", null),
 });
 
 
