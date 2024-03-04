@@ -3,7 +3,7 @@ import config from "config";
 const configVariables = {
   SYS_APP_CNF: config.get("SYS_APP_CNF"),
   PRIVATE_API_KEY: config.get("PRIVATE_API_KEY"),
-  DATABASE_CONNECTION_URI_DEV: config.get("DATABASE_CONNECTION_URI_DEV"),
+  DATABASE_CONNECTION_URI: config.get("DATABASE_CONNECTION_URI"),
   AWS_ACCESS_KEY_ID: config.get("AWS_ACCESS_KEY_ID"),
   AWS_SECRET_ACCESS_KEY: config.get("AWS_SECRET_ACCESS_KEY"),
   S3_BUCKET_NAME: config.get("S3_BUCKET_NAME"),
