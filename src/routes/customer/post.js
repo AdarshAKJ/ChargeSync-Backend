@@ -610,10 +610,14 @@ export const getCustomerSelectHandler = async (req, res) => {
       .lean()
       .exec();
 
+    let total_count = await CustomerModel.countDocuments(where);
+
     return res.status(StatusCodes.OK).send(
       responseGenerators(
         {
-          selectedCustomer: customer,
+          paginatedData: customer,
+          totalCount: total_count,
+          itemsPerPage: pagination.limit,
         },
         StatusCodes.OK,
         "SUCCESS",
@@ -641,7 +645,6 @@ export const getCustomerSelectHandler = async (req, res) => {
       );
   }
 };
-
 
 // get-charger-select
 export const getChargerSelectHandler = async (req, res) => {

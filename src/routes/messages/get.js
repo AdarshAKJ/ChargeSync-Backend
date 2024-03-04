@@ -8,12 +8,13 @@ import {
   messageValidation,
 } from "../../helpers/validations/messages.validation";
 import { getCurrentUnix, setPagination } from "../../commons/common-functions";
+import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 
 export const readUpdateMessageHandler = async (req, res) => {
   try {
     //validation
     await messageValidation.validateAsync(req.body);
-
+    checkClientIdAccess(req.session, req.body.clientId);
     const { clientId } = req.body || req.session;
     const messageIds = req?.body?.messageIds;
 
@@ -72,6 +73,7 @@ export const listUnreadMessagesHandler = async (req, res) => {
   try {
     await cidMessageValidation.validateAsync(req.body);
     const { clientId } = req.body;
+    checkClientIdAccess(req.session, req.body.clientId);
     let paginatedData = setPagination(req.query);
     const where = { clientId, isRead: false };
     const messages = await MessageModel.find(where)

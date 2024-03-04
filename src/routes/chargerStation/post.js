@@ -453,12 +453,13 @@ export const getStationSelectHandler = async (req, res) => {
       .lean()
       .exec();
 
-    if (!station) throw new CustomError("Station not found");
-
+    const total_count = await ChargingStationModel.countDocuments(where);
     return res.status(StatusCodes.OK).send(
       responseGenerators(
         {
-          selectedStation: station,
+          paginatedData: station,
+          totalCount: total_count,
+          itemsPerPage: pagination.limit,
         },
         StatusCodes.OK,
         "SUCCESS",

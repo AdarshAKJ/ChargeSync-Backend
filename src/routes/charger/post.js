@@ -530,10 +530,13 @@ export const getChargerSelectHandler = async (req, res) => {
       .lean()
       .exec();
 
+    const total_count = await ChargerModel.countDocuments(where);
     return res.status(StatusCodes.OK).send(
       responseGenerators(
         {
-          selectedCharger: charger,
+          paginatedData: charger,
+          totalCount: total_count,
+          itemsPerPage: pagination.limit,
         },
         StatusCodes.OK,
         "SUCCESS",
