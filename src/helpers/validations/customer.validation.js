@@ -56,3 +56,7 @@ export const getChargerSelectValidation = Joi.object({
 export const getStationSelectValidation = Joi.object({
   clientId: Joi.string().optional().allow(null),
 });
+
+export const forgotPasswordValidation = Joi.object({
+  email: Joi.string().email().required(),
+});

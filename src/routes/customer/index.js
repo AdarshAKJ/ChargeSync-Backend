@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createCustomerHandler,
+  forgetPasswordHandler,
   getCustomerSelectHandler,
   listCustomerHandler,
   signupOrLoginOTPVerificationHandler,
@@ -48,6 +49,12 @@ customerRouter.post(
   "/toggle-block-unblock/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   toggleBlockUnblockHandler
+);
+
+
+customerRouter.post(
+  "/forgot-password",
+  forgetPasswordHandler
 );
 
 export default customerRouter;
