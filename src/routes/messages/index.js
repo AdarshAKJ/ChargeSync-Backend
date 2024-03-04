@@ -5,7 +5,7 @@ import { addMessage } from "./post";
 
 const messageRouter = express.Router();
 
-messageRouter.get(
+messageRouter.post(
   "/list-message",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   listUnreadMessagesHandler
