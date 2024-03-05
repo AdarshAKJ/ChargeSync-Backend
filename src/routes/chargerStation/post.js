@@ -436,14 +436,26 @@ export const getStationSelectHandler = async (req, res) => {
       clientId: req.session.clientId || req.query.clientId,
     };
 
-    if (req.query?.search) {
-      where = {
-        ...where,
-        station_name: new RegExp(req.query?.search.toString(), "i"),
-      };
-    }
-
     const pagination = setPagination(req.query);
+
+    if (!req.query?.search)
+      return res.status(StatusCodes.OK).send(
+        responseGenerators(
+          {
+            paginatedData: [],
+            totalCount: 0,
+            itemsPerPage: pagination.limit,
+          },
+          StatusCodes.OK,
+          "SUCCESS",
+          0
+        )
+      );
+
+    where = {
+      ...where,
+      station_name: new RegExp(req.query?.search.toString(), "i"),
+    };
 
     const station = await ChargingStationModel.find(where)
       .select("_id station_name")
