@@ -219,14 +219,28 @@ export const singleTransaction = async (req, res) => {
     checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
-      _id: req.body.id,
-      isDeleted: false,
+      _id: req.params.id,
       clientId: req.session.clientId || req.body.clientId,
     };
 
     const aggregationPipeline = [
       {
         $match: where,
+      },
+      {
+        $lookup: {
+          from: "charging-stations",
+          localField: "stationId",
+          foreignField: "_id",
+          as: "stationData",
+          pipeline: [
+            {
+              $project: {
+                station_name: 1,
+              },
+            },
+          ],
+        },
       },
       {
         $lookup: {
@@ -244,7 +258,39 @@ export const singleTransaction = async (req, res) => {
         },
       },
       {
-        $unwind: "$chargerConnectorsData",
+        $lookup: {
+          from: "customers",
+          localField: "customerId",
+          foreignField: "_id",
+          as: "customerData",
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                fname: 1,
+                lname: 1,
+                phoneNumber: 1,
+                email: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: "vehicles",
+          localField: "vehicleId",
+          foreignField: "_id",
+          as: "vehicleData",
+          pipeline: [
+            {
+              $project: {
+                name: 1,
+                vehicleNumber: 1,
+              },
+            },
+          ],
+        },
       },
     ];
 
@@ -650,8 +696,7 @@ export const stopTransactionHandler = async (req, res) => {
 
     sendNotification(
       NOTIFICATION_TITLE.transactionStopped,
-      NOTIFICATION_MESSAGE.transactionStopped(
-        transactionId),
+      NOTIFICATION_MESSAGE.transactionStopped(transactionId),
       req.session.clientId
     );
     // notifications for transaction stop // TO DO
