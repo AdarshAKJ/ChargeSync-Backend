@@ -513,14 +513,26 @@ export const getChargerSelectHandler = async (req, res) => {
       clientId: req?.session?.clientId || req?.body?.clientId,
     };
 
-    if (req.query?.search) {
-      where = {
-        ...where,
-        name: new RegExp(req.query?.search.toString(), "i"),
-      };
-    }
-
     const pagination = setPagination(req.query);
+
+    if (!req.query?.search)
+      return res.status(StatusCodes.OK).send(
+        responseGenerators(
+          {
+            paginatedData: [],
+            totalCount: 0,
+            itemsPerPage: pagination.limit,
+          },
+          StatusCodes.OK,
+          "SUCCESS",
+          0
+        )
+      );
+
+    where = {
+      ...where,
+      name: new RegExp(req.query?.search.toString(), "i"),
+    };
 
     const charger = await ChargerModel.find(where)
       .select("serialNumber name")
