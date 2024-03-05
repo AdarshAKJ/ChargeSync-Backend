@@ -1,6 +1,20 @@
 import { StatusCodes } from "http-status-codes";
 import { ValidationError } from "joi";
 import {
+  createCustomerValidation,
+  getCustomerSelectValidation,
+  listCustomerValidation,
+  signupOrLoginOTPVerificationValidation,
+  singleCustomerValidation,
+  updateCustomerValidation,
+} from "../../helpers/validations/customer.validation";
+import { responseGenerators } from "../../lib/utils";
+import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
+import CustomerModel from "../../models/customer";
+import WalletModel from "../../models/wallet";
+import { StatusCodes } from "http-status-codes";
+import { CustomError } from "../../helpers/custome.error";
+import {
   comparePassword,
   encryptData,
   generateSecret,
@@ -10,21 +24,8 @@ import {
   setPagination,
   verifyTotp,
 } from "../../commons/common-functions";
-import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
 import { getJwt } from "../../helpers/Jwt.helper";
-import { CustomError } from "../../helpers/custome.error";
-import {
-  createCustomerValidation,
-  getChargerSelectValidation,
-  getCustomerSelectValidation,
-  getStationSelectValidation,
-  listCustomerValidation,
-  signupOrLoginOTPVerificationValidation,
-  singleCustomerValidation,
-  updateCustomerValidation,
-} from "../../helpers/validations/customer.validation";
-import { responseGenerators } from "../../lib/utils";
-import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
+import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
 import ChargerModel from "../../models/charger";
 import ChargingStationModel from "../../models/chargingStations";
 import CustomerModel from "../../models/customer";
@@ -586,163 +587,50 @@ export const getCustomerSelectHandler = async (req, res) => {
       clientId: req?.session?.clientId || req?.body?.clientId,
     };
 
-    if (req.query?.search) {
-      where = {
-        ...where,
-        ...{
-          $or: [
-            { fname: new RegExp(req.query.search.toString(), "i") },
-            { lname: new RegExp(req.query.search.toString(), "i") },
-            { phoneNumber: new RegExp(req.query.search.toString(), "i") },
-            { email: new RegExp(req.query.search.toString(), "i") },
-          ],
-        },
-      };
-    }
-
     const pagination = setPagination(req.query);
+
+    if (!req.query?.search)
+      return res.status(StatusCodes.OK).send(
+        responseGenerators(
+          {
+            paginatedData: [],
+            totalCount: 0,
+            itemsPerPage: pagination.limit,
+          },
+          StatusCodes.OK,
+          "SUCCESS",
+          0
+        )
+      );
+
+    where = {
+      ...where,
+      ...{
+        $or: [
+          { fname: new RegExp(req.query.search.toString(), "i") },
+          { lname: new RegExp(req.query.search.toString(), "i") },
+          { phoneNumber: new RegExp(req.query.search.toString(), "i") },
+          { email: new RegExp(req.query.search.toString(), "i") },
+        ],
+      },
+    };
 
     const customer = await CustomerModel.find(where)
-      .select("_id fname lname phoneNumber email")
+      .select("_id fname lname email phoneNumber")
       .sort(pagination.sort)
       .skip(pagination.offset)
       .limit(pagination.limit)
       .lean()
       .exec();
 
-    const customersWithFullname = customer.map((c) => {
-      if (c.fname || c.lname) {
-        c.fullname = `${c.fname} ${c.lname}`;
-      }
-      return c;
-    });
+    let total_count = await CustomerModel.countDocuments(where);
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(
         {
-          selectedCustomer: customersWithFullname,
-        },
-        StatusCodes.OK,
-        "SUCCESS",
-        0
-      )
-    );
-  } catch (error) {
-    if (error instanceof ValidationError || error instanceof CustomError) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(
-          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-        );
-    }
-    console.log(JSON.stringify(error));
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        responseGenerators(
-          {},
-          StatusCodes.INTERNAL_SERVER_ERROR,
-          "Internal Server Error",
-          1
-        )
-      );
-  }
-};
-
-// get-charger-select
-export const getChargerSelectHandler = async (req, res) => {
-  try {
-    await getChargerSelectValidation.validateAsync(req.body);
-
-    checkClientIdAccess(req.session, req.body.clientId);
-
-    let where = {
-      isDeleted: false,
-      clientId: req?.session?.clientId || req?.body?.clientId,
-    };
-
-    if (req.query?.search) {
-      where = {
-        ...where,
-        name: new RegExp(req.query?.search.toString(), "i"),
-      };
-    }
-
-    const pagination = setPagination(req.query);
-
-    const charger = await ChargerModel.find(where)
-      .select("serialNumber name")
-      .sort(pagination.sort)
-      .skip(pagination.offset)
-      .limit(pagination.limit)
-      .lean()
-      .exec();
-
-    return res.status(StatusCodes.OK).send(
-      responseGenerators(
-        {
-          selectedCharger: charger,
-        },
-        StatusCodes.OK,
-        "SUCCESS",
-        0
-      )
-    );
-  } catch (error) {
-    if (error instanceof ValidationError || error instanceof CustomError) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(
-          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-        );
-    }
-    console.log(JSON.stringify(error));
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        responseGenerators(
-          {},
-          StatusCodes.INTERNAL_SERVER_ERROR,
-          "Internal Server Error",
-          1
-        )
-      );
-  }
-};
-
-// get-station-select
-export const getStationSelectHandler = async (req, res) => {
-  try {
-    await getStationSelectValidation.validateAsync(req.body);
-
-    checkClientIdAccess(req.session, req.body.clientId);
-
-    let where = {
-      isDeleted: false,
-      clientId: req.session.clientId || req.query.clientId,
-    };
-
-    if (req.query?.search) {
-      where = {
-        ...where,
-        station_name: new RegExp(req.query?.search.toString(), "i"),
-      };
-    }
-
-    const pagination = setPagination(req.query);
-
-    const station = await ChargingStationModel.find(where)
-      .select("_id station_name")
-      .sort(pagination.sort)
-      .skip(pagination.offset)
-      .limit(pagination.limit)
-      .lean()
-      .exec();
-
-    return res.status(StatusCodes.OK).send(
-      responseGenerators(
-        {
-          selectedStation: station,
+          paginatedData: customer,
+          totalCount: total_count,
+          itemsPerPage: pagination.limit,
         },
         StatusCodes.OK,
         "SUCCESS",

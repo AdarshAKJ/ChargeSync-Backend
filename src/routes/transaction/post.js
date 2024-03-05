@@ -648,6 +648,12 @@ export const stopTransactionHandler = async (req, res) => {
       }
     );
 
+    sendNotification(
+      NOTIFICATION_TITLE.transactionStopped,
+      NOTIFICATION_MESSAGE.transactionStopped(
+        transactionId),
+      req.session.clientId
+    );
     // notifications for transaction stop // TO DO
     return res
       .status(StatusCodes.OK)

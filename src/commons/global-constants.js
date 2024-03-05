@@ -180,9 +180,13 @@ export const NOTIFICATION_MESSAGE = {
   transactionStarted: function (transactionId) {
     return `Transaction started for ${transactionId}.`;
   },
+  transactionStopped: function (transactionId) {
+    return `Transaction stopped for ${transactionId}.`;
+  },
 };
 
 export const NOTIFICATION_TITLE = {
   chargerOffline: "Charger offline",
   transactionStarted: "Transaction started notification",
+  transactionStopped: "Transaction stopped notification"
 };

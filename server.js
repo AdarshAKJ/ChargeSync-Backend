@@ -33,5 +33,4 @@ const port = 8010;
   }
 })();
 
-console.log(process.env.NODE_ENV);
 export default db;

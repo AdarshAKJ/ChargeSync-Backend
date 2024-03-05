@@ -31,3 +31,9 @@ export const listWalletCustomerTransactionsValidation = Joi.object({
 export const getCustomerSelectValidation = Joi.object({
   clientId: Joi.string().optional().allow(null),
 });
+
+export const addBalanceToWalletValidation = Joi.object({
+  amount: Joi.number().required(),
+});
+
+
