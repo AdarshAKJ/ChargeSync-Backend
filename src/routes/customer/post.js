@@ -664,8 +664,7 @@ export const toggleBlockUnblockHandler = async (req, res) => {
 
     if (!id) throw new CustomError("Please provide a valid ID");
 
-    if (status !== "blocked" && status !== "unblocked")
-      throw new CustomError("Invalid status provided");
+    if (status == undefined) throw new CustomError("Invalid status provided");
 
     const customer = await CustomerModel.findById(id);
     if (!customer) {
