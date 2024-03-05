@@ -1,5 +1,4 @@
-import { joi, ValidationError } from "joi";
-import {hashSync } from "bcrypt";
+import { ValidationError } from "joi";
 import jwt from "jsonwebtoken";
 import {
   createCustomerValidation,
@@ -779,7 +778,7 @@ export const resetPasswordHandler = async (req, res) => {
     try {
       decodedToken = jwt.verify(token, configVariables.JWT_SECRET_KEY);
     } catch (error) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid token" });
+      throw new CustomError("Invalid token");
     }
 
     const _id = decodedToken.customerId;
@@ -798,7 +797,7 @@ export const resetPasswordHandler = async (req, res) => {
       throw new CustomError("New password and compare password do not match");
     }
 
-    const hashedPassword = hashSync(new_password, 10);
+    const hashedPassword = await hashPassword(new_password);
 
     await CustomerModel.findByIdAndUpdate(customer._id, { password: hashedPassword });
 
