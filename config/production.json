@@ -14,7 +14,7 @@
     "sender_email_name": "Playground <contact@apttechsols.com>"
   },
   "PRIVATE_API_KEY": "si51inptQaBvh6ZzGvI1iaOl8JtJYqWmGbnyVj994Nk=",
-  "DATABASE_CONNECTION_URI_DEV": "mongodb+srv://Akki955:gzdCVaRNkJV7PuBw@cluster0.mlek7iv.mongodb.net/echosyncpower?retryWrites=true&w=majority",
+  "DATABASE_CONNECTION_URI": "mongodb+srv://Akki955:gzdCVaRNkJV7PuBw@cluster0.mlek7iv.mongodb.net/echosyncpower?retryWrites=true&w=majority",
   "AWS_ACCESS_KEY_ID": "test",
   "AWS_SECRET_ACCESS_KEY": "test",
   "S3_BUCKET_NAME": "test",

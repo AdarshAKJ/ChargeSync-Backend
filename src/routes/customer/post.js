@@ -1,12 +1,12 @@
-import joi, { ValidationError } from "joi";
+import { joi, ValidationError } from "joi";
+import {hashSync } from "bcrypt";
 import jwt from "jsonwebtoken";
 import {
   createCustomerValidation,
   forgotPasswordValidation,
-  getChargerSelectValidation,
   getCustomerSelectValidation,
-  getStationSelectValidation,
   listCustomerValidation,
+  resetPasswordValidation,
   signupOrLoginOTPVerificationValidation,
   singleCustomerValidation,
   updateCustomerValidation,
@@ -29,8 +29,6 @@ import {
 } from "../../commons/common-functions";
 import { getJwt } from "../../helpers/Jwt.helper";
 import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
-import ChargerModel from "../../models/charger";
-import ChargingStationModel from "../../models/chargingStations";
 import configVariables from "../../../config";
 
 // create user and provide OTP, if exist then provide OTP
@@ -589,24 +587,36 @@ export const getCustomerSelectHandler = async (req, res) => {
       clientId: req?.session?.clientId || req?.body?.clientId,
     };
 
-    if (req.query?.search) {
-      where = {
-        ...where,
-        ...{
-          $or: [
-            { fname: new RegExp(req.query.search.toString(), "i") },
-            { lname: new RegExp(req.query.search.toString(), "i") },
-            { phoneNumber: new RegExp(req.query.search.toString(), "i") },
-            { email: new RegExp(req.query.search.toString(), "i") },
-          ],
-        },
-      };
-    }
-
     const pagination = setPagination(req.query);
 
+    if (!req.query?.search)
+      return res.status(StatusCodes.OK).send(
+        responseGenerators(
+          {
+            paginatedData: [],
+            totalCount: 0,
+            itemsPerPage: pagination.limit,
+          },
+          StatusCodes.OK,
+          "SUCCESS",
+          0
+        )
+      );
+
+    where = {
+      ...where,
+      ...{
+        $or: [
+          { fname: new RegExp(req.query.search.toString(), "i") },
+          { lname: new RegExp(req.query.search.toString(), "i") },
+          { phoneNumber: new RegExp(req.query.search.toString(), "i") },
+          { email: new RegExp(req.query.search.toString(), "i") },
+        ],
+      },
+    };
+
     const customer = await CustomerModel.find(where)
-      .select("_id fname lname")
+      .select("_id fname lname email phoneNumber")
       .sort(pagination.sort)
       .skip(pagination.offset)
       .limit(pagination.limit)
@@ -621,128 +631,6 @@ export const getCustomerSelectHandler = async (req, res) => {
           paginatedData: customer,
           totalCount: total_count,
           itemsPerPage: pagination.limit,
-        },
-        StatusCodes.OK,
-        "SUCCESS",
-        0
-      )
-    );
-  } catch (error) {
-    if (error instanceof ValidationError || error instanceof CustomError) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(
-          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-        );
-    }
-    console.log(JSON.stringify(error));
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        responseGenerators(
-          {},
-          StatusCodes.INTERNAL_SERVER_ERROR,
-          "Internal Server Error",
-          1
-        )
-      );
-  }
-};
-
-// get-charger-select
-export const getChargerSelectHandler = async (req, res) => {
-  try {
-    await getChargerSelectValidation.validateAsync(req.body);
-
-    checkClientIdAccess(req.session, req.body.clientId);
-
-    let where = {
-      isDeleted: false,
-      clientId: req?.session?.clientId || req?.body?.clientId,
-    };
-
-    if (req.query?.search) {
-      where = {
-        ...where,
-        name: new RegExp(req.query?.search.toString(), "i"),
-      };
-    }
-
-    const pagination = setPagination(req.query);
-
-    const charger = await ChargerModel.find(where)
-      .select("serialNumber name")
-      .sort(pagination.sort)
-      .skip(pagination.offset)
-      .limit(pagination.limit)
-      .lean()
-      .exec();
-
-    return res.status(StatusCodes.OK).send(
-      responseGenerators(
-        {
-          selectedCharger: charger,
-        },
-        StatusCodes.OK,
-        "SUCCESS",
-        0
-      )
-    );
-  } catch (error) {
-    if (error instanceof ValidationError || error instanceof CustomError) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(
-          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-        );
-    }
-    console.log(JSON.stringify(error));
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        responseGenerators(
-          {},
-          StatusCodes.INTERNAL_SERVER_ERROR,
-          "Internal Server Error",
-          1
-        )
-      );
-  }
-};
-
-// get-station-select
-export const getStationSelectHandler = async (req, res) => {
-  try {
-    await getStationSelectValidation.validateAsync(req.body);
-
-    checkClientIdAccess(req.session, req.body.clientId);
-
-    let where = {
-      isDeleted: false,
-      clientId: req.session.clientId || req.query.clientId,
-    };
-
-    if (req.query?.search) {
-      where = {
-        ...where,
-        station_name: new RegExp(req.query?.search.toString(), "i"),
-      };
-    }
-
-    const pagination = setPagination(req.query);
-
-    const station = await ChargingStationModel.find(where)
-      .select("_id station_name")
-      .sort(pagination.sort)
-      .skip(pagination.offset)
-      .limit(pagination.limit)
-      .lean()
-      .exec();
-
-    return res.status(StatusCodes.OK).send(
-      responseGenerators(
-        {
-          selectedStation: station,
         },
         StatusCodes.OK,
         "SUCCESS",
@@ -826,7 +714,7 @@ export const toggleBlockUnblockHandler = async (req, res) => {
 
 
 
-// Forget Password API for Customer
+// FORGET Password API for Customer
 export const forgetPasswordHandler = async (req, res) => {
   try {
     await forgotPasswordValidation.validateAsync(req.body);
@@ -854,6 +742,74 @@ export const forgetPasswordHandler = async (req, res) => {
         0
       )
     );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+
+// RESET Password API for Customer
+export const resetPasswordHandler = async (req, res) => {
+  try {
+    await resetPasswordValidation.validateAsync(req.body);
+    const { token, new_password, compare_password } = req.body;
+
+    if (!token) {
+      throw new CustomError("Token is missing");
+    }
+
+    let decodedToken;
+    try {
+      decodedToken = jwt.verify(token, configVariables.JWT_SECRET_KEY);
+    } catch (error) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid token" });
+    }
+
+    const _id = decodedToken.customerId;
+
+    const customer = await CustomerModel.findById(_id);
+
+    if (!customer) {
+      throw new CustomError("User with this customer ID does not exist");
+    }
+
+    if (customer.loginBy !== 'EMAIL') {
+      throw new CustomError("Reset password is only allowed for customers logged in via email");
+    }
+
+    if (new_password !== compare_password) {
+      throw new CustomError("New password and compare password do not match");
+    }
+
+    const hashedPassword = hashSync(new_password, 10);
+
+    await CustomerModel.findByIdAndUpdate(customer._id, { password: hashedPassword });
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
+
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res

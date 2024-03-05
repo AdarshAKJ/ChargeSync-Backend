@@ -4,6 +4,7 @@ import {
   forgetPasswordHandler,
   getCustomerSelectHandler,
   listCustomerHandler,
+  resetPasswordHandler,
   signupOrLoginOTPVerificationHandler,
   singleCustomerHandler,
   toggleBlockUnblockHandler,
@@ -51,10 +52,14 @@ customerRouter.post(
   toggleBlockUnblockHandler
 );
 
-
 customerRouter.post(
   "/forgot-password",
   forgetPasswordHandler
+);
+
+customerRouter.post(
+  "/reset-password",
+  resetPasswordHandler
 );
 
 export default customerRouter;
