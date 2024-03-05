@@ -77,6 +77,58 @@ export const listUnreadMessagesHandler = async (req, res) => {
     let paginatedData = setPagination(req.query);
     const where = { clientId, isRead: false };
     const messages = await MessageModel.find(where)
+      .select("message isPreserved isRead title created_at")
+      .sort(paginatedData.sort)
+      .skip(paginatedData.skip)
+      .limit(paginatedData.limit)
+      .lean()
+      .exec();
+
+    const total_count = await MessageModel.countDocuments(where);
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          paginatedData: messages,
+          totalCount: total_count,
+          itemsPerPage: paginatedData.limit,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+export const listPreservedMessagesHandler = async (req, res) => {
+  try {
+    await cidMessageValidation.validateAsync(req.body);
+    const { clientId } = req.body;
+    checkClientIdAccess(req.session, req.body.clientId);
+    let paginatedData = setPagination(req.query);
+    const where = { clientId, isPreserved: true };
+    const messages = await MessageModel.find(where)
+      .select("message isPreserved isRead title created_at")
       .sort(paginatedData.sort)
       .skip(paginatedData.skip)
       .limit(paginatedData.limit)
