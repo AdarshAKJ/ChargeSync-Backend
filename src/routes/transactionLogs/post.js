@@ -22,41 +22,41 @@ export const singleTransactionLog = async (req, res) => {
       {
         $match: where,
       },
-      {
-        $lookup: {
-          from: "transactions",
-          localField: "transactionId",
-          foreignField: "_id",
-          as: "transactionsData",
-          pipeline: [
-            {
-              $project: {
-                clientId: 1,
-                serialNumber: 1,
-                connectorId: 1,
-                status: 1,
-                vehicleId: 1,
-                perUnitCharges: 1,
-              },
-            },
-          ],
-        },
-      },
-      {
-        $lookup: {
-          from: "chargerConnectors",
-          localField: "transactionsData.connectorId",
-          foreignField: "_id",
-          as: "chargerConnectorsData",
-          pipeline: [
-            {
-              $project: {
-                connectorId: 1,
-              },
-            },
-          ],
-        },
-      },
+      // {
+      //   $lookup: {
+      //     from: "transactions",
+      //     localField: "transactionId",
+      //     foreignField: "_id",
+      //     as: "transactionsData",
+      //     pipeline: [
+      //       {
+      //         $project: {
+      //           clientId: 1,
+      //           serialNumber: 1,
+      //           connectorId: 1,
+      //           status: 1,
+      //           vehicleId: 1,
+      //           perUnitCharges: 1,
+      //         },
+      //       },
+      //     ],
+      //   },
+      // },
+      // {
+      //   $lookup: {
+      //     from: "chargerConnectors",
+      //     localField: "transactionsData.connectorId",
+      //     foreignField: "_id",
+      //     as: "chargerConnectorsData",
+      //     pipeline: [
+      //       {
+      //         $project: {
+      //           connectorId: 1,
+      //         },
+      //       },
+      //     ],
+      //   },
+      // },
     ];
 
     const transactionlog = await TransactionLogsModel.aggregate(

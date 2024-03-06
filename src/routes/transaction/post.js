@@ -39,6 +39,7 @@ import MaintenanceModel from "../../models/maintenance";
 import { AxiosError } from "axios";
 import { sendNotification } from "../messages/common";
 
+// list transactions
 export const listTransactions = async (req, res) => {
   try {
     await listTransactionsValidation.validateAsync(req.body);
@@ -210,6 +211,7 @@ export const listTransactions = async (req, res) => {
   }
 };
 
+// get single transaction
 export const singleTransaction = async (req, res) => {
   try {
     await singleTransactionValidation.validateAsync({
