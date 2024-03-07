@@ -30,6 +30,7 @@ import WalletTransactionModel from "../../models/walletTransaction";
 import { callAPI } from "../../helpers/api";
 import {
   CONNECTOR_MESSAGE,
+  ERROR,
   MENTANENCE_MESSAGE,
   NOTIFICATION_MESSAGE,
   NOTIFICATION_TITLE,
@@ -38,6 +39,7 @@ import {
 import MaintenanceModel from "../../models/maintenance";
 import { AxiosError } from "axios";
 import { sendNotification } from "../messages/common";
+import configVariables from "../../../config";
 
 // list transactions
 export const listTransactions = async (req, res) => {
@@ -510,16 +512,18 @@ export const startTransactionHandler = async (req, res) => {
     if (!connectorData)
       throw new CustomError("Please provide a valid connector id");
 
-    // calculate the  amount
     let amount = (requestedWatts / 1000) * connectorData.pricePerUnit;
 
-    // check wallet balance greater or equal to the amount.
+    // Calculate the  amount.
+    let amountWithTax = (amount * +configVariables.TAX) / 100 + amount;
+
+    // Check wallet balance greater or equal to the amount.
     let walletBalance = await WalletModel.findOne({
       customerId: req.session._id,
     });
 
     // check for wallet balance insufficient
-    if (!walletBalance || +walletBalance.amount < +amount)
+    if (!walletBalance || +walletBalance.amount < +amountWithTax)
       throw new CustomError("Insufficient wallet balance");
 
     // call the live status for charger.
@@ -593,18 +597,31 @@ export const startTransactionHandler = async (req, res) => {
       }
     );
 
+    // if transaction API failed then notify client.
+    if (transactionData?.code != 200) {
+      sendNotification(
+        NOTIFICATION_TITLE.transactionAPIFailed,
+        NOTIFICATION_MESSAGE.transactionAPIFailingFor(serialNumber),
+        req.session.clientId,
+        null,
+        null,
+        true
+      );
+      throw new CustomError(ERROR.SERVER_DOWN);
+    }
+
     let preBalance = +walletBalance.amount;
     // deduce the amount
-    walletBalance.amount = +walletBalance.amount - +amount;
+    walletBalance.amount = +walletBalance.amount - +amountWithTax;
     // add the wallet history
     let walletTransactionData = await WalletTransactionModel.create({
       clientId: req.session.clientId,
       customerId: req.session._id,
       preBalance: preBalance,
       effectedBalance: +walletBalance.amount,
-      amount: +amount,
+      amount: +amountWithTax,
       type: "DEBITED",
-      reason: `Transaction deducted for transaction :- ${transactionData?.data?.transactionId}`,
+      reason: `Credit deducted for transaction :- ${transactionData?.data?.transactionId}`,
       source: "WALLET",
       created_at: getCurrentUnix(),
       updated_at: getCurrentUnix(),
@@ -616,14 +633,23 @@ export const startTransactionHandler = async (req, res) => {
     walletBalance.updated_at = getCurrentUnix();
     walletBalance.updated_by = req.session._id;
     await walletBalance.save();
+
     console.log(
       "Wallet updated for transaction: " + transactionData?.data?.transactionId
     );
 
     // update transaction for wallet transaction id
+    // with wallet transaction id and amount
     await TransactionModel.findOneAndUpdate(
       { _id: transactionData.data._id },
-      { walletTransactionId: walletTransactionData._id, deductedAmount: amount }
+      {
+        walletTransactionId: walletTransactionData._id,
+        amount: amount,
+        tax: configVariables.TAX,
+        totalCost: amountWithTax,
+        updated_at: getCurrentUnix(),
+        updated_by: req.session._id,
+      }
     );
 
     // Transaction started notification

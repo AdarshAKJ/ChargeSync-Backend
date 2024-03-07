@@ -44,5 +44,6 @@
   "MEMBER_LOGIN": "http://localhost:3000/",
   "API_KEY": "dev-media360XjwUYH3MXLZjJL7fczHT0E6RdIJjMZHB1zMfXsiavShKgDvAvPuj",
   "ENCRYPT_SECRET": "1e1a2e51d9334cf857c6607f259d3db19dbd6328f0dafffd48ddcd8fe9358e3b",
-  "IV": "38605c68ac582d970971f97dc4c9c86b"
+  "IV": "38605c68ac582d970971f97dc4c9c86b",
+  "TAX": 18
 }
