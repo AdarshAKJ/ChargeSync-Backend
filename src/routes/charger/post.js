@@ -373,7 +373,7 @@ export const updateChargerHandler = async (req, res) => {
 
     checkClientIdAccess(req.session, req.body.clientId);
 
-    const charger = await ChargerModel.findOne({
+    let charger = await ChargerModel.findOne({
       _id: chargerId,
       clientId: req.body.clientId,
       isDeleted: false,
@@ -389,8 +389,39 @@ export const updateChargerHandler = async (req, res) => {
         `Charger cannot be update while it is still connected. Please disconnect the charger before attempting to update.`
       );
 
+    // check the charger connector count.
+    let connectorCount = await ChargerConnectorModel.countDocuments({
+      chargerId: charger._id,
+    });
+
+    //if count is mismatch then throw an error
+    if (req.body.connectorDetails.length != connectorCount)
+      throw new CustomError(`You cannot add or delete the new connector.`);
+
+    let reqData = { ...req.body };
+    // delete connectorDetails
+    delete reqData.connectorDetails;
+
+    // update each connector for the charger
+    let connectorData = [];
+    for (const singleConnector of req.body.connectorDetails) {
+      let singleUpdatedConnector = await ChargerConnectorModel.findOneAndUpdate(
+        {
+          chargerId: charger._id,
+          connectorId: singleConnector.connectorId,
+        },
+        {
+          connectorId: singleConnector.connectorId,
+          connectorType: singleConnector.connectorType,
+          pricePerUnit: singleConnector.pricePerUnit,
+        },
+        { new: true }
+      );
+      connectorData.push(singleUpdatedConnector);
+    }
+
     let keys = [];
-    for (let key in req.body) {
+    for (let key in reqData) {
       keys.push(key);
     }
 
@@ -402,17 +433,12 @@ export const updateChargerHandler = async (req, res) => {
     charger.updated_by = req.session._id;
 
     await charger.save();
+    charger = charger.toJSON();
+    charger = { ...charger, connectorDetails: connectorData };
 
     return res
       .status(StatusCodes.OK)
-      .send(
-        responseGenerators(
-          { ...charger.toJSON() },
-          StatusCodes.OK,
-          "SUCCESS",
-          0
-        )
-      );
+      .send(responseGenerators(charger, StatusCodes.OK, "SUCCESS", 0));
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
@@ -513,14 +539,26 @@ export const getChargerSelectHandler = async (req, res) => {
       clientId: req?.session?.clientId || req?.body?.clientId,
     };
 
-    if (req.query?.search) {
-      where = {
-        ...where,
-        name: new RegExp(req.query?.search.toString(), "i"),
-      };
-    }
-
     const pagination = setPagination(req.query);
+
+    if (!req.query?.search)
+      return res.status(StatusCodes.OK).send(
+        responseGenerators(
+          {
+            paginatedData: [],
+            totalCount: 0,
+            itemsPerPage: pagination.limit,
+          },
+          StatusCodes.OK,
+          "SUCCESS",
+          0
+        )
+      );
+
+    where = {
+      ...where,
+      name: new RegExp(req.query?.search.toString(), "i"),
+    };
 
     const charger = await ChargerModel.find(where)
       .select("serialNumber name")

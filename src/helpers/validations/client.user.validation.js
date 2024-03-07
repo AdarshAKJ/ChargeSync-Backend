@@ -35,7 +35,7 @@ export const updateClientUserValidation = Joi.object({
     .allow(null),
   countryCode: Joi.string().required(),
   address: Joi.string().required(),
-  status: Joi.string().valid("ACTIVE", "BLOCKED").required(),
+  status: Joi.string().valid("ACTIVE", "BLOCKED").default("ACTIVE").optional(),
   documents: Joi.array()
     .items(
       Joi.object({
