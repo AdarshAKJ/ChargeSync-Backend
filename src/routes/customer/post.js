@@ -1,4 +1,3 @@
-import { StatusCodes } from "http-status-codes";
 import { ValidationError } from "joi";
 import {
   createCustomerValidation,
@@ -10,7 +9,6 @@ import {
 } from "../../helpers/validations/customer.validation";
 import { responseGenerators } from "../../lib/utils";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
-import CustomerModel from "../../models/customer";
 import WalletModel from "../../models/wallet";
 import { StatusCodes } from "http-status-codes";
 import { CustomError } from "../../helpers/custome.error";
@@ -26,10 +24,7 @@ import {
 } from "../../commons/common-functions";
 import { getJwt } from "../../helpers/Jwt.helper";
 import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
-import ChargerModel from "../../models/charger";
-import ChargingStationModel from "../../models/chargingStations";
 import CustomerModel from "../../models/customer";
-import WalletModel from "../../models/wallet";
 
 // create user and provide OTP, if exist then provide OTP
 export const createCustomerHandler = async (req, res) => {
