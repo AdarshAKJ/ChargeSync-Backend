@@ -273,19 +273,59 @@ export const singleChargerHandler = async (req, res) => {
     checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
+      _id: req.params.id,
       isDeleted: false,
-      clientId: req.session.clientId || req.body.clientId,
+      clientId: req.body.clientId || req.session.clientId
     };
 
-    const charger = await ChargerModel.findOne(where);
+   
+    const aggregationPipeline = [
+      {
+        $match: where,
+      },
+      {
+        $lookup: {
+          from: "charger-connectors",
+          localField: "_id",
+          foreignField: "chargerId",
+          as: "ChargerConnectorData",
+          pipeline: [
+            {
+              $match: {
+                isDeleted: false,  // Add this condition to filter charger-connectors
+              },
+            },
+            {
+              $project: {
+                _id : 1,
+                connectorType: 1,
+                pricePerUnit: 1,
+              },
+            },
+          ],
+        },
+      },
+    ];
 
-    if (!charger) {
+    const charger = await ChargerModel.aggregate(aggregationPipeline);
+
+    
+    if (!charger || charger.length <= 0) {
       return res
         .status(StatusCodes.NOT_FOUND)
         .json({ error: "Charger not found" });
     }
 
-    return res.status(StatusCodes.OK).json({ charger });
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          singlechargerData: charger[0],
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
