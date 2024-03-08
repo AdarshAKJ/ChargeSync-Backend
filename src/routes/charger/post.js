@@ -275,6 +275,7 @@ export const singleChargerHandler = async (req, res) => {
     let where = {
       _id: req.params.id,
       isDeleted: false,
+      clientId: req.body.clientId || req.session.clientId
     };
 
    
@@ -309,7 +310,7 @@ export const singleChargerHandler = async (req, res) => {
     const charger = await ChargerModel.aggregate(aggregationPipeline);
 
     
-    if (!charger) {
+    if (!charger || charger.length <= 0) {
       return res
         .status(StatusCodes.NOT_FOUND)
         .json({ error: "Charger not found" });
