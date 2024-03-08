@@ -4,10 +4,10 @@ import MessageModel from "../../models/messages";
 export const sendNotification = async (
   title,
   msg,
-  clientId,
-  customerId,
-  clientUserId,
-  isPreserved
+  clientId = null,
+  customerId = null,
+  clientUserId = null,
+  isPreserved = false
 ) => {
   try {
     await MessageModel.create({
