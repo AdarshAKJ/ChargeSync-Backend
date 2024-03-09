@@ -24,6 +24,8 @@ export const createClientUser = async (req, res) => {
   try {
     await createClientUserValidation.validateAsync({ ...req.body });
     checkClientIdAccess(req.session, req.body.clientId);
+    let isAdminCreated = session.superAdmin? true : false;
+
     const isAvailable = await ClientUserModel.findOne({
       $or: [
         {
@@ -51,6 +53,7 @@ export const createClientUser = async (req, res) => {
       ...req.body,
       email: req.body.email.toLowerCase(),
       password: await hashPassword(req.body.password),
+      isAdminCreated:isAdminCreated,
       created_at: getCurrentUnix(),
       updated_at: getCurrentUnix(),
       updated_by: req.session._id,
@@ -245,6 +248,7 @@ export const deleteClientUser = async (req, res) => {
 
     if (!user) throw new CustomError(`No such user is registered with us.`);
 
+    if(user.isAdminCreated) throw new CustomError(`Admin can not be deleted`);
     user.isDeleted = true;
 
     await user.save();
