@@ -300,6 +300,7 @@ export const singleChargerHandler = async (req, res) => {
                 _id : 1,
                 connectorType: 1,
                 pricePerUnit: 1,
+                connectorId: 1,
               },
             },
           ],
