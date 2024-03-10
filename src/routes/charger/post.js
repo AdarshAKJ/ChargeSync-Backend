@@ -199,16 +199,19 @@ export const getSerialNumberHandler = async (req, res) => {
       return res.status(404).json({ error: "Client not found" });
     }
 
-    return res
-      .status(StatusCodes.OK)
-      .send(
-        responseGenerators(
-          [{ serialNumberCount: +client[0].serialNumberCount + 1, ...client }],
-          StatusCodes.OK,
-          "SUCCESS",
-          0
-        )
-      );
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        [
+          {
+            ...client[0],
+            serialNumberCount: +client[0].serialNumberCount + 1,
+          },
+        ],
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
