@@ -55,7 +55,7 @@ export const dashboardHandler = async (req, res) => {
         },
       },
     ]);
-    responseData.revenueCount = responseData.revenueCount[0].totalCost;
+    responseData.revenueCount = responseData?.revenueCount[0]?.totalCost || 0;
 
     // Active charging.
     responseData.activeChargingCount =
@@ -66,25 +66,22 @@ export const dashboardHandler = async (req, res) => {
         // created_at: { $gte: monthStartData },
       });
 
-    // Online chargers count 
-    responseData.onlineChargerCount =
-    await ChargerModel.countDocuments({
+    // Online chargers count
+    responseData.onlineChargerCount = await ChargerModel.countDocuments({
       clientId: req.session.clientId,
       status: "ONLINE",
       isDeleted: false,
     });
-    
-    // offline chargers count 
-    responseData.offlineChargerCount =
-    await ChargerModel.countDocuments({
+
+    // offline chargers count
+    responseData.offlineChargerCount = await ChargerModel.countDocuments({
       clientId: req.session.clientId,
       status: "OFFLINE",
       isDeleted: false,
     });
 
-    // CONFIGURING chargers count 
-    responseData.faultyChargerCount =
-    await ChargerModel.countDocuments({
+    // CONFIGURING chargers count
+    responseData.faultyChargerCount = await ChargerModel.countDocuments({
       clientId: req.session.clientId,
       status: "CONFIGURING",
       isDeleted: false,

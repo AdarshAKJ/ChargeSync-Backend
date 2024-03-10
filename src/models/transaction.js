@@ -33,7 +33,7 @@ const TransactionSchema = new mongoose.Schema({
   vehicleId: { type: String, required: true },
   perUnitCharges: { type: Number, required: true },
   startMeterReading: { type: Number }, //in "Wh"
-  expectedEndMeterReading: { type: Number }, // this is expected meter reading where charger will stop.
+  expectedEndMeterReading: { type: Number }, // this is expected meter reading where charger should stop.
   endMeterReading: { type: Number },
   amount: { type: Number },
   tax: { type: Number },
