@@ -190,9 +190,10 @@ export const getSerialNumberHandler = async (req, res) => {
       _id: req.session.clientId || req.body.clientId,
     };
 
-    const client = await ClientModel.find(where).select(
-      "prefix serialNumberCount"
-    );
+    const client = await ClientModel.find(where)
+      .select("prefix serialNumberCount")
+      .lean()
+      .exec();
 
     if (!client) {
       return res.status(404).json({ error: "Client not found" });
@@ -200,7 +201,14 @@ export const getSerialNumberHandler = async (req, res) => {
 
     return res
       .status(StatusCodes.OK)
-      .send(responseGenerators(client, StatusCodes.OK, "SUCCESS", 0));
+      .send(
+        responseGenerators(
+          { ...client, serialNumberCount: +client.serialNumberCount + 1 },
+          StatusCodes.OK,
+          "SUCCESS",
+          0
+        )
+      );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
@@ -275,10 +283,9 @@ export const singleChargerHandler = async (req, res) => {
     let where = {
       _id: req.params.id,
       isDeleted: false,
-      clientId: req.body.clientId || req.session.clientId
+      clientId: req.body.clientId || req.session.clientId,
     };
 
-   
     const aggregationPipeline = [
       {
         $match: where,
@@ -292,12 +299,12 @@ export const singleChargerHandler = async (req, res) => {
           pipeline: [
             {
               $match: {
-                isDeleted: false,  // Add this condition to filter charger-connectors
+                isDeleted: false, // Add this condition to filter charger-connectors
               },
             },
             {
               $project: {
-                _id : 1,
+                _id: 1,
                 connectorType: 1,
                 pricePerUnit: 1,
                 connectorId: 1,
@@ -310,7 +317,6 @@ export const singleChargerHandler = async (req, res) => {
 
     const charger = await ChargerModel.aggregate(aggregationPipeline);
 
-    
     if (!charger || charger.length <= 0) {
       return res
         .status(StatusCodes.NOT_FOUND)
