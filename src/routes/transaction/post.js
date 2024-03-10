@@ -464,6 +464,7 @@ export const singlecustomerTransactionsHandler = async (req, res) => {
   }
 };
 
+// start transaction.
 export const startTransactionHandler = async (req, res) => {
   try {
     await startTransactionValidation.validateAsync(req.body);
@@ -704,10 +705,23 @@ export const startTransactionHandler = async (req, res) => {
   }
 };
 
+// stop the transaction
 export const stopTransactionHandler = async (req, res) => {
   try {
     await stopTransactionValidation(req.body);
-    let { serialNumber, transactionId } = req.body;
+    let { serialNumber, transactionId, customerReason } = req.body;
+
+    // check for transaction.
+    let tData = await TransactionModel.findOne({
+      serialNumber: serialNumber,
+      occpTransactionId: transactionId,
+    }).select("_id serialNumber occpTransactionId status");
+
+    // check exits
+    if (!tData) throw new CustomError("Transaction not found.");
+    // check status
+    if (tData.status != "InProgress")
+      throw new CustomError("No Active transactions found.");
 
     // call the live status for charger.
     let stopTransaction = await callAPI(
@@ -722,21 +736,36 @@ export const stopTransactionHandler = async (req, res) => {
       }
     );
 
+    if (stopTransaction?.code != 200) {
+      sendNotification(
+        NOTIFICATION_TITLE.stopTransactionFailed,
+        NOTIFICATION_MESSAGE.stopTransactionFailed(serialNumber),
+        req.session.clientId
+      );
+      throw new CustomError(
+        `Failed to stop transaction, Please trigger Emergency stop`
+      );
+    }
+
     sendNotification(
       NOTIFICATION_TITLE.transactionStopped,
       NOTIFICATION_MESSAGE.transactionStopped(transactionId),
       req.session.clientId
     );
+
+    await TransactionModel.findOneAndUpdate(
+      { serialNumber: serialNumber, occpTransactionId: transactionId },
+      {
+        customerReason: customerReason || "Manually stopped transaction.",
+        updated_at: getCurrentUnix(),
+        updated_by: req.session._id,
+      }
+    );
     // notifications for transaction stop // TO DO
     return res
       .status(StatusCodes.OK)
       .send(
-        responseGenerators(
-          stopTransaction?.data?.data,
-          StatusCodes.OK,
-          "SUCCESS",
-          0
-        )
+        responseGenerators(stopTransaction?.data, StatusCodes.OK, "SUCCESS", 0)
       );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {

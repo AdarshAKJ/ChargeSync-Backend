@@ -40,6 +40,7 @@ const TransactionSchema = new mongoose.Schema({
   totalCost: { type: Number },
   initialDeduction: { type: Number },
   failedReason: { type: String, trim: true },
+  customerReason: { type: String, trim: true },
   requestedWatts: { type: Number }, // this is requested by user
   requiredTime: { type: Number },
   idTag: { type: String, trim: true, index: true },

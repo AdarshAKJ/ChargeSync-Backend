@@ -186,7 +186,10 @@ export const NOTIFICATION_MESSAGE = {
     return `Transaction stopped for ${transactionId}.`;
   },
   transactionAPIFailingFor: function (serialNumber) {
-    return `Transaction API failing for ${serialNumber} charger, Please contact admin.`;
+    return `Transaction Start API failing for ${serialNumber} charger, Please contact admin.`;
+  },
+  stopTransactionFailed: function (serialNumber) {
+    return `Transaction Stop API failing for ${serialNumber} charger, Please contact admin.`;
   },
 };
 
@@ -195,4 +198,5 @@ export const NOTIFICATION_TITLE = {
   transactionStarted: "Transaction started notification",
   transactionStopped: "Transaction stopped notification",
   transactionAPIFailed: "Transaction API failing",
+  stopTransactionFailed: "Stop transaction Failed",
 };
