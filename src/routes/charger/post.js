@@ -195,7 +195,7 @@ export const getSerialNumberHandler = async (req, res) => {
       .lean()
       .exec();
 
-    if (!client) {
+    if (!client || !client.length) {
       return res.status(404).json({ error: "Client not found" });
     }
 
@@ -203,7 +203,7 @@ export const getSerialNumberHandler = async (req, res) => {
       .status(StatusCodes.OK)
       .send(
         responseGenerators(
-          { ...client, serialNumberCount: +client.serialNumberCount + 1 },
+          [{ serialNumberCount: +client[0].serialNumberCount + 1, ...client }],
           StatusCodes.OK,
           "SUCCESS",
           0
