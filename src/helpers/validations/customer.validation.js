@@ -57,3 +57,8 @@ export const getChargerSelectValidation = Joi.object({
 export const getStationSelectValidation = Joi.object({
   clientId: Joi.string().optional().allow(null),
 });
+export const chargerAvailableConnectorsValidation = Joi.object({  
+  serialNumber: Joi.string().required(),
+  clientId: Joi.string().optional().allow(null),
+});
+

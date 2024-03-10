@@ -44,6 +44,7 @@ customerRouter.post(
   getCustomerSelectHandler
 );
 
+// block-unblock
 customerRouter.post(
   "/toggle-block-unblock/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
