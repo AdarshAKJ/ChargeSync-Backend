@@ -9,6 +9,22 @@ export const createCustomerValidation = Joi.object({
   loginBy: Joi.string().optional().allow("EMAIL", "PHONE"),
 });
 
+export const v2CreateCustomerValidation = Joi.object({
+  clientId: Joi.string().required(),
+  email: Joi.string().email().optional().allow(null),
+  password: Joi.string(),
+  phoneNumber: Joi.string().optional().allow(null),
+  countryCode: Joi.string().optional().allow(null),
+  loginBy: Joi.string().optional().allow("EMAIL", "PHONE"),
+});
+
+export const createPinValidation = Joi.object({
+  clientId: Joi.string().required(),
+  id: Joi.string().required(),
+  pin: Joi.string().required(),
+  checkPin: Joi.string().required(),
+});
+
 export const signupOrLoginOTPVerificationValidation = Joi.object({
   clientId: Joi.string().required(),
   email: Joi.string().email().optional().allow(null),
