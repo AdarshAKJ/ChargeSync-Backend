@@ -27,8 +27,8 @@ export const createPinValidation = Joi.object({
 export const signupOrLoginOTPVerificationValidation = Joi.object({
   id: Joi.string().required(),
   otp: Joi.string().required(),
-  password: Joi.number().integer().min(1000000).max(999999).required(),
-  confirmPassword: Joi.number().integer().min(1000000).max(999999).required(),
+  password: Joi.number().integer().min(100000).max(999999).required(),
+  confirmPassword: Joi.number().integer().min(100000).max(999999).required(),
 });
 
 export const updateCustomerValidation = Joi.object({
@@ -78,5 +78,5 @@ export const chargerAvailableConnectorsValidation = Joi.object({
 
 export const loginValidation = Joi.object({
   id: Joi.string().required(),
-  password: Joi.number().integer().min(1000000).max(999999).required(),
+  password: Joi.number().integer().min(100000).max(999999).required(),
 });

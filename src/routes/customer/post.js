@@ -467,7 +467,7 @@ export const loginHandler = async (req, res) => {
 
     //compare the pin
     let passwordMatch = await comparePassword(
-      req.body.password,
+      req.body.password.toString(),
       customerData.password
     );
 
