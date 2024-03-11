@@ -46,7 +46,7 @@ export const createClientUser = async (req, res) => {
 
     if (isAvailable)
       throw new CustomError(
-        `user already exits with given Email or Phone Number.`
+        `user already exist with given Email or Phone Number.`
       );
 
     let data = {
