@@ -807,7 +807,7 @@ export const startTransactionHandler = async (req, res) => {
 // stop the transaction
 export const stopTransactionHandler = async (req, res) => {
   try {
-    await stopTransactionValidation(req.body);
+    await stopTransactionValidation.validateAsync(req.body);
     let { serialNumber, transactionId, customerReason } = req.body;
 
     // check for transaction.
