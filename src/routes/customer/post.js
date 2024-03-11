@@ -1,9 +1,9 @@
 import { ValidationError } from "joi";
 import {
   createCustomerValidation,
-  createPinValidation,
   getCustomerSelectValidation,
   listCustomerValidation,
+  loginValidation,
   signupOrLoginOTPVerificationValidation,
   singleCustomerValidation,
   updateCustomerValidation,
@@ -27,7 +27,6 @@ import {
 import { getJwt } from "../../helpers/Jwt.helper";
 import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
 import CustomerModel from "../../models/customer";
-
 
 // create user and provide OTP, if exist then provide OTP
 export const createCustomerHandler = async (req, res) => {
@@ -214,13 +213,13 @@ export const createCustomerHandler = async (req, res) => {
   }
 };
 
-// v2 version of create customer 
+// v2 version of create customer
 export const v2CreateCustomerHandler = async (req, res) => {
   try {
+    // validation
     await v2CreateCustomerValidation.validateAsync(req.body);
 
     if (req.body.loginBy == "EMAIL") {
-
       let customerData;
 
       customerData = await CustomerModel.findOne({
@@ -229,6 +228,7 @@ export const v2CreateCustomerHandler = async (req, res) => {
         isDeleted: false,
       });
 
+      // check customer is not exist
       if (!customerData || (customerData && !customerData.isVerified)) {
         if (customerData && !customerData.isVerified) {
           await CustomerModel.deleteOne({
@@ -258,11 +258,8 @@ export const v2CreateCustomerHandler = async (req, res) => {
         return res.status(StatusCodes.OK).send(
           responseGenerators(
             {
-              token: null,
-              customerData: null,
-              loginCompleted: false,
-              id : customerData._id,
-              email: customerData.email,
+              isNew: true,
+              id: customerData._id,
             },
             StatusCodes.OK,
             OTP.SUCCESS,
@@ -270,39 +267,11 @@ export const v2CreateCustomerHandler = async (req, res) => {
           )
         );
       } else {
-        // pin compare
-        let passwordMatch = await comparePassword(
-          req.body.password,
-          customerData.password
-        );
-
-        if (!passwordMatch)
-          throw new CustomError(
-            `Incorrect PIN.`
-          );
-
-        customerData.lastLogin = getCurrentUnix();
-        customerData.updated_at = getCurrentUnix();
-
-        let customerTokenData = customerData.toJSON();
-
-        // token generate
-        let jswToken = await getJwt({
-          id: customerData._id,
-          clientId: customerData?.clientId,
-          email: customerData.email,
-          role: "CUSTOMER",
-        });
-
-        delete customerTokenData?.password;
-        delete customerTokenData?.otpSecret;
-
         return res.status(StatusCodes.OK).send(
           responseGenerators(
             {
-              token: encryptData(jswToken),
-              customerData: customerTokenData,
-              loginCompleted: true,
+              isNew: false,
+              id: customerData._id,
             },
             StatusCodes.OK,
             CUSTOMER_MESSAGE.LOGIN_SUCCESS,
@@ -311,7 +280,6 @@ export const v2CreateCustomerHandler = async (req, res) => {
         );
       }
     } else if (req.body.loginBy == "PHONE") {
-      
       let customerData;
 
       customerData = await CustomerModel.findOne({
@@ -349,12 +317,8 @@ export const v2CreateCustomerHandler = async (req, res) => {
         return res.status(StatusCodes.OK).send(
           responseGenerators(
             {
-              token: null,
-              customerData: null,
-              loginCompleted: false,
-              id : customerData._id,
-              phoneNumber: customerData.phoneNumber,
-              countryCode: customerData.countryCode,
+              isNew: true,
+              id: customerData._id,
             },
             StatusCodes.OK,
             OTP.SUCCESS,
@@ -362,57 +326,11 @@ export const v2CreateCustomerHandler = async (req, res) => {
           )
         );
       } else {
-        // pin compare
-        let passwordMatch = await comparePassword(
-          req.body.password,
-          customerData.password
-        );
-
-        if (!passwordMatch)
-          throw new CustomError(
-            `Incorrect PIN.`
-          );
-
-        customerData.lastLogin = getCurrentUnix();
-        customerData.updated_at = getCurrentUnix();
-
-        let customerTokenData = customerData.toJSON();
-
-        // token generate
-        let jswToken = await getJwt({
-          id: customerData._id,
-          clientId: customerData?.clientId,
-          email: customerData.email,
-          role: "CUSTOMER",
-        });
-
-        delete customerTokenData?.password;
-        delete customerTokenData?.otpSecret;
-
-      // check wallet
-      let isWalletAvailable = await WalletModel.findOne({
-        customerId: customerData._id,
-      });
-
-      if (!isWalletAvailable) {
-        await WalletModel.create({
-          clientId: req.body.clientId,
-          customerId: customerData._id,
-          amount: 0,
-          created_by: req.body._id,
-          updated_by: req.body._id,
-          created_at: getCurrentUnix(),
-          updated_at: getCurrentUnix(),
-        });
-      }
-
-
         return res.status(StatusCodes.OK).send(
           responseGenerators(
             {
-              token: encryptData(jswToken),
-              customerData: customerTokenData,
-              loginCompleted: true,
+              isNew: false,
+              id: customerData._id,
             },
             StatusCodes.OK,
             CUSTOMER_MESSAGE.LOGIN_SUCCESS,
@@ -445,134 +363,67 @@ export const v2CreateCustomerHandler = async (req, res) => {
   }
 };
 
-
 // customer OTP verification
 export const signupOrLoginOTPVerificationHandler = async (req, res) => {
   try {
     await signupOrLoginOTPVerificationValidation.validateAsync(req.body);
 
-    // if email exits
-    if (req.body.email) {
-      let customerData = await CustomerModel.findOne({
-        email: req.body.email,
-        clientId: req.body.clientId,
-      });
+    let { id, otp, password, confirmPassword } = req.body;
 
-      if (!customerData) throw new CustomError("Couldn't find customer");
-      const purpose = "SIGNUP-LOGIN";
-      let otpSecret = customerData.otpSecret.filter(
-        (e) => e.purpose == purpose
+    if (password !== confirmPassword)
+      throw new CustomError(` Pin and Confirm pin should be identical`);
+
+    let customerData = await CustomerModel.findOne({
+      _id: id,
+      isDeleted: false,
+    });
+
+    if (!customerData) throw new CustomError(`Customer not found`);
+
+    if (customerData.isVerified)
+      throw new CustomError(`Customer already verified`);
+
+    const purpose = "SIGNUP-LOGIN";
+    let otpSecret = customerData.otpSecret.filter((e) => e.purpose == purpose);
+
+    if (!otpSecret || !otpSecret.length)
+      throw new CustomError("No pending OTP found for customer.");
+
+    let isValid = verifyTotp(otpSecret.reverse()[0].secret, otp);
+
+    if (isValid) {
+      await CustomerModel.findOneAndUpdate(
+        { _id: customerData._id },
+        {
+          otpSecret: [],
+          isVerified: true,
+          password: await hashPassword(password.toString()),
+        }
       );
 
-      if (!otpSecret || !otpSecret.length)
-        throw new CustomError("No pending OTP found for customer.");
-
-      let isValid = verifyTotp(otpSecret.reverse()[0].secret, req.body.otp);
-      
-      if (isValid) {
-        await CustomerModel.findOneAndUpdate(
-          { _id: customerData._id },
+      // welcome message
+      return res.status(StatusCodes.OK).send(
+        responseGenerators(
           {
-            otpSecret: [],
+            id: customerData._id,
             isVerified: true,
-          }
-        );
-
-        // customerData.lastLogin = getCurrentUnix();
-        customerData.updated_at = getCurrentUnix();
-
-        return res.status(StatusCodes.OK).send(
-          responseGenerators(
-            {
-              customerId: customerData._id,
-              clientId: customerData.clientId,
-              isVerified: true,
-            },
-            StatusCodes.OK,
-            OTP.VERIFIED_OTP,
-            0
-          )
-        );
-        // welcome email.
-      } else {
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .send(
-            responseGenerators(
-              null,
-              StatusCodes.BAD_REQUEST,
-              OTP.INVALID_OTP,
-              true
-            )
-          );
-      }
+          },
+          StatusCodes.OK,
+          OTP.VERIFIED_OTP,
+          0
+        )
+      );
     } else {
-      // if phone exits
-      let customerData = await CustomerModel.findOne({
-        phoneNumber: req.body.phoneNumber,
-        countryCode: req.body.countryCode,
-        clientId: req.body.clientId,
-      });
-      if (!customerData) throw new CustomError("Couldn't find customer");
-      const purpose = "SIGNUP-LOGIN";
-      let otpSecret = customerData.otpSecret.filter(
-        (e) => e.purpose == purpose
-      );
-
-      if (!otpSecret || !otpSecret.length)
-        throw new CustomError("No pending OTP found for customer.");
-      let isValid = verifyTotp(otpSecret.reverse()[0].secret, req.body.otp);
-
-      if (isValid) {
-        await CustomerModel.findOneAndUpdate(
-          { _id: customerData._id },
-          {
-            $pull: { otpSecret: { purpose } },
-            isVerified: true,
-          }
-        );
-
-        // customerData.lastLogin = getCurrentUnix();
-        customerData.updated_at = getCurrentUnix();
-
-        // let customerTokenData = customerData.toJSON();
-
-        // token generate
-        // let jswToken = await getJwt({
-        //   id: customerData._id,
-        //   clientId: customerData?.clientId,
-        //   phoneNumber: customerData.phoneNumber,
-        //   countryCode: customerData.countryCode,
-        //   role: "CUSTOMER",
-        // });
-
-        // delete customerTokenData?.password;
-        // delete customerTokenData?.otpSecret;
-        return res.status(StatusCodes.OK).send(
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
           responseGenerators(
-            {
-              customerId: customerData._id,
-              clientId: customerData.clientId,
-              isVerified: true,
-            },
-            StatusCodes.OK,
-            OTP.VERIFIED_OTP,
-            0
+            null,
+            StatusCodes.BAD_REQUEST,
+            OTP.INVALID_OTP,
+            true
           )
         );
-        // welcome email.
-      } else {
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .send(
-            responseGenerators(
-              null,
-              StatusCodes.BAD_REQUEST,
-              OTP.INVALID_OTP,
-              true
-            )
-          );
-      }
     }
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
@@ -596,35 +447,75 @@ export const signupOrLoginOTPVerificationHandler = async (req, res) => {
   }
 };
 
-// create pin
-// export const createPinHandler = async (req, res) => {
-//   try {
-//     await createPinValidation.validateAsync(req.body);
+// this is for login user using pin
+export const loginHandler = async (req, res) => {
+  try {
+    // validation
+    await loginValidation.validateAsync(req.body);
 
-//     // check both pin equal or not
-//     if (req.body.pin === req.body.)
+    // check exist
+    let customerData = await CustomerModel.findOne({
+      _id: req.body.id,
+      isDeleted: false,
+    });
 
-//   } catch (error) {
-//     if (error instanceof ValidationError || error instanceof CustomError) {
-//       return res
-//         .status(StatusCodes.BAD_REQUEST)
-//         .send(
-//           responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-//         );
-//     }
-//     console.log(JSON.stringify(error));
-//     return res
-//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-//       .send(
-//         responseGenerators(
-//           {},
-//           StatusCodes.INTERNAL_SERVER_ERROR,
-//           "Internal Server Error",
-//           1
-//         )
-//       );
-//   }
-// };
+    if (!customerData) throw new CustomError(`Customer not found`);
+
+    // is verified
+    if (!customerData.isVerified)
+      throw new CustomError(`Customer  not  verified`);
+
+    //compare the pin
+    let passwordMatch = await comparePassword(
+      req.body.password,
+      customerData.password
+    );
+
+    if (!passwordMatch) throw new CustomError(`Please provide a valid pin`);
+
+    // provide session with JWT
+    let loginDataRaw = customerData.toJSON();
+    customerData.lastLogin = getCurrentUnix();
+    customerData.save();
+    delete loginDataRaw.password;
+    let jswToken = await getJwt({
+      id: loginDataRaw._id,
+      clientId: loginDataRaw.clientId,
+    });
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          token: encryptData(jswToken),
+          userData: loginDataRaw,
+          loginCompleted: true,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
 
 // update the customer
 export const updateCustomerHandler = async (req, res) => {

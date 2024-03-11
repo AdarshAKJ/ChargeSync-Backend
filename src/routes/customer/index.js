@@ -3,6 +3,7 @@ import {
   createCustomerHandler,
   getCustomerSelectHandler,
   listCustomerHandler,
+  loginHandler,
   signupOrLoginOTPVerificationHandler,
   singleCustomerHandler,
   toggleBlockUnblockHandler,
@@ -11,26 +12,29 @@ import {
 } from "./post";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 import { authenticateCustomer } from "../../middleware/authenticateCustomer";
+import { privateKeyMiddleware } from "../../middleware/privateKeyCheck";
 
 const customerRouter = express.Router();
 
 //create customer
-customerRouter.post("/create", createCustomerHandler);
+customerRouter.post("/create", privateKeyMiddleware, createCustomerHandler);
 
 //create customer
-customerRouter.post("/v2/create", v2CreateCustomerHandler);
+customerRouter.post(
+  "/v2/create",
+  privateKeyMiddleware,
+  v2CreateCustomerHandler
+);
 
 // otp verification
 customerRouter.post(
   "/signup-login-otp-verification",
+  privateKeyMiddleware,
   signupOrLoginOTPVerificationHandler
 );
 
-// create pin
-// customerRouter.post(
-//   "/signup-login-otp-verification",
-//   createPinHandler
-// );
+// login
+customerRouter.post("/login", privateKeyMiddleware, loginHandler);
 
 // update server
 customerRouter.post("/update/:id", authenticateCustomer, updateCustomerHandler);
