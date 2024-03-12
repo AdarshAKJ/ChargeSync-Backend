@@ -12,6 +12,7 @@ import {
 } from "../../commons/common-functions";
 import TransactionModel from "../../models/transaction";
 import {
+  currentActiveValidation,
   customerTransactionsValidation,
   getCostValidation,
   inprogressTransactionHistoryValidation,
@@ -534,6 +535,89 @@ export const getCostHandler = async (req, res) => {
       responseGenerators(
         {
           transactionCost: transactionCost,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+// current active transaction
+export const currentActiveTransactionHandler = async (req, res) => {
+  try {
+    await currentActiveValidation.validateAsync(req.body);
+
+    let where = {
+      clientId: req.session.clientId,
+      connectorId: req.body.connectorId,
+      serialNumber: req.body.serialNumber,
+      status: "InProgress",
+    };
+
+    const aggregationPipeline = [
+      {
+        $match: where,
+      },
+      {
+        $lookup: {
+          from: "customers",
+          localField: "customerId",
+          foreignField: "_id",
+          as: "customerData",
+          pipeline: [
+            {
+              $match: {
+                isDeleted: false,
+              },
+            },
+            {
+              $project: {
+                _id: 1,
+                fname: 1,
+                lname: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $project: {
+          currentMeterReadingTime: 1,
+          customerData: 1,
+        },
+      },
+    ];
+
+    const transactionData = await TransactionModel.aggregate(aggregationPipeline);
+
+
+    
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          transactionData: transactionData,
         },
         StatusCodes.OK,
         "SUCCESS",

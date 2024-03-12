@@ -37,6 +37,7 @@ export const updateCustomerValidation = Joi.object({
   lname: Joi.string().required(),
   address: Joi.object().optional().allow(null),
   dob: Joi.string().optional().allow(null),
+  termAndCondition: Joi.boolean().valid(true).required(),
 });
 
 export const listCustomerValidation = Joi.object({

@@ -534,7 +534,7 @@ export const updateCustomerHandler = async (req, res) => {
 
     // find customer and update customer
     let customerData = await CustomerModel.findOneAndUpdate(
-      { _id: req.params.id },
+      { _id: req.params.id, isDeleted: false },
       {
         $set: {
           isDeleted: false,
