@@ -166,6 +166,21 @@ export const listTransactions = async (req, res) => {
         },
       },
       {
+        $lookup: {
+          from: "chargers",
+          localField: "serialNumber",
+          foreignField: "serialNumber",
+          as: "chargerData",
+          pipeline: [
+            {
+              $project: {
+                name: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
         $sort: pagination.sort,
       },
       {
