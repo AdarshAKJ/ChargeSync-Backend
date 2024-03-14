@@ -20,6 +20,7 @@ const clientUserSchema = new mongoose.Schema({
   countryCode: { type: String, required: true },
   password: { type: String, required: true },
   address: { type: String },
+  isAdminCreated: { type: Boolean , default: false},
   status: {
     type: String,
     enum: ["ACTIVE", "BLOCKED"],

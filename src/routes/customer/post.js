@@ -12,7 +12,6 @@ import {
 } from "../../helpers/validations/customer.validation";
 import { responseGenerators } from "../../lib/utils";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
-import CustomerModel from "../../models/customer";
 import WalletModel from "../../models/wallet";
 import { StatusCodes } from "http-status-codes";
 import { CustomError } from "../../helpers/custome.error";
@@ -28,7 +27,9 @@ import {
 } from "../../commons/common-functions";
 import { getJwt } from "../../helpers/Jwt.helper";
 import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
+import CustomerModel from "../../models/customer";
 import configVariables from "../../../config";
+
 
 // create user and provide OTP, if exist then provide OTP
 export const createCustomerHandler = async (req, res) => {
@@ -581,7 +582,7 @@ export const getCustomerSelectHandler = async (req, res) => {
     await getCustomerSelectValidation.validateAsync(req.body);
 
     let where = {
-      fname: { $exists: true },
+      // fname: { $exists: true },
       isDeleted: false,
       clientId: req?.session?.clientId || req?.body?.clientId,
     };
