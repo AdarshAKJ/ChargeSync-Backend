@@ -12,7 +12,10 @@ import {
 } from "../../commons/common-functions";
 import TransactionModel from "../../models/transaction";
 import {
+  currentActiveValidation,
   customerTransactionsValidation,
+  getCostValidation,
+  inprogressTransactionHistoryValidation,
   listTransactionsValidation,
   singleTransactionValidation,
   singlecustomerTransactionsValidation,
@@ -158,6 +161,21 @@ export const listTransactions = async (req, res) => {
               $project: {
                 name: 1,
                 vehicleNumber: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: "chargers",
+          localField: "serialNumber",
+          foreignField: "serialNumber",
+          as: "chargerData",
+          pipeline: [
+            {
+              $project: {
+                name: 1,
               },
             },
           ],
@@ -419,7 +437,7 @@ export const customerTransactionsHandler = async (req, res) => {
 
 export const singlecustomerTransactionsHandler = async (req, res) => {
   try {
-    await singlecustomerTransactionsValidation.validateAsync(req.body);
+    await singlecustomerTransactionsValidation.validateAsync({...req.body,...req.params});
     checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
@@ -464,6 +482,186 @@ export const singlecustomerTransactionsHandler = async (req, res) => {
       );
   }
 };
+
+// real time transaction history
+export const inProgressTransactionHistoryHandler = async (req, res) => {
+  try {
+    await inprogressTransactionHistoryValidation.validateAsync(req.body);
+    
+    let where = {
+      isDeleted: false,
+      clientId: req.session.clientId,
+      serialNumber: req.body.serialNumber,
+      status : "InProgress",
+    };
+
+    let transactions = await TransactionModel.find(where).lean().exec();
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          transactionData: transactions,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+// Get cost for charging
+export const getCostHandler = async (req, res) => {
+  try {
+    await getCostValidation.validateAsync(req.body);
+
+    let where = {
+      isDeleted: false,
+      clientId: req.session.clientId,
+      connectorId: req.body.connectorId,
+      serialNumber: req.body.serialNumber,
+    };
+
+    let transactionCost = await ChargerConnectorModel.findOne(where).select('pricePerUnit').lean().exec();
+
+    const requireWatt = req.body.requireWatt/1000 ;
+    
+    transactionCost = transactionCost*requireWatt;
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          transactionCost: transactionCost,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+// current active transaction
+export const currentActiveTransactionHandler = async (req, res) => {
+  try {
+    await currentActiveValidation.validateAsync(req.body);
+
+    let where = {
+      clientId: req.session.clientId,
+      connectorId: req.body.connectorId,
+      serialNumber: req.body.serialNumber,
+      status: "InProgress",
+    };
+
+    const aggregationPipeline = [
+      {
+        $match: where,
+      },
+      {
+        $lookup: {
+          from: "customers",
+          localField: "customerId",
+          foreignField: "_id",
+          as: "customerData",
+          pipeline: [
+            {
+              $match: {
+                isDeleted: false,
+              },
+            },
+            {
+              $project: {
+                _id: 1,
+                fname: 1,
+                lname: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $project: {
+          currentMeterReadingTime: 1,
+          customerData: 1,
+        },
+      },
+    ];
+
+    const transactionData = await TransactionModel.aggregate(aggregationPipeline);
+
+
+    
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          transactionData: transactionData,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
 
 // start transaction.
 export const startTransactionHandler = async (req, res) => {

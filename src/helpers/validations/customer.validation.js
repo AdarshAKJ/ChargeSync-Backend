@@ -9,12 +9,26 @@ export const createCustomerValidation = Joi.object({
   loginBy: Joi.string().optional().allow("EMAIL", "PHONE"),
 });
 
-export const signupOrLoginOTPVerificationValidation = Joi.object({
+export const v2CreateCustomerValidation = Joi.object({
   clientId: Joi.string().required(),
   email: Joi.string().email().optional().allow(null),
   phoneNumber: Joi.string().optional().allow(null),
   countryCode: Joi.string().optional().allow(null),
+  loginBy: Joi.string().optional().allow("EMAIL", "PHONE"),
+});
+
+export const createPinValidation = Joi.object({
+  clientId: Joi.string().required(),
+  id: Joi.string().required(),
+  pin: Joi.string().required(),
+  checkPin: Joi.string().required(),
+});
+
+export const signupOrLoginOTPVerificationValidation = Joi.object({
+  id: Joi.string().required(),
   otp: Joi.string().required(),
+  password: Joi.number().integer().min(100000).max(999999).required(),
+  confirmPassword: Joi.number().integer().min(100000).max(999999).required(),
 });
 
 export const updateCustomerValidation = Joi.object({
@@ -23,6 +37,7 @@ export const updateCustomerValidation = Joi.object({
   lname: Joi.string().required(),
   address: Joi.object().optional().allow(null),
   dob: Joi.string().optional().allow(null),
+  termAndCondition: Joi.boolean().valid(true).required(),
 });
 
 export const listCustomerValidation = Joi.object({
@@ -56,4 +71,13 @@ export const getChargerSelectValidation = Joi.object({
 });
 export const getStationSelectValidation = Joi.object({
   clientId: Joi.string().optional().allow(null),
+});
+export const chargerAvailableConnectorsValidation = Joi.object({
+  serialNumber: Joi.string().required(),
+  clientId: Joi.string().optional().allow(null),
+});
+
+export const loginValidation = Joi.object({
+  id: Joi.string().required(),
+  password: Joi.number().integer().min(100000).max(999999).required(),
 });
