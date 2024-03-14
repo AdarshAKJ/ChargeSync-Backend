@@ -21,3 +21,16 @@ export const singlecustomerTransactionsValidation = Joi.object({
   clientId: Joi.string().required(),
   connectorId: Joi.string().required(),
 });
+export const inprogressTransactionHistoryValidation = Joi.object({
+  serialNumber: Joi.string().required(),
+});
+export const getCostValidation = Joi.object({
+  serialNumber: Joi.string().required(),
+  connectorId: Joi.string().required(),
+  requireWatt: Joi.number().required(),
+});
+
+export const currentActiveValidation = Joi.object({
+  serialNumber: Joi.string().required(),
+  connectorId: Joi.string().required(),
+});

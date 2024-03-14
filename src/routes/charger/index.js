@@ -2,6 +2,7 @@ import express from "express";
 
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 import {
+  chargerAvailableConnectorsHandler,
   createChargerHandler,
   deleteChargerHandler,
   getChargerCountHandler,
@@ -74,5 +75,13 @@ chargerRouter.post(
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   getChargerSelectHandler
 );
+
+// available connector for charger
+chargerRouter.post(
+  "/charger-available-connectors",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  chargerAvailableConnectorsHandler
+);
+
 
 export default chargerRouter;
