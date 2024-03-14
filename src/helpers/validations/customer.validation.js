@@ -81,3 +81,11 @@ export const loginValidation = Joi.object({
   id: Joi.string().required(),
   password: Joi.number().integer().min(100000).max(999999).required(),
 });
+
+export const chargerClientIdValidation = Joi.object({
+  serialNumber: Joi.string().required(),
+});
+export const chargerOfflineOnlineValidation = Joi.object({
+  serialNumber: Joi.string().required(),
+});
+
