@@ -64,6 +64,7 @@ export const listTransactions = async (req, res) => {
         $gte: getUnixStartTime(dateToUnix(req.query.startDate)),
       };
     }
+
     if (req?.query?.endDate) {
       where.createdAt = {
         $lte: getUnixEndTime(dateToUnix(req.query.endDate)),

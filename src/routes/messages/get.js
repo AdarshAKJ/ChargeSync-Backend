@@ -75,7 +75,9 @@ export const listUnreadMessagesHandler = async (req, res) => {
     const { clientId } = req.body;
     checkClientIdAccess(req.session, req.body.clientId);
     let paginatedData = setPagination(req.query);
+
     const where = { clientId, isRead: false };
+
     const messages = await MessageModel.find(where)
       .select("message isPreserved isRead title created_at")
       .sort(paginatedData.sort)

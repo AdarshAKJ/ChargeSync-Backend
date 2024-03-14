@@ -7,8 +7,8 @@ ws://192.168.224.14:8080/PRIVA1?token=d3f9f12ff91d8ada1d471a1e
 
 Backend improvements :-
 
-1. Need to remove the charger name logs
-2. Send notification if charger disconnected while charging.
+1. Need to remove the charger name logs // DONE
+2. Send notification if charger disconnected while charging. // DONE
 
 3. Forget Pin - Atharva
 
