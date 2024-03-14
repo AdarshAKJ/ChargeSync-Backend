@@ -14,6 +14,10 @@ Backend improvements :-
 
 4 and 5 for Adarsh
 
-4. One API which will get serial number and connectorId as body and provide the current active transaction , only the name of the customer, required time.
+4. One API which will get serial number and connectorId as body and provide the current active transaction , only the name of the customer, required time. //Done
 
 5. Add the TandC (boolean) in the customer Model and add that filed in update customer API. //Done
+
+6. Get Client Id by Serial Number
+
+7. Check charger is online or offline.

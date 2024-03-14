@@ -22,7 +22,7 @@ import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 import ChargerModel from "../../models/charger";
 import ClientModel from "../../models/client";
 import ChargerConnectorModel from "../../models/chargerConnector";
-import { chargerAvailableConnectorsValidation, getChargerSelectValidation } from "../../helpers/validations/customer.validation";
+import { chargerAvailableConnectorsValidation, chargerClientIdValidation, chargerOfflineOnlineValidation, getChargerSelectValidation } from "../../helpers/validations/customer.validation";
 
 // DONE
 export const createChargerHandler = async (req, res) => {
@@ -718,6 +718,98 @@ export const chargerAvailableConnectorsHandler = async (req, res) => {
           paginatedData: chargerData,
           totalCount: total_count,
           itemsPerPage: pagination.limit,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+// Get Client Id by Serial Number
+export const chargerClientIdHandler = async(req, res) => {
+  try {
+    await chargerClientIdValidation.validateAsync(req.body);
+
+    let where = {
+      isDeleted: false,
+      serialNumber: req.body.serialNumber
+    };
+
+ 
+    const chargerData = await ChargerModel.findOne(where).select("clientId");
+    
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          chargerData : chargerData,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+// Check charger is online or offline.
+export const chargerOfflineOnlineHandler = async(req, res) => {
+  try {
+    await chargerOfflineOnlineValidation.validateAsync(req.body);
+
+    let where = {
+      isDeleted: false,
+      serialNumber: req.body.serialNumber
+    };
+
+ 
+    const chargerData = await ChargerModel.findOne(where).select("status");
+    
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          chargerclientId : chargerData,
         },
         StatusCodes.OK,
         "SUCCESS",
