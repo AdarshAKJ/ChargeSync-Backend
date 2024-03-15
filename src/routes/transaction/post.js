@@ -63,12 +63,18 @@ export const listTransactions = async (req, res) => {
     }
 
     if (req?.query?.startDate) {
-      where.createdAt = {
+      where.created_at = {
         $gte: getUnixStartTime(dateToUnix(req.query.startDate)),
       };
     }
     if (req?.query?.endDate) {
-      where.createdAt = {
+      where.created_at = {
+        $lte: getUnixEndTime(dateToUnix(req.query.endDate)),
+      };
+    }
+    if (req?.query?.startDate && req?.query?.endDate) {
+      where.created_at = {
+        $gte: getUnixStartTime(dateToUnix(req.query.startDate)),
         $lte: getUnixEndTime(dateToUnix(req.query.endDate)),
       };
     }

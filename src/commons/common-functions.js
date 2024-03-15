@@ -184,7 +184,7 @@ export const getUnixEndTime = (unixData) => {
 };
 
 export const dateToUnix = (dateString) => {
-  return dayjs(dateString).unix().toString();
+  return dayjs(dayjs(dateString).format('YYYY-MM-DD').toString()).unix().toString();
 };
 
 export const getUnixStartTime = (unixData) => {
