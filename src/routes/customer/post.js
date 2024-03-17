@@ -850,3 +850,32 @@ export const toggleBlockUnblockHandler = async (req, res) => {
       );
   }
 };
+
+export const infoCustomerHandler = async (req, res) => {
+  try {
+    let customerData = await CustomerModel.findOne({
+      _id: req.session._id,
+    })
+      .lean()
+      .exec();
+
+    delete customerData?.password;
+    delete customerData?.otpSecret;
+
+    return res
+      .status(StatusCodes.OK)
+      .send(responseGenerators(customerData, StatusCodes.OK, "SUCCESS", 0));
+  } catch (error) {
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
