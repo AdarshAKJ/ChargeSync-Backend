@@ -243,7 +243,7 @@ export const listChargerStationHandler = async (req, res) => {
     }
 
     const stations = await ChargingStationModel.find(where)
-      .select("_id station_name address")
+      .select("_id station_name address own_by contact_no contact_email")
       .limit(pagination.limit)
       .sort(pagination.sort)
       .skip(pagination.offset)
