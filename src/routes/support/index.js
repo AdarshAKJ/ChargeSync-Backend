@@ -1,7 +1,8 @@
 import express from "express";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
-import { createSupportTicket, updateSupportTicket } from "./post";
-import { deleteSupportTicket, listClientSupportTickets, listSupportTickets } from "./get";
+import { createSupportTicket, markTicketAsResolvedHandler, updateSupportTicket } from "./post";
+import { deleteSupportTicket, listClientSupportTickets, listSupportTickets, markTicketAsClosedHandler } from "./get";
+import { onlyAdmin } from "../../middleware/onlyAdmin";
 
 const supportRouter = express.Router();
 
@@ -29,11 +30,25 @@ supportRouter.post(
   updateSupportTicket
 );
 
-//Add Dummy Messages to DataBase
+
 supportRouter.get(
   "/delete-ticket/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   deleteSupportTicket
 );
+
+supportRouter.post(
+  "/mark-resolved/:id",
+  onlyAdmin,
+  markTicketAsResolvedHandler
+);
+
+
+supportRouter.get(
+  "/mark-closed/:id",
+  onlyAdmin,
+  markTicketAsClosedHandler
+);
+
 
 export default supportRouter;

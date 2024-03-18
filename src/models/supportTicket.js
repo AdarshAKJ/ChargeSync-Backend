@@ -21,6 +21,8 @@ const SupportTicketSchema = new mongoose.Schema({
   created_at: { type: String, required: true },
   updated_at: { type: String, required: true },
   resolved_at: { type: String },
+  resolved_by: { type: String },
+  resolved_summary: { type: String },
   closed_at: { type: String },
 });
 

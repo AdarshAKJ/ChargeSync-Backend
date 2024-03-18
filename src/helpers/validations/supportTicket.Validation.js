@@ -25,3 +25,11 @@ export const createSupportTicketValidation = Joi.object({
       id: Joi.string().required(),
     }),
   });
+
+  
+  export const ResolveTicketValidation = Joi.object({
+    params: Joi.object({
+      id: Joi.string().required(),
+    }),
+      resolved_summary: Joi.string().required(),
+  });

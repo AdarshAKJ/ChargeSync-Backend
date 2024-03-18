@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import { ValidationError } from "joi";
-import { createSupportTicketValidation, updateSupportTicketValidation } from "../../helpers/validations/supportTicket.Validation";
+import { ResolveTicketValidation, createSupportTicketValidation, updateSupportTicketValidation } from "../../helpers/validations/supportTicket.Validation";
 import { CustomError } from "../../helpers/custome.error";
 import { generatePublicId, getCurrentUnix } from "../../commons/common-functions";
 import SupportTicketsModel from "../../models/supportTicket";
@@ -66,3 +66,42 @@ export const updateSupportTicket = async (req, res) => {
     }
 };
 
+
+export const markTicketAsResolvedHandler = async (req, res) => {
+    try {
+      await ResolveTicketValidation.validateAsync(req.body);
+  
+      // Extract ticket ID from request parameters
+      const id  = req.params.id;
+  
+      // Find the support ticket by ID and update its status to "RESOLVED"
+      const supportTicket = await SupportTicketsModel.findByIdAndUpdate(
+        id,
+        {
+          status: "RESOLVED",
+          resolved_summary: req.body.resolved_summary,
+          resolved_at: getCurrentUnix(),
+          resolved_by: req.session._id, 
+          updated_at: getCurrentUnix(),
+        },
+        { new: true }
+      );
+  
+      // Check if ticket exists
+      if (!supportTicket) {
+        throw new CustomError("Support ticket not found", StatusCodes.NOT_FOUND);
+      }
+
+      return res.status(StatusCodes.OK).send(
+        responseGenerators(supportTicket, StatusCodes.OK, "SUCCESS", 0)
+      );
+    } catch (error) {
+      // Handle validation errors and custom errors
+      if (error instanceof ValidationError || error instanceof CustomError) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
+      }
+      console.error("Error resolving support ticket:", error);
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Internal Server Error" });
+    }
+  };
+  
