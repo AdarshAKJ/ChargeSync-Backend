@@ -22,6 +22,9 @@ export const dashboardHandler = async (req, res) => {
       transactionCount: 0,
       revenueCount: 0,
       activeChargingCount: 0,
+      onlineChargerCount: 0,
+      offlineChargerCount: 0,
+      faultyChargerCount: 0,
     };
 
     // charger count
@@ -52,7 +55,7 @@ export const dashboardHandler = async (req, res) => {
         },
       },
     ]);
-    responseData.revenueCount = responseData.revenueCount[0].totalCost;
+    responseData.revenueCount = responseData?.revenueCount[0]?.totalCost || 0;
 
     // Active charging.
     responseData.activeChargingCount =
@@ -62,6 +65,27 @@ export const dashboardHandler = async (req, res) => {
         isDeleted: false,
         // created_at: { $gte: monthStartData },
       });
+
+    // Online chargers count
+    responseData.onlineChargerCount = await ChargerModel.countDocuments({
+      clientId: req.session.clientId,
+      status: "ONLINE",
+      isDeleted: false,
+    });
+
+    // offline chargers count
+    responseData.offlineChargerCount = await ChargerModel.countDocuments({
+      clientId: req.session.clientId,
+      status: "OFFLINE",
+      isDeleted: false,
+    });
+
+    // CONFIGURING chargers count
+    responseData.faultyChargerCount = await ChargerModel.countDocuments({
+      clientId: req.session.clientId,
+      status: "CONFIGURING",
+      isDeleted: false,
+    });
 
     return res
       .status(StatusCodes.OK)

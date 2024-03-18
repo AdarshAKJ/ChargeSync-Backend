@@ -12,7 +12,10 @@ import {
 } from "../../commons/common-functions";
 import TransactionModel from "../../models/transaction";
 import {
+  currentActiveValidation,
   customerTransactionsValidation,
+  getCostValidation,
+  inprogressTransactionHistoryValidation,
   listTransactionsValidation,
   singleTransactionValidation,
   singlecustomerTransactionsValidation,
@@ -30,6 +33,7 @@ import WalletTransactionModel from "../../models/walletTransaction";
 import { callAPI } from "../../helpers/api";
 import {
   CONNECTOR_MESSAGE,
+  ERROR,
   MENTANENCE_MESSAGE,
   NOTIFICATION_MESSAGE,
   NOTIFICATION_TITLE,
@@ -38,7 +42,9 @@ import {
 import MaintenanceModel from "../../models/maintenance";
 import { AxiosError } from "axios";
 import { sendNotification } from "../messages/common";
+import configVariables from "../../../config";
 
+// list transactions
 export const listTransactions = async (req, res) => {
   try {
     await listTransactionsValidation.validateAsync(req.body);
@@ -61,6 +67,7 @@ export const listTransactions = async (req, res) => {
         $gte: getUnixStartTime(dateToUnix(req.query.startDate)),
       };
     }
+
     if (req?.query?.endDate) {
       where.createdAt = {
         $lte: getUnixEndTime(dateToUnix(req.query.endDate)),
@@ -78,7 +85,7 @@ export const listTransactions = async (req, res) => {
       } else if (req.body.key === "CHARGER") {
         where = {
           ...where,
-          serialNumber: req.body.idid,
+          serialNumber: req.body.id,
         };
       } else if (req.body.key === "STATION") {
         where = {
@@ -160,6 +167,21 @@ export const listTransactions = async (req, res) => {
         },
       },
       {
+        $lookup: {
+          from: "chargers",
+          localField: "serialNumber",
+          foreignField: "serialNumber",
+          as: "chargerData",
+          pipeline: [
+            {
+              $project: {
+                name: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
         $sort: pagination.sort,
       },
       {
@@ -210,6 +232,7 @@ export const listTransactions = async (req, res) => {
   }
 };
 
+// get single transaction
 export const singleTransaction = async (req, res) => {
   try {
     await singleTransactionValidation.validateAsync({
@@ -219,14 +242,28 @@ export const singleTransaction = async (req, res) => {
     checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
-      _id: req.body.id,
-      isDeleted: false,
+      _id: req.params.id,
       clientId: req.session.clientId || req.body.clientId,
     };
 
     const aggregationPipeline = [
       {
         $match: where,
+      },
+      {
+        $lookup: {
+          from: "charging-stations",
+          localField: "stationId",
+          foreignField: "_id",
+          as: "stationData",
+          pipeline: [
+            {
+              $project: {
+                station_name: 1,
+              },
+            },
+          ],
+        },
       },
       {
         $lookup: {
@@ -244,7 +281,39 @@ export const singleTransaction = async (req, res) => {
         },
       },
       {
-        $unwind: "$chargerConnectorsData",
+        $lookup: {
+          from: "customers",
+          localField: "customerId",
+          foreignField: "_id",
+          as: "customerData",
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                fname: 1,
+                lname: 1,
+                phoneNumber: 1,
+                email: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: "vehicles",
+          localField: "vehicleId",
+          foreignField: "_id",
+          as: "vehicleData",
+          pipeline: [
+            {
+              $project: {
+                name: 1,
+                vehicleNumber: 1,
+              },
+            },
+          ],
+        },
       },
     ];
 
@@ -368,7 +437,7 @@ export const customerTransactionsHandler = async (req, res) => {
 
 export const singlecustomerTransactionsHandler = async (req, res) => {
   try {
-    await singlecustomerTransactionsValidation.validateAsync(req.body);
+    await singlecustomerTransactionsValidation.validateAsync({...req.body,...req.params});
     checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
@@ -414,6 +483,187 @@ export const singlecustomerTransactionsHandler = async (req, res) => {
   }
 };
 
+// real time transaction history
+export const inProgressTransactionHistoryHandler = async (req, res) => {
+  try {
+    await inprogressTransactionHistoryValidation.validateAsync(req.body);
+    
+    let where = {
+      isDeleted: false,
+      clientId: req.session.clientId,
+      serialNumber: req.body.serialNumber,
+      status : "InProgress",
+    };
+
+    let transactions = await TransactionModel.find(where).lean().exec();
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          transactionData: transactions,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+// Get cost for charging
+export const getCostHandler = async (req, res) => {
+  try {
+    await getCostValidation.validateAsync(req.body);
+
+    let where = {
+      isDeleted: false,
+      clientId: req.session.clientId,
+      connectorId: req.body.connectorId,
+      serialNumber: req.body.serialNumber,
+    };
+
+    let transactionCost = await ChargerConnectorModel.findOne(where).select('pricePerUnit').lean().exec();
+
+    const requireWatt = req.body.requireWatt/1000 ;
+    
+    transactionCost = transactionCost*requireWatt;
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          transactionCost: transactionCost,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+// current active transaction
+export const currentActiveTransactionHandler = async (req, res) => {
+  try {
+    await currentActiveValidation.validateAsync(req.body);
+
+    let where = {
+      clientId: req.session.clientId,
+      connectorId: req.body.connectorId,
+      serialNumber: req.body.serialNumber,
+      status: "InProgress",
+    };
+
+    const aggregationPipeline = [
+      {
+        $match: where,
+      },
+      {
+        $lookup: {
+          from: "customers",
+          localField: "customerId",
+          foreignField: "_id",
+          as: "customerData",
+          pipeline: [
+            {
+              $match: {
+                isDeleted: false,
+              },
+            },
+            {
+              $project: {
+                _id: 1,
+                fname: 1,
+                lname: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $project: {
+          currentMeterReadingTime: 1,
+          customerData: 1,
+        },
+      },
+    ];
+
+    const transactionData = await TransactionModel.aggregate(aggregationPipeline);
+
+
+    
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          transactionData: transactionData,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+
+// start transaction.
 export const startTransactionHandler = async (req, res) => {
   try {
     await startTransactionValidation.validateAsync(req.body);
@@ -462,16 +712,18 @@ export const startTransactionHandler = async (req, res) => {
     if (!connectorData)
       throw new CustomError("Please provide a valid connector id");
 
-    // calculate the  amount
     let amount = (requestedWatts / 1000) * connectorData.pricePerUnit;
 
-    // check wallet balance greater or equal to the amount.
+    // Calculate the  amount.
+    let amountWithTax = (amount * +configVariables.TAX) / 100 + amount;
+
+    // Check wallet balance greater or equal to the amount.
     let walletBalance = await WalletModel.findOne({
       customerId: req.session._id,
     });
 
     // check for wallet balance insufficient
-    if (!walletBalance || +walletBalance.amount < +amount)
+    if (!walletBalance || +walletBalance.amount < +amountWithTax)
       throw new CustomError("Insufficient wallet balance");
 
     // call the live status for charger.
@@ -545,18 +797,31 @@ export const startTransactionHandler = async (req, res) => {
       }
     );
 
+    // if transaction API failed then notify client.
+    if (transactionData?.code != 200) {
+      sendNotification(
+        NOTIFICATION_TITLE.transactionAPIFailed,
+        NOTIFICATION_MESSAGE.transactionAPIFailingFor(serialNumber),
+        req.session.clientId,
+        null,
+        null,
+        true
+      );
+      throw new CustomError(ERROR.SERVER_DOWN);
+    }
+
     let preBalance = +walletBalance.amount;
     // deduce the amount
-    walletBalance.amount = +walletBalance.amount - +amount;
+    walletBalance.amount = +walletBalance.amount - +amountWithTax;
     // add the wallet history
     let walletTransactionData = await WalletTransactionModel.create({
       clientId: req.session.clientId,
       customerId: req.session._id,
       preBalance: preBalance,
       effectedBalance: +walletBalance.amount,
-      amount: +amount,
+      amount: +amountWithTax,
       type: "DEBITED",
-      reason: `Transaction deducted for transaction :- ${transactionData?.data?.transactionId}`,
+      reason: `Credit deducted for transaction :- ${transactionData?.data?.transactionId}`,
       source: "WALLET",
       created_at: getCurrentUnix(),
       updated_at: getCurrentUnix(),
@@ -568,14 +833,23 @@ export const startTransactionHandler = async (req, res) => {
     walletBalance.updated_at = getCurrentUnix();
     walletBalance.updated_by = req.session._id;
     await walletBalance.save();
+
     console.log(
       "Wallet updated for transaction: " + transactionData?.data?.transactionId
     );
 
     // update transaction for wallet transaction id
+    // with wallet transaction id and amount
     await TransactionModel.findOneAndUpdate(
       { _id: transactionData.data._id },
-      { walletTransactionId: walletTransactionData._id, deductedAmount: amount }
+      {
+        walletTransactionId: walletTransactionData._id,
+        amount: amount,
+        tax: configVariables.TAX,
+        totalCost: amountWithTax,
+        updated_at: getCurrentUnix(),
+        updated_by: req.session._id,
+      }
     );
 
     // Transaction started notification
@@ -630,10 +904,23 @@ export const startTransactionHandler = async (req, res) => {
   }
 };
 
+// stop the transaction
 export const stopTransactionHandler = async (req, res) => {
   try {
-    await stopTransactionValidation(req.body);
-    let { serialNumber, transactionId } = req.body;
+    await stopTransactionValidation.validateAsync(req.body);
+    let { serialNumber, transactionId, customerReason } = req.body;
+
+    // check for transaction.
+    let tData = await TransactionModel.findOne({
+      serialNumber: serialNumber,
+      occpTransactionId: transactionId,
+    }).select("_id serialNumber occpTransactionId status");
+
+    // check exits
+    if (!tData) throw new CustomError("Transaction not found.");
+    // check status
+    if (tData.status != "InProgress")
+      throw new CustomError("No Active transactions found.");
 
     // call the live status for charger.
     let stopTransaction = await callAPI(
@@ -648,22 +935,36 @@ export const stopTransactionHandler = async (req, res) => {
       }
     );
 
+    if (stopTransaction?.code != 200) {
+      sendNotification(
+        NOTIFICATION_TITLE.stopTransactionFailed,
+        NOTIFICATION_MESSAGE.stopTransactionFailed(serialNumber),
+        req.session.clientId
+      );
+      throw new CustomError(
+        `Failed to stop transaction, Please trigger Emergency stop`
+      );
+    }
+
     sendNotification(
       NOTIFICATION_TITLE.transactionStopped,
-      NOTIFICATION_MESSAGE.transactionStopped(
-        transactionId),
+      NOTIFICATION_MESSAGE.transactionStopped(transactionId),
       req.session.clientId
+    );
+
+    await TransactionModel.findOneAndUpdate(
+      { serialNumber: serialNumber, occpTransactionId: transactionId },
+      {
+        customerReason: customerReason || "Manually stopped transaction.",
+        updated_at: getCurrentUnix(),
+        updated_by: req.session._id,
+      }
     );
     // notifications for transaction stop // TO DO
     return res
       .status(StatusCodes.OK)
       .send(
-        responseGenerators(
-          stopTransaction?.data?.data,
-          StatusCodes.OK,
-          "SUCCESS",
-          0
-        )
+        responseGenerators(stopTransaction?.data, StatusCodes.OK, "SUCCESS", 0)
       );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {

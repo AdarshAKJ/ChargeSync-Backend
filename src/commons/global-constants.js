@@ -7,6 +7,8 @@ export const ERROR = {
   PROVIDE_SERVICE_KEY: "Please provide a service API key.",
   INVALID_SERVICE_KEY: "Invalid service API key.",
   PROVIDE_TOKEN_SERVICE_ERROR: "Please provide a valid redirection token.",
+  SERVER_DOWN:
+    "WE are encountering some issues from our end please try after sometime.",
 };
 
 export const USER = {
@@ -183,10 +185,18 @@ export const NOTIFICATION_MESSAGE = {
   transactionStopped: function (transactionId) {
     return `Transaction stopped for ${transactionId}.`;
   },
+  transactionAPIFailingFor: function (serialNumber) {
+    return `Transaction Start API failing for ${serialNumber} charger, Please contact admin.`;
+  },
+  stopTransactionFailed: function (serialNumber) {
+    return `Transaction Stop API failing for ${serialNumber} charger, Please contact admin.`;
+  },
 };
 
 export const NOTIFICATION_TITLE = {
   chargerOffline: "Charger offline",
   transactionStarted: "Transaction started notification",
-  transactionStopped: "Transaction stopped notification"
+  transactionStopped: "Transaction stopped notification",
+  transactionAPIFailed: "Transaction API failing",
+  stopTransactionFailed: "Stop transaction Failed",
 };

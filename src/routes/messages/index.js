@@ -1,5 +1,9 @@
 import express from "express";
-import { listUnreadMessagesHandler, readUpdateMessageHandler } from "./get";
+import {
+  listPreservedMessagesHandler,
+  listUnreadMessagesHandler,
+  readUpdateMessageHandler,
+} from "./get";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 import { addMessage } from "./post";
 
@@ -9,6 +13,12 @@ messageRouter.post(
   "/list-message",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   listUnreadMessagesHandler
+);
+
+messageRouter.post(
+  "/list-preserved-message",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  listPreservedMessagesHandler
 );
 
 messageRouter.post(
@@ -23,6 +33,5 @@ messageRouter.post(
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   addMessage
 );
-
 
 export default messageRouter;

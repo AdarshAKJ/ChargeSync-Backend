@@ -1,6 +1,9 @@
 import express from "express";
 import {
+  currentActiveTransactionHandler,
   customerTransactionsHandler,
+  getCostHandler,
+  inProgressTransactionHistoryHandler,
   listTransactions,
   singleTransaction,
   singlecustomerTransactionsHandler,
@@ -18,6 +21,7 @@ transactionRouter.post(
   listTransactions
 );
 
+// single transaction
 transactionRouter.post(
   "/single-transaction/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "ACCOUNT"]),
@@ -30,11 +34,29 @@ transactionRouter.post(
   authenticateCustomer,
   customerTransactionsHandler
 );
+
 //  singleTransaction by customerId
 transactionRouter.post(
   "/single-customer-transactions/:id",
   authenticateCustomer,
   singlecustomerTransactionsHandler
+);
+
+// real time transaction history
+transactionRouter.post(
+  "/inprogress-transaction-history",
+  authenticateCustomer,
+  inProgressTransactionHistoryHandler
+);
+
+// Get cost for charging
+transactionRouter.post("/get-cost", authenticateCustomer, getCostHandler);
+
+// current active transaction
+transactionRouter.post(
+  "/current-active-transaction",
+  onlyAdminAndClientWithRoles(["ADMIN", "ACCOUNT"]),
+  currentActiveTransactionHandler
 );
 
 // start transaction

@@ -19,6 +19,7 @@ const CustomerSchema = new mongoose.Schema({
   dob: { type: String },
   countryCode: { type: String },
   isVerified: { type: Boolean, required: true, default: false },
+  termAndCondition: {type: Boolean, required: true, default: false},
   loginBy: { type: String, trim: true, enum: ["EMAIL", "PHONE"] },
   lastLogin: { type: String, trim: true },
   otpSecret: { type: [] },

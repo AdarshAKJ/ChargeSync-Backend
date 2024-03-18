@@ -2,6 +2,9 @@ import express from "express";
 
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 import {
+  chargerAvailableConnectorsHandler,
+  chargerClientIdHandler,
+  chargerOfflineOnlineHandler,
   createChargerHandler,
   deleteChargerHandler,
   getChargerCountHandler,
@@ -74,5 +77,27 @@ chargerRouter.post(
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   getChargerSelectHandler
 );
+
+// available connector for charger
+chargerRouter.post(
+  "/charger-available-connectors",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  chargerAvailableConnectorsHandler
+);
+
+// Get Client Id by Serial Number
+chargerRouter.post(
+  "/charger-client-id",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  chargerClientIdHandler
+);
+
+// Check charger is online or offline.
+chargerRouter.post(
+  "/charger-offline-online",
+  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  chargerOfflineOnlineHandler
+);
+
 
 export default chargerRouter;

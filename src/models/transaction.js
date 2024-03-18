@@ -14,7 +14,7 @@ const TransactionSchema = new mongoose.Schema({
   serialNumber: { type: String, required: true }, //database
   connectorId: { type: String, required: true }, //database
   status: {
-    type: String,
+    type: String, 
     required: true,
     enum: [
       "Pending",
@@ -33,26 +33,25 @@ const TransactionSchema = new mongoose.Schema({
   vehicleId: { type: String, required: true },
   perUnitCharges: { type: Number, required: true },
   startMeterReading: { type: Number }, //in "Wh"
-  expectedEndMeterReading: { type: Number },
+  expectedEndMeterReading: { type: Number }, // this is expected meter reading where charger should stop.
   endMeterReading: { type: Number },
   amount: { type: Number },
   tax: { type: Number },
   totalCost: { type: Number },
+  initialDeduction: { type: Number },
   failedReason: { type: String, trim: true },
-  requestedWatts: { type: Number },
+  customerReason: { type: String, trim: true },
+  requestedWatts: { type: Number }, // this is requested by user
   requiredTime: { type: Number },
   idTag: { type: String, trim: true, index: true },
-  currentMeterReading: { type: Number },
+  currentMeterReading: { type: Number }, // this we use to calculate the required time for charging
   currentMeterReadingTime: { type: String },
-  secondMeterReading: { type: Number },
-  secondMeterReadingTime: { type: String },
   requestInput: {
     type: String,
     trim: true,
     enum: ["WATT", "TIME"],
     default: "WATT",
   },
-  deductedAmount: { type: Number },
   created_by: { type: String },
   updated_by: { type: String },
   created_at: { type: String },
