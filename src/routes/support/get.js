@@ -55,6 +55,7 @@ export const listSupportTickets = async (req, res) => {
     }
 };
 
+// Retrieve all support tickets (CLIENT)
 export const listClientSupportTickets = async (req, res) => {
     try {
         const clientId = req.params.id;
@@ -78,7 +79,7 @@ export const listClientSupportTickets = async (req, res) => {
 };
 
 
-
+// Mark Ticket As "CLOSED"
 export const markTicketAsClosedHandler = async (req, res) => {
     try {
         // Extract ticket ID from request parameters

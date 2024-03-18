@@ -6,6 +6,8 @@ import { generatePublicId, getCurrentUnix } from "../../commons/common-functions
 import SupportTicketsModel from "../../models/supportTicket";
 import { responseGenerators } from "../../lib/utils";
 
+
+// Create New Ticket
 export const createSupportTicket = async (req, res) => {
     try {
         await createSupportTicketValidation.validateAsync(req.body);
@@ -35,7 +37,7 @@ export const createSupportTicket = async (req, res) => {
 };
 
 
-
+// Update Ticket
 export const updateSupportTicket = async (req, res) => {
     try {
         await updateSupportTicketValidation.validateAsync(req.body);
@@ -66,7 +68,7 @@ export const updateSupportTicket = async (req, res) => {
     }
 };
 
-
+// Mark Ticket As "RESOLVED"
 export const markTicketAsResolvedHandler = async (req, res) => {
     try {
       await ResolveTicketValidation.validateAsync(req.body);
