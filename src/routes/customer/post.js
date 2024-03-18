@@ -31,6 +31,8 @@ import { getJwt } from "../../helpers/Jwt.helper";
 import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
 import configVariables from "../../../config";
 import CustomerModel from "../../models/customer";
+import configVariables from "../../../config";
+
 
 // create user and provide OTP, if exist then provide OTP
 export const createCustomerHandler = async (req, res) => {
