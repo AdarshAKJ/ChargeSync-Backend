@@ -893,4 +893,120 @@ export const infoCustomerHandler = async (req, res) => {
   }
 };
 
+// FORGET Password API for Customer
+export const forgetPasswordHandler = async (req, res) => {
+  try {
+    await forgotPasswordValidation.validateAsync(req.body);
+    const customer = await CustomerModel.findOne({
+      email: req.body.email.toLowerCase(),
+    });
 
+    if (!customer) {
+      throw new CustomError("User with this email address does not exist");
+    }
+
+    const token = jwt.sign(
+      { customerId: customer._id },
+      configVariables.JWT_SECRET_KEY,
+      { expiresIn: "5m" }
+    );
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          token,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+// RESET Password API for Customer
+export const resetPasswordHandler = async (req, res) => {
+  try {
+    await resetPasswordValidation.validateAsync(req.body);
+    const { token, new_password, compare_password } = req.body;
+
+    if (!token) {
+      throw new CustomError("Token is missing");
+    }
+
+    let decodedToken;
+    try {
+      decodedToken = jwt.verify(token, configVariables.JWT_SECRET_KEY);
+    } catch (error) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ error: "Invalid token" });
+    }
+
+    const _id = decodedToken.customerId;
+
+    const customer = await CustomerModel.findById(_id);
+
+    if (!customer) {
+      throw new CustomError("User with this customer ID does not exist");
+    }
+
+    if (customer.loginBy !== "EMAIL") {
+      throw new CustomError(
+        "Reset password is only allowed for customers logged in via email"
+      );
+    }
+
+    if (new_password !== compare_password) {
+      throw new CustomError("New password and compare password do not match");
+    }
+
+    const hashedPassword = hashSync(new_password, 10);
+
+    await CustomerModel.findByIdAndUpdate(customer._id, {
+      password: hashedPassword,
+    });
+
+    return res
+      .status(StatusCodes.OK)
+      .send(responseGenerators(StatusCodes.OK, "SUCCESS", 0));
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
