@@ -25,7 +25,7 @@ transactionRouter.post(
 transactionRouter.post(
   "/single-transaction/:id",
   onlyAdminAndClientWithRoles(["ADMIN", "ACCOUNT"]),
-  singleTransaction 
+  singleTransaction
 );
 
 // single customer all transactions
@@ -50,11 +50,7 @@ transactionRouter.post(
 );
 
 // Get cost for charging
-transactionRouter.post(
-  "/get-cost",
-  authenticateCustomer,
-  getCostHandler
-);
+transactionRouter.post("/get-cost", authenticateCustomer, getCostHandler);
 
 // current active transaction
 transactionRouter.post(
@@ -62,8 +58,6 @@ transactionRouter.post(
   onlyAdminAndClientWithRoles(["ADMIN", "ACCOUNT"]),
   currentActiveTransactionHandler
 );
-
-
 
 // start transaction
 transactionRouter.post("/start", authenticateCustomer, startTransactionHandler);

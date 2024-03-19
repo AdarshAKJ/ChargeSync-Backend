@@ -2,6 +2,7 @@ import express from "express";
 import {
   createCustomerHandler,
   getCustomerSelectHandler,
+  infoCustomerHandler,
   listCustomerHandler,
   loginHandler,
   signupOrLoginOTPVerificationHandler,
@@ -64,5 +65,7 @@ customerRouter.post(
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   toggleBlockUnblockHandler
 );
+
+customerRouter.get("/info", authenticateCustomer, infoCustomerHandler);
 
 export default customerRouter;
