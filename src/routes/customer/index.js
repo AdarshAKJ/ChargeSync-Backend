@@ -1,9 +1,11 @@
 import express from "express";
 import {
   createCustomerHandler,
+  //forgetPasswordHandler,
   getCustomerSelectHandler,
   infoCustomerHandler,
   listCustomerHandler,
+  //resetPasswordHandler,
   loginHandler,
   signupOrLoginOTPVerificationHandler,
   singleCustomerHandler,
@@ -65,6 +67,16 @@ customerRouter.post(
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   toggleBlockUnblockHandler
 );
+
+// customerRouter.post(
+//   "/forgot-password",
+//   forgetPasswordHandler
+// );
+
+// customerRouter.post(
+//   "/reset-password",
+//   resetPasswordHandler
+// );
 
 customerRouter.get("/info", authenticateCustomer, infoCustomerHandler);
 

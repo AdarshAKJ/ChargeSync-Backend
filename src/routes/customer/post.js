@@ -1,8 +1,11 @@
 import { ValidationError } from "joi";
+import jwt from "jsonwebtoken";
 import {
   createCustomerValidation,
+  forgotPasswordValidation,
   getCustomerSelectValidation,
   listCustomerValidation,
+  resetPasswordValidation,
   loginValidation,
   signupOrLoginOTPVerificationValidation,
   singleCustomerValidation,
@@ -26,7 +29,10 @@ import {
 } from "../../commons/common-functions";
 import { getJwt } from "../../helpers/Jwt.helper";
 import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
+import configVariables from "../../../config";
 import CustomerModel from "../../models/customer";
+import configVariables from "../../../config";
+
 
 // create user and provide OTP, if exist then provide OTP
 export const createCustomerHandler = async (req, res) => {
@@ -865,7 +871,14 @@ export const infoCustomerHandler = async (req, res) => {
     return res
       .status(StatusCodes.OK)
       .send(responseGenerators(customerData, StatusCodes.OK, "SUCCESS", 0));
-  } catch (error) {
+  }  catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
     console.log(JSON.stringify(error));
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -879,3 +892,5 @@ export const infoCustomerHandler = async (req, res) => {
       );
   }
 };
+
+

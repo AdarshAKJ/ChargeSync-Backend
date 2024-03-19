@@ -72,6 +72,16 @@ export const getChargerSelectValidation = Joi.object({
 export const getStationSelectValidation = Joi.object({
   clientId: Joi.string().optional().allow(null),
 });
+
+export const forgotPasswordValidation = Joi.object({
+  email: Joi.string().email().required(),
+});
+
+export const resetPasswordValidation = Joi.object({
+  token: Joi.string().required(),
+  new_password: Joi.string().min(6).required(),
+  compare_password: Joi.string().valid(Joi.ref('new_password')).required().strict(),
+});
 export const chargerAvailableConnectorsValidation = Joi.object({
   serialNumber: Joi.string().required(),
   clientId: Joi.string().optional().allow(null),
