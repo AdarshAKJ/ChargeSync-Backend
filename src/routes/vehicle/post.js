@@ -96,7 +96,7 @@ export const updateVehicleHandler = async (req, res) => {
 
     if (isAvailable)
       throw new CustomError(
-        `The Vehicle you are trying to Update is already registered for that user.`
+        `Vehicle is not Found!.`
       );
 
     let vehicleData = await VehicleModel.findOneAndUpdate(

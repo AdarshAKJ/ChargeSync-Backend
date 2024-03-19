@@ -13,7 +13,7 @@ vehicleRouter.post("/create", authenticateCustomer, createVehicleHandler);
 vehicleRouter.post("/update/:id", authenticateCustomer, updateVehicleHandler);
 vehicleRouter.post("/list", authenticateCustomer, listVehicleHandler);
 vehicleRouter.post(
-  "/single-customer/:id",
+  "/single-vehicle/:id",
   authenticateCustomer,
   singleVehicleHandler
 );
