@@ -11,7 +11,6 @@ import WalletTransactionModel from "../../models/walletTransaction";
 
 export const addAmountToWallet = async (req, res) => {
   try {
-    console.log(req.session);
     await addBalanceToWalletValidation.validateAsync(req.body);
     const { amount } = req.body;
     const clientId = req.session.clientId || req.query.clientId;
@@ -25,9 +24,9 @@ export const addAmountToWallet = async (req, res) => {
       );
     }
 
-    const previousBalance = wallet.amount;
+    const previousBalance = +wallet.amount;
 
-    wallet.amount += amount;
+    wallet.amount += +amount;
 
     await wallet.save();
 
@@ -35,9 +34,9 @@ export const addAmountToWallet = async (req, res) => {
     await WalletTransactionModel.create({
       clientId: clientId,
       customerId: customerId,
-      preBalance: previousBalance,
-      effectedBalance: wallet.amount,
-      amount: amount,
+      preBalance: +previousBalance,
+      effectedBalance: +wallet.amount,
+      amount: +amount,
       type: "CREDITED",
       reason: "Amount added to wallet",
       source: "RAZORPAY",
