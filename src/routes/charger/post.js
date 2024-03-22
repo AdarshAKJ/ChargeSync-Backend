@@ -22,7 +22,12 @@ import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 import ChargerModel from "../../models/charger";
 import ClientModel from "../../models/client";
 import ChargerConnectorModel from "../../models/chargerConnector";
-import { chargerAvailableConnectorsValidation, chargerClientIdValidation, chargerOfflineOnlineValidation, getChargerSelectValidation } from "../../helpers/validations/customer.validation";
+import {
+  chargerAvailableConnectorsValidation,
+  chargerClientIdValidation,
+  chargerOfflineOnlineValidation,
+  getChargerSelectValidation,
+} from "../../helpers/validations/customer.validation";
 
 // DONE
 export const createChargerHandler = async (req, res) => {
@@ -582,7 +587,7 @@ export const getChargerSelectHandler = async (req, res) => {
   try {
     await getChargerSelectValidation.validateAsync(req.body);
 
-    checkClientIdAccess(req.session, req.body.clientId);
+    checkClientIdAccess(req?.session, req?.body?.clientId);
 
     let where = {
       isDeleted: false,
@@ -658,11 +663,11 @@ export const chargerAvailableConnectorsHandler = async (req, res) => {
   try {
     await chargerAvailableConnectorsValidation.validateAsync(req.body);
 
-    checkClientIdAccess(req.session, req.body.clientId);
+    // checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
       isDeleted: false,
-      serialNumber: req.body.serialNumber
+      serialNumber: req.body.serialNumber,
     };
 
     const pagination = setPagination(req.query);
@@ -686,7 +691,7 @@ export const chargerAvailableConnectorsHandler = async (req, res) => {
           as: "chargerConnectorData",
           pipeline: [
             {
-              $match: { isDeleted: false},
+              $match: { isDeleted: false },
             },
             {
               $project: {
@@ -695,22 +700,17 @@ export const chargerAvailableConnectorsHandler = async (req, res) => {
                 connectorId: 1,
               },
             },
-            
           ],
         },
       },
     ];
 
-    const chargerData = await ChargerModel.aggregate(
-      aggregationPipeline
-    )
-    .sort(pagination.sort)
-    .skip(pagination.offset)
-    .limit(pagination.limit);
+    const chargerData = await ChargerModel.aggregate(aggregationPipeline)
+      .sort(pagination.sort)
+      .skip(pagination.offset)
+      .limit(pagination.limit);
 
     let total_count = await ChargerModel.count(where);
-
-    
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(
@@ -747,23 +747,21 @@ export const chargerAvailableConnectorsHandler = async (req, res) => {
 };
 
 // Get Client Id by Serial Number
-export const chargerClientIdHandler = async(req, res) => {
+export const chargerClientIdHandler = async (req, res) => {
   try {
     await chargerClientIdValidation.validateAsync(req.body);
 
     let where = {
       isDeleted: false,
-      serialNumber: req.body.serialNumber
+      serialNumber: req.body.serialNumber,
     };
 
- 
     const chargerData = await ChargerModel.findOne(where).select("clientId");
-    
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(
         {
-          chargerData : chargerData,
+          chargerData: chargerData,
         },
         StatusCodes.OK,
         "SUCCESS",
@@ -793,23 +791,21 @@ export const chargerClientIdHandler = async(req, res) => {
 };
 
 // Check charger is online or offline.
-export const chargerOfflineOnlineHandler = async(req, res) => {
+export const chargerOfflineOnlineHandler = async (req, res) => {
   try {
     await chargerOfflineOnlineValidation.validateAsync(req.body);
 
     let where = {
       isDeleted: false,
-      serialNumber: req.body.serialNumber
+      serialNumber: req.body.serialNumber,
     };
 
- 
     const chargerData = await ChargerModel.findOne(where).select("status");
-    
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(
         {
-          chargerclientId : chargerData,
+          chargerclientId: chargerData,
         },
         StatusCodes.OK,
         "SUCCESS",

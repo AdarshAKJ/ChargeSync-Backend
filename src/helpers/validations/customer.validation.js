@@ -29,6 +29,7 @@ export const signupOrLoginOTPVerificationValidation = Joi.object({
   otp: Joi.string().required(),
   password: Joi.number().integer().min(100000).max(999999).required(),
   confirmPassword: Joi.number().integer().min(100000).max(999999).required(),
+  termAndCondition: Joi.boolean().valid(true).required(),
 });
 
 export const updateCustomerValidation = Joi.object({
@@ -37,7 +38,7 @@ export const updateCustomerValidation = Joi.object({
   lname: Joi.string().required(),
   address: Joi.object().optional().allow(null),
   dob: Joi.string().optional().allow(null),
-  termAndCondition: Joi.boolean().valid(true).required(),
+  // termAndCondition: Joi.boolean().valid(true).required(),
 });
 
 export const listCustomerValidation = Joi.object({

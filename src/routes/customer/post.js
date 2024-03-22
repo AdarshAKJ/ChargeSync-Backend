@@ -32,7 +32,7 @@ import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
 import configVariables from "../../../config";
 import CustomerModel from "../../models/customer";
 
-// create user and provide OTP, if exist then provide OTP
+/** Outdated route for customer creation */
 export const createCustomerHandler = async (req, res) => {
   try {
     await createCustomerValidation.validateAsync(req.body);
@@ -217,7 +217,7 @@ export const createCustomerHandler = async (req, res) => {
   }
 };
 
-// v2 version of create customer
+/** v2 version of create customer. We are using this Route */
 export const v2CreateCustomerHandler = async (req, res) => {
   try {
     // validation
@@ -264,6 +264,7 @@ export const v2CreateCustomerHandler = async (req, res) => {
             {
               isNew: true,
               id: customerData._id,
+              test: code, // Temporary
             },
             StatusCodes.OK,
             OTP.SUCCESS,
@@ -323,6 +324,7 @@ export const v2CreateCustomerHandler = async (req, res) => {
             {
               isNew: true,
               id: customerData._id,
+              test: code, // Temporary
             },
             StatusCodes.OK,
             OTP.SUCCESS,
@@ -367,7 +369,7 @@ export const v2CreateCustomerHandler = async (req, res) => {
   }
 };
 
-// customer OTP verification
+/** customer OTP verification, first time OTP verification */
 export const signupOrLoginOTPVerificationHandler = async (req, res) => {
   try {
     await signupOrLoginOTPVerificationValidation.validateAsync(req.body);
@@ -400,10 +402,25 @@ export const signupOrLoginOTPVerificationHandler = async (req, res) => {
         { _id: customerData._id },
         {
           otpSecret: [],
+          termAndCondition: true,
           isVerified: true,
           password: await hashPassword(password.toString()),
         }
       );
+
+      // create wallet for customer.
+      const wallet = new WalletModel({
+        clientId: customerData?.clientId,
+        customerId: customerData?._id,
+        amount: 0.0,
+        created_at: getCurrentUnix(),
+        created_by: customerData?._id,
+        updated_by: customerData?._id,
+        updated_at: getCurrentUnix(),
+      });
+
+      // Saving the wallet to the database
+      await wallet.save();
 
       // welcome message
       return res.status(StatusCodes.OK).send(
@@ -451,7 +468,7 @@ export const signupOrLoginOTPVerificationHandler = async (req, res) => {
   }
 };
 
-// this is for login user using pin
+/**  This is for login user using pin  */
 export const loginHandler = async (req, res) => {
   try {
     // validation

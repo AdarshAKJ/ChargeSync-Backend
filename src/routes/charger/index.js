@@ -81,7 +81,7 @@ chargerRouter.post(
 // available connector for charger
 chargerRouter.post(
   "/charger-available-connectors",
-  onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
+  // onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   chargerAvailableConnectorsHandler
 );
 
@@ -98,6 +98,5 @@ chargerRouter.post(
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   chargerOfflineOnlineHandler
 );
-
 
 export default chargerRouter;
