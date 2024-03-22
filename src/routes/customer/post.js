@@ -538,7 +538,7 @@ export const loginHandler = async (req, res) => {
   }
 };
 
-// update the customer
+/** Update the customer */
 export const updateCustomerHandler = async (req, res) => {
   try {
     // validation
@@ -598,7 +598,7 @@ export const updateCustomerHandler = async (req, res) => {
   }
 };
 
-// list customer
+/** list customer */
 export const listCustomerHandler = async (req, res) => {
   try {
     await listCustomerValidation.validateAsync(req.body);
@@ -669,7 +669,7 @@ export const listCustomerHandler = async (req, res) => {
   }
 };
 
-// single customer
+/** single customer */
 export const singleCustomerHandler = async (req, res) => {
   try {
     await singleCustomerValidation.validateAsync({
@@ -736,14 +736,12 @@ export const singleCustomerHandler = async (req, res) => {
   }
 };
 
-//
-// get-customer-select
+/** get-customer-select */
 export const getCustomerSelectHandler = async (req, res) => {
   try {
     await getCustomerSelectValidation.validateAsync(req.body);
 
     let where = {
-      // fname: { $exists: true },
       isDeleted: false,
       clientId: req?.session?.clientId || req?.body?.clientId,
     };
@@ -820,7 +818,7 @@ export const getCustomerSelectHandler = async (req, res) => {
   }
 };
 
-// Customer Block/UnBlock
+/** Block/Unblock user */
 export const toggleBlockUnblockHandler = async (req, res) => {
   try {
     const { id } = req.params;
@@ -908,7 +906,7 @@ export const infoCustomerHandler = async (req, res) => {
   }
 };
 
-// FORGET Password API for Customer
+/** FORGET Password API for Customer */
 export const forgetPasswordHandler = async (req, res) => {
   try {
     await forgotPasswordValidation.validateAsync(req.body);
@@ -958,7 +956,7 @@ export const forgetPasswordHandler = async (req, res) => {
   }
 };
 
-// RESET Password API for Customer
+/** RESET Password API for Customer */
 export const resetPasswordHandler = async (req, res) => {
   try {
     await resetPasswordValidation.validateAsync(req.body);
