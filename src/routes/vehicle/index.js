@@ -6,6 +6,7 @@ import {
   updateVehicleHandler,
 } from "./post";
 import { authenticateCustomer } from "../../middleware/authenticateCustomer";
+import { deleteVehicleHandler } from "./get";
 
 const vehicleRouter = express.Router();
 
@@ -17,5 +18,7 @@ vehicleRouter.post(
   authenticateCustomer,
   singleVehicleHandler
 );
+
+vehicleRouter.get("/delete/:id", authenticateCustomer, deleteVehicleHandler);
 
 export default vehicleRouter;
