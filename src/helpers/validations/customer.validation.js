@@ -75,7 +75,9 @@ export const getStationSelectValidation = Joi.object({
 });
 
 export const forgotPasswordValidation = Joi.object({
-  email: Joi.string().email().required(),
+  email: Joi.string().email().optional().allow(null, ""),
+  phoneNumber: Joi.string().optional().allow(null, ""),
+  type: Joi.string().required().allow("EMAIL", "PHONE"),
 });
 
 export const resetPasswordValidation = Joi.object({

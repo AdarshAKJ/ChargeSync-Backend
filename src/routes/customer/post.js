@@ -910,9 +910,21 @@ export const infoCustomerHandler = async (req, res) => {
 export const forgetPasswordHandler = async (req, res) => {
   try {
     await forgotPasswordValidation.validateAsync(req.body);
-    const customer = await CustomerModel.findOne({
-      email: req.body.email.toLowerCase(),
-    });
+
+    /** where clause */
+    let where = {};
+
+    /** if email exits */
+    if (req.body.type == "EMAIL") {
+      if (req.body.email)
+        throw new CustomError("Please provide an email address");
+      where.email = req.body.email.toLowerCase();
+    } else if (req.body.type == "PHONE") {
+      if (!req.body.phoneNumber)
+        throw new CustomError("Please enter a phone number");
+      where.phoneNumber = req.body.phoneNumber.toLowerCase();
+    }
+    const customer = await CustomerModel.findOne(where);
 
     if (!customer) {
       throw new CustomError("User with this email address does not exist");
@@ -927,7 +939,7 @@ export const forgetPasswordHandler = async (req, res) => {
     return res.status(StatusCodes.OK).send(
       responseGenerators(
         {
-          token,
+          token: encryptData(token),
         },
         StatusCodes.OK,
         "SUCCESS",
