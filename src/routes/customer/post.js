@@ -31,6 +31,7 @@ import { getJwt } from "../../helpers/Jwt.helper";
 import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
 import configVariables from "../../../config";
 import CustomerModel from "../../models/customer";
+import { hashSync } from "bcryptjs";
 
 /** Outdated route for customer creation */
 export const createCustomerHandler = async (req, res) => {

@@ -5,7 +5,6 @@ import { responseGenerators } from "../../lib/utils";
 import { StatusCodes } from "http-status-codes";
 import ClientModel from "../../models/client";
 import { setPagination } from "../../commons/common-functions";
-import { listClientUserValidation } from "../../helpers/validations/client.user.validation";
 
 
 

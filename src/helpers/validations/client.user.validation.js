@@ -62,3 +62,16 @@ export const singleClientUserValidation = Joi.object({
 export const listClientUserValidation = Joi.object({
   clientId: Joi.string().required(),
 });
+
+export const clientUserForgotPasswordValidation = Joi.object({
+  email: Joi.string().email().required(),
+});
+
+export const clientUserResetPasswordValidation = Joi.object({
+  token: Joi.string().required(),
+  new_password: Joi.string().min(6).required(),
+  compare_password: Joi.string()
+    .valid(Joi.ref("new_password"))
+    .required()
+    .strict(),
+});
