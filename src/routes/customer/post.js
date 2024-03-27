@@ -870,6 +870,7 @@ export const toggleBlockUnblockHandler = async (req, res) => {
   }
 };
 
+/** Get Customer Info API for Customer */
 export const infoCustomerHandler = async (req, res) => {
   try {
     let customerData = await CustomerModel.findOne({
