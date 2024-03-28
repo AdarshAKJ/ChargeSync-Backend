@@ -834,6 +834,7 @@ export const chargerOfflineOnlineHandler = async (req, res) => {
   }
 };
 
+/** get client details for APP based on serial Number  */
 export const getClientDetailsBySerialNumberHandler = async (req, res) => {
   try {
     if (!req.params.serialNumber)
@@ -845,7 +846,7 @@ export const getClientDetailsBySerialNumberHandler = async (req, res) => {
     };
 
     const chargerData = await ChargerModel.findOne(where)
-      .select("clientId", "serialNumber")
+      .select("clientId serialNumber")
       .lean()
       .exec();
 

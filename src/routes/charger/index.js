@@ -100,6 +100,10 @@ chargerRouter.post(
   chargerOfflineOnlineHandler
 );
 
+/**
+ *  get client details based on serial Number
+ *  This API is used by APP to get client details
+ */
 chargerRouter.get(
   "/get-client-details-by-serial-number/:serialNumber",
   getClientDetailsBySerialNumberHandler
