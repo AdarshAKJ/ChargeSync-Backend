@@ -833,3 +833,63 @@ export const chargerOfflineOnlineHandler = async (req, res) => {
       );
   }
 };
+
+export const getClientDetailsBySerialNumberHandler = async (req, res) => {
+  try {
+    if (!req.params.serialNumber)
+      throw new CustomError(`Please provide a serial number`);
+
+    let where = {
+      isDeleted: false,
+      serialNumber: req.params.serialNumber,
+    };
+
+    const chargerData = await ChargerModel.findOne(where)
+      .select("clientId", "serialNumber")
+      .lean()
+      .exec();
+
+    if (!chargerData) throw new CustomError(`Charger not found`);
+
+    const clientData = await ClientModel.findOne({
+      _id: chargerData.clientId,
+    })
+      .select("_id name")
+      .lean()
+      .exec();
+
+    if (!clientData) throw new CustomError(`Client not found`);
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          clientId: clientData._id,
+          clientName: clientData.name,
+          serialNumber: req.params.serialNumber,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
