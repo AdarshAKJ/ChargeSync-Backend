@@ -5,6 +5,8 @@ import {
   updateClientUser,
   deleteClientUser,
   listClientUser,
+  forgetPasswordHandler,
+  resetPasswordHandler,
 } from "./post";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 import { getSingleClientUser } from "./get";
@@ -42,5 +44,10 @@ clientUserRouter.post(
   onlyAdminAndClientWithRoles(["ADMIN"]),
   deleteClientUser
 ); //DONE
+
+clientUserRouter.post("/forgot-password",forgetPasswordHandler);
+
+  
+clientUserRouter.post("/reset-password",resetPasswordHandler);
 
 export default clientUserRouter;
