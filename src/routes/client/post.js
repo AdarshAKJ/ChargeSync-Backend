@@ -68,6 +68,10 @@ export const createClient = async (req, res) => {
     // Create the client
     const client = await ClientModel.create(data);
 
+    // Create client default member and as isAdminCreated = true
+
+    // send mail to client with url and username nad temp-password
+
     if (!client)
       throw new CustomError(
         `We are encountering some errors from our side. Please try again later.`
@@ -305,6 +309,7 @@ export const getClientSelectHandler = async (req, res) => {
       );
   }
 };
+
 
 
 

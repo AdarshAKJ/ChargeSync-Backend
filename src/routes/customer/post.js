@@ -912,24 +912,39 @@ export const infoCustomerHandler = async (req, res) => {
 export const forgetPasswordHandler = async (req, res) => {
   try {
     await forgotPasswordValidation.validateAsync(req.body);
-    const customer = await CustomerModel.findOne({
-      email: req.body.email.toLowerCase(),
-    });
 
-    if (!customer) {
+    /** where clause */
+    let where = {};
+
+    /** if email exits */
+    if (req.body.type == "EMAIL") {
+      if (req.body.email)
+        throw new CustomError("Please provide an email address");
+      where.email = req.body.email.toLowerCase();
+    } else if (req.body.type == "PHONE") {
+      if (!req.body.phoneNumber)
+        throw new CustomError("Please enter a phone number");
+      where.phoneNumber = req.body.phoneNumber.toLowerCase();
+    }
+    const customerData = await CustomerModel.findOne(where);
+
+    if (!customerData) {
       throw new CustomError("User with this email address does not exist");
     }
 
-    const token = jwt.sign(
-      { customerId: customer._id },
-      configVariables.JWT_SECRET_KEY,
-      { expiresIn: "5m" }
-    );
+    // We will send the OTP and customer need to verify that OTP
+    const secret = generateSecret();
+    const purpose = "RESET-PIN";
+    const { code, newOtpSecret } = generateTOTP(secret, purpose);
+    customerData.otpSecret.push(newOtpSecret);
+    await customerData.save();
+    console.log(`FORGOT PIN:- OTP :-` + code);
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(
         {
-          token,
+          otp: code,
+          _id: customerData._id,
         },
         StatusCodes.OK,
         "SUCCESS",
@@ -958,38 +973,32 @@ export const forgetPasswordHandler = async (req, res) => {
   }
 };
 
-/** RESET Password API for Customer */
+/** RESET Password API for Customer with OTP verification */
 export const resetPasswordHandler = async (req, res) => {
   try {
+    /** validation */
     await resetPasswordValidation.validateAsync(req.body);
-    const { token, new_password, compare_password } = req.body;
 
-    if (!token) {
-      throw new CustomError("Token is missing");
-    }
+    const { _id, otp, new_password, compare_password } = req.body;
 
-    let decodedToken;
-    try {
-      decodedToken = jwt.verify(token, configVariables.JWT_SECRET_KEY);
-    } catch (error) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ error: "Invalid token" });
-    }
+    if (!otp) throw new CustomError("Please provide valid OTP");
 
-    const _id = decodedToken.customerId;
+    const customerData = await CustomerModel.findById(_id);
 
-    const customer = await CustomerModel.findById(_id);
-
-    if (!customer) {
+    if (!customerData) {
       throw new CustomError("User with this customer ID does not exist");
     }
 
-    if (customer.loginBy !== "EMAIL") {
-      throw new CustomError(
-        "Reset password is only allowed for customers logged in via email"
-      );
-    }
+    // verify OTP here.
+    const purpose = "RESET-PIN";
+    let otpSecret = customerData.otpSecret.filter((e) => e.purpose == purpose);
+
+    if (!otpSecret || !otpSecret.length)
+      throw new CustomError("No pending OTP found for customer.");
+
+    let isValid = verifyTotp(otpSecret.reverse()[0].secret, otp);
+
+    if (!isValid) throw new CustomError("Please provide valid OTP");
 
     if (new_password !== compare_password) {
       throw new CustomError("New password and compare password do not match");
@@ -997,8 +1006,9 @@ export const resetPasswordHandler = async (req, res) => {
 
     const hashedPassword = hashSync(new_password, 10);
 
-    await CustomerModel.findByIdAndUpdate(customer._id, {
+    await CustomerModel.findByIdAndUpdate(customerData._id, {
       password: hashedPassword,
+      updated_at: getCurrentUnix(),
     });
 
     return res

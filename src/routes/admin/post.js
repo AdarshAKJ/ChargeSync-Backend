@@ -136,6 +136,7 @@ export const updateAdminHandler = async (req, res) => {
 export const deleteAdminHandler = async (req, res) => {
   try {
     if (!req.params.id) throw new CustomError(`Please provide vaild id`);
+
     const isAvailable = await AdminModel.findOne({
       isDeleted: false,
       id: req.params.id,

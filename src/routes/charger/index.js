@@ -9,6 +9,7 @@ import {
   deleteChargerHandler,
   getChargerCountHandler,
   getChargerSelectHandler,
+  getClientDetailsBySerialNumberHandler,
   getSerialNumberHandler,
   listChargerHandler,
   singleChargerHandler,
@@ -97,6 +98,11 @@ chargerRouter.post(
   "/charger-offline-online",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   chargerOfflineOnlineHandler
+);
+
+chargerRouter.get(
+  "/get-client-details-by-serial-number/:serialNumber",
+  getClientDetailsBySerialNumberHandler
 );
 
 export default chargerRouter;

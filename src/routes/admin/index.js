@@ -9,8 +9,8 @@ import {
 import { infoAdminHandler, listAdminHandler } from "./get";
 
 const adminRoute = Router();
-adminRoute.post(`/login`, privateKeyMiddleware, loginAdminHandler); //DONE
-adminRoute.post("/create", privateKeyMiddleware, createAdminHandler); // DONE
+adminRoute.post(`/login`, privateKeyMiddleware, loginAdminHandler);
+adminRoute.post("/create", privateKeyMiddleware, createAdminHandler);
 
 adminRoute.post(`/update/:id`, privateKeyMiddleware, updateAdminHandler);
 adminRoute.post(`/delete/:id`, privateKeyMiddleware, deleteAdminHandler);
