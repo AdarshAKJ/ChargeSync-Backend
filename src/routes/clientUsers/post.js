@@ -1,5 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import { ValidationError } from "joi";
+import jwt from "jsonwebtoken";
 import {
   comparePassword,
   encryptData,
@@ -9,6 +10,8 @@ import {
 } from "../../commons/common-functions";
 import { CustomError } from "../../helpers/custome.error";
 import {
+  clientUserForgotPasswordValidation,
+  clientUserResetPasswordValidation,
   createClientUserValidation,
   deleteClientUserValidation,
   listClientUserValidation,
@@ -19,6 +22,8 @@ import { responseGenerators } from "../../lib/utils";
 import ClientUserModel from "../../models/clientUser";
 import { getJwt } from "../../helpers/Jwt.helper";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
+import configVariables from "../../../config";
+import { hashSync } from "bcryptjs";
 
 export const createClientUser = async (req, res) => {
   try {
@@ -333,6 +338,120 @@ export const listClientUser = async (req, res) => {
           0
         )
       );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+/** FORGET Password API for ClientUser */
+export const forgetPasswordHandler = async (req, res) => {
+  try {
+    await clientUserForgotPasswordValidation.validateAsync(req.body);
+    
+    const clientUser = await ClientUserModel.findOne({
+      email: req.body.email.toLowerCase(),
+    });
+
+    if (!clientUser) {
+      throw new CustomError("User with this email address does not exist");
+    }
+
+    const token = jwt.sign(
+      { clientUserId: clientUser._id },
+      configVariables.JWT_SECRET_KEY,
+      { expiresIn: "5m" }
+    );
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        {
+          token,
+        },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof CustomError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send(
+          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
+        );
+    }
+    console.log(JSON.stringify(error));
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(
+        responseGenerators(
+          {},
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Internal Server Error",
+          1
+        )
+      );
+  }
+};
+
+
+/** RESET Password API for ClientUser */
+export const resetPasswordHandler = async (req, res) => {
+  try {
+    await clientUserResetPasswordValidation.validateAsync(req.body);
+    const { token, new_password, compare_password } = req.body;
+
+    if (!token) {
+      throw new CustomError("Token is missing");
+    }
+
+    let decodedToken;
+    try {
+      decodedToken = jwt.verify(token, configVariables.JWT_SECRET_KEY);
+    } catch (error) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ error: "Invalid token" });
+    }
+
+    const _id = decodedToken.clientUserId;
+
+    const clientUser = await ClientUserModel.findById(_id);
+
+    if (!clientUser) {
+      throw new CustomError("User with this clientUser ID does not exist");
+    }
+
+    if (new_password !== compare_password) {
+      throw new CustomError("New password and compare password do not match");
+    }
+
+    const hashedPassword = hashSync(new_password, 10);
+
+    await ClientUserModel.findByIdAndUpdate(clientUser._id, {
+      password: hashedPassword,
+    });
+
+    return res
+      .status(StatusCodes.OK)
+      .send(responseGenerators(StatusCodes.OK, "SUCCESS", 0));
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res

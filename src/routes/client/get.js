@@ -4,16 +4,54 @@ import { responseGenerators } from "../../lib/utils";
 
 import { StatusCodes } from "http-status-codes";
 import ClientModel from "../../models/client";
+import { setPagination } from "../../commons/common-functions";
 
+
+
+// List Client API
 export const listClient = async (req, res) => {
   try {
-    const clients = await ClientModel.find().lean().exec();
+    let where = {
+      isDeleted: false,
+    };
 
-    if (!clients) throw new CustomError(`No client found.`);
+    if (req.query?.search) {
+      where = {
+        ...where,
+        ...{
+          $or: [
+            { name: new RegExp(req.query?.search.toString(), "i") },
+            { contactPerson: new RegExp(req.query?.search.toString(), "i") },
+            { contactPersonEmailAddress: new RegExp(req.query?.search.toString(), "i") },
+            { contactPersonPhoneNumber: new RegExp(req.query?.search.toString(), "i") },
+          ],
+        },
+      };
+    }
 
-    return res
-      .status(StatusCodes.OK)
-      .send(responseGenerators({ ...clients }, StatusCodes.OK, "SUCCESS", 0));
+    const pagination = setPagination(req.query);
+    
+    const clients = await ClientModel.find(where)
+      .lean()
+      .sort(pagination.sort)
+      .skip(pagination.offset)
+      .limit(pagination.limit)
+      .exec();
+
+    if (!clients || clients.length === 0) {
+      throw new CustomError(`No clients found.`);
+    }
+
+    const total_count = await ClientModel.countDocuments();
+
+    return res.status(StatusCodes.OK).send(
+      responseGenerators(
+        { paginatedData: clients, totalCount: total_count },
+        StatusCodes.OK,
+        "SUCCESS",
+        0
+      )
+    );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
@@ -36,6 +74,7 @@ export const listClient = async (req, res) => {
   }
 };
 
+// Delete Client API
 export const deleteClient = async (req, res) => {
   try {
     const { id: _id } = req.params;
@@ -72,6 +111,7 @@ export const deleteClient = async (req, res) => {
   }
 };
 
+// Get Single Client API
 export const getSingleClientHandler = async (req, res) => {
   try {
     const clientId = req.params.id;
@@ -111,3 +151,4 @@ export const getSingleClientHandler = async (req, res) => {
       );
   }
 };
+
