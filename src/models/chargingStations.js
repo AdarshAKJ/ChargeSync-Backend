@@ -8,11 +8,12 @@ const chargingStationSchema = new mongoose.Schema({
   address: {
     area: { type: String, required: true },
     city: { type: String, required: true },
+    state: { type: String, required: true },
     postal: { type: String, required: true },
     countryCode: { type: String, required: true },
     coordinates: {
-      latitude: { type: String, required: true },
-      longitude: { type: String, required: true },
+      latitude: { type: String, required: false },
+      longitude: { type: String, required: false },
     },
   },
   own_by: { type: String },

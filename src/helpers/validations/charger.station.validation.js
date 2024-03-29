@@ -7,10 +7,11 @@ export const createChargerStationValidation = Joi.object({
     area: Joi.string().required(),
     city: Joi.string().required(),
     postal: Joi.string().required(),
+    state: Joi.string().required(),
     countryCode: Joi.string().required(),
     coordinates: Joi.object({
-      latitude: Joi.string().required(),
-      longitude: Joi.string().required(),
+      latitude: Joi.string().optional().allow(null, ""),
+      longitude: Joi.string().optional().allow(null, ""),
     }),
   }),
   own_by: Joi.string().optional().allow(null),
@@ -27,11 +28,12 @@ export const updateChargerStationValidation = Joi.object({
   address: Joi.object({
     area: Joi.string().required(),
     city: Joi.string().required(),
+    state: Joi.string().required(),
     postal: Joi.string().required(),
     countryCode: Joi.string().required(),
     coordinates: Joi.object({
-      latitude: Joi.string().required(),
-      longitude: Joi.string().required(),
+      latitude: Joi.string().optional().allow(null, ""),
+      longitude: Joi.string().optional().allow(null, ""),
     }),
   }),
   own_by: Joi.string().optional().allow(null),
