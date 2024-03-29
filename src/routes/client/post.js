@@ -7,25 +7,36 @@ import {
   updateClientValidation,
 } from "../../helpers/validations/client.validation";
 import ClientModel from "../../models/client";
-import { getCurrentUnix, hashPassword, setPagination } from "../../commons/common-functions";
+import {
+  getCurrentUnix,
+  hashPassword,
+  setPagination,
+} from "../../commons/common-functions";
 import { StatusCodes } from "http-status-codes";
 import ClientUserModel from "../../models/clientUser";
 
-
-
+/** This APi will create client and default client members */
 export const createClient = async (req, res) => {
   try {
     await createClientValidation.validateAsync(req.body);
+
     const isAvailable = await ClientModel.findOne({
-      name: req.body.name,
+      $or: [{ username: req.body.username }, { name: req.body.name }],
       isDeleted: false,
     })
       .lean()
       .exec();
 
     if (isAvailable)
+      throw new CustomError(`Client with same name or username already exist.`);
+
+    let clientUserExist = await ClientUserModel.findOne({
+      $or: [{ username: req.body.username }, { email: req.body.email }],
+    });
+
+    if (clientUserExist)
       throw new CustomError(
-        `The user you are trying to create is already registered.`
+        `Client Member with same name or username already exist.`
       );
 
     const {
@@ -39,15 +50,6 @@ export const createClient = async (req, res) => {
       prefix,
       username,
     } = req.body;
-
-    let tempPassword1
-    let tempPassword2
-
-    // Generate a temporary 8-digit password and hash it
-    tempPassword1 = Math.random().toString(36).slice(-8);
-    let hashPass = await hashPassword(tempPassword1);
-    tempPassword2 = hashPass;
-    
 
     let data = {
       name,
@@ -77,14 +79,21 @@ export const createClient = async (req, res) => {
         `We are encountering some errors from our side. Please try again later.`
       );
 
-      let contactPersonParts = contactPerson.split(" ");
+    // Generate a temporary 8-digit password and hash it
+    let tempPassword1;
+    let tempPassword2;
+    tempPassword1 = Math.random().toString(36).slice(-8);
+    let hashPass = await hashPassword(tempPassword1);
+    tempPassword2 = hashPass;
+
+    let contactPersonParts = contactPerson.split(" ");
     // Create a default ClientUser for the client
     const defaultClientUser = await ClientUserModel.create({
       clientId: client._id,
       username,
       password: tempPassword2,
       isAdminCreated: true,
-      roleId:"ADMIN",
+      roleId: "ADMIN",
       fname: contactPersonParts[0],
       lname: contactPersonParts.slice(1).join(" "),
       email: contactPersonEmailAddress,
@@ -92,14 +101,16 @@ export const createClient = async (req, res) => {
       countryCode: countryCode,
     });
 
-    return res.status(StatusCodes.OK).send(
-      responseGenerators(
-        { ...client.toJSON(), defaultClientUser, password : tempPassword1},
-        StatusCodes.OK,
-        "SUCCESS",
-        0
-      )
-    );
+    return res
+      .status(StatusCodes.OK)
+      .send(
+        responseGenerators(
+          { ...client.toJSON(), defaultClientUser, password: tempPassword1 },
+          StatusCodes.OK,
+          "SUCCESS",
+          0
+        )
+      );
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
@@ -122,85 +133,7 @@ export const createClient = async (req, res) => {
   }
 };
 
-
-//Create Client API
-// export const createClient = async (req, res) => {
-//   try {
-//     await createClientValidation.validateAsync(req.body);
-//     const isAvailable = await ClientModel.findOne({
-//       name: req.body.name,
-//       isDeleted: false,
-//     })
-//       .lean()
-//       .exec();
-
-//     if (isAvailable)
-//       throw new CustomError(
-//         `The user you are trying to create is already registered.`
-//       );
-
-//     const {
-//       name,
-//       contactPerson,
-//       contactPersonEmailAddress,
-//       contactPersonPhoneNumber,
-//       countryCode,
-//       address,
-//       documents,
-//       prefix,
-//     } = req.body;
-
-//     let data = {
-//       name,
-//       contactPerson,
-//       prefix: prefix.toUpperCase(),
-//       contactPersonEmailAddress: contactPersonEmailAddress.toLowerCase(),
-//       contactPersonPhoneNumber,
-//       countryCode,
-//       address,
-//       documents,
-//       subscriptionId: "kwrgfvwhkfkwhgcjhd",
-//       created_at: getCurrentUnix(),
-//       updated_at: getCurrentUnix(),
-//       updated_by: req.session._id,
-//       created_by: req.session._id,
-//     };
-
-//     const client = await ClientModel.create(data);
-
-//     if (!client)
-//       throw new CustomError(
-//         `We are encountering some errors from our side. Please try again later.`
-//       );
-
-//     return res
-//       .status(StatusCodes.OK)
-//       .send(
-//         responseGenerators({ ...client.toJSON() }, StatusCodes.OK, "SUCCESS", 0)
-//       );
-//   } catch (error) {
-//     if (error instanceof ValidationError || error instanceof CustomError) {
-//       return res
-//         .status(StatusCodes.BAD_REQUEST)
-//         .send(
-//           responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-//         );
-//     }
-//     console.log(JSON.stringify(error));
-//     return res
-//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-//       .send(
-//         responseGenerators(
-//           {},
-//           StatusCodes.INTERNAL_SERVER_ERROR,
-//           "Internal Server Error",
-//           1
-//         )
-//       );
-//   }
-// };
-
-// Update Client API
+/** Update Client API */
 export const updateClient = async (req, res) => {
   try {
     await updateClientValidation.validateAsync(req.body);
@@ -255,7 +188,7 @@ export const updateClient = async (req, res) => {
   }
 };
 
-// API to provide client name for selection box with id
+/** API to provide client name for selection box with id */
 export const getClientSelectHandler = async (req, res) => {
   try {
     const pagination = setPagination(req.query);
@@ -309,9 +242,3 @@ export const getClientSelectHandler = async (req, res) => {
       );
   }
 };
-
-
-
-
-
-

@@ -19,7 +19,6 @@ const clientSchema = new mongoose.Schema({
   },
   onBoard: { type: Boolean },
   subscriptionId: { type: String, required: true },
-  // documents like array [{type:"NDA", path:"s3://s3.amazonaws.com"}]
   documents: {
     type: [],
   },
