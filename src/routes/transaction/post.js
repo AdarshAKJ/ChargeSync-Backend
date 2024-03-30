@@ -361,13 +361,8 @@ export const singleTransaction = async (req, res) => {
 
 export const customerTransactionsHandler = async (req, res) => {
   try {
-    await customerTransactionsValidation.validateAsync(req.body);
-    checkClientIdAccess(req.session, req.body.clientId);
-
     let where = {
-      isDeleted: false,
-      clientId: req.session.clientId || req.body.clientId,
-      customerId: req.body.id,
+      customerId: req.session.id,
     };
 
     if (req.query?.status) {
@@ -377,23 +372,25 @@ export const customerTransactionsHandler = async (req, res) => {
       };
     }
 
-    if (req.query?.connectorId) {
-      where = {
-        ...where,
-        connectorId: new RegExp(req.query.connectorId.toString(), "i"),
-      };
-    }
-
     if (req?.query?.startDate) {
       where.createdAt = {
         $gte: getUnixStartTime(dateToUnix(req.query.startDate)),
       };
     }
+
     if (req?.query?.endDate) {
       where.createdAt = {
         $lte: getUnixEndTime(dateToUnix(req.query.endDate)),
       };
     }
+
+    if (req?.query?.startDate && req?.query?.endDate) {
+      where.createdAt = {
+        $gte: getUnixStartTime(dateToUnix(req.query.startDate)),
+        $lte: getUnixEndTime(dateToUnix(req.query.endDate)),
+      };
+    }
+
     const pagination = setPagination(req.query);
 
     const transactions = await TransactionModel.findOne(where)

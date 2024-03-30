@@ -5,7 +5,11 @@ import { CustomError } from "../../helpers/custome.error";
 import ChargerModel from "../../models/charger";
 import TransactionModel from "../../models/transaction";
 import ChargerConnectorModel from "../../models/chargerConnector";
-import { dateToUnix, getUnixEndTime, getUnixStartTime } from "../../commons/common-functions";
+import {
+  dateToUnix,
+  getUnixEndTime,
+  getUnixStartTime,
+} from "../../commons/common-functions";
 // import { getMonthStartData } from "../../commons/common-functions";
 
 export const dashboardHandler = async (req, res) => {
@@ -40,7 +44,7 @@ export const dashboardHandler = async (req, res) => {
       };
     }
 
-    if(req?.query?.startDate && req?.query?.endDate){
+    if (req?.query?.startDate && req?.query?.endDate) {
       where.created_at = {
         $gte: getUnixStartTime(dateToUnix(req.query.startDate)),
         $lte: getUnixEndTime(dateToUnix(req.query.endDate)),
@@ -99,7 +103,7 @@ export const dashboardHandler = async (req, res) => {
       activeChargingCount,
       onlineChargerCount,
       offlineChargerCount,
-      faultyChargerCount
+      faultyChargerCount,
     ] = await Promise.all([
       chargerCountPromise,
       transactionCountPromise,
@@ -107,7 +111,7 @@ export const dashboardHandler = async (req, res) => {
       activeChargingCountPromise,
       onlineChargerCountPromise,
       offlineChargerCountPromise,
-      faultyChargerCountPromise
+      faultyChargerCountPromise,
     ]);
 
     const responseData = {
@@ -117,13 +121,12 @@ export const dashboardHandler = async (req, res) => {
       activeChargingCount,
       onlineChargerCount,
       offlineChargerCount,
-      faultyChargerCount
+      faultyChargerCount,
     };
 
     return res
       .status(StatusCodes.OK)
       .send(responseGenerators(responseData, StatusCodes.OK, "Success", 0));
-      
   } catch (error) {
     if (error instanceof ValidationError || error instanceof CustomError) {
       return res
@@ -146,11 +149,9 @@ export const dashboardHandler = async (req, res) => {
   }
 };
 
-
-
 // export const dashboardHandler = async (req, res) => {
 //   try {
-    
+
 //     checkClientIdAccess(
 //       req.session,
 //       req?.body?.clientId || req.session.clientId

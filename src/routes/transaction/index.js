@@ -29,7 +29,7 @@ transactionRouter.post(
 );
 
 // single customer all transactions
-transactionRouter.post(
+transactionRouter.get(
   "/customer-transactions",
   authenticateCustomer,
   customerTransactionsHandler
