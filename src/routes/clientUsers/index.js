@@ -13,41 +13,40 @@ import { getSingleClientUser } from "./get";
 
 const clientUserRouter = express.Router();
 
-clientUserRouter.post("/login", loginClientUser); // DONE
+clientUserRouter.post("/login", loginClientUser);
 
 clientUserRouter.post(
   "/create",
   onlyAdminAndClientWithRoles(["ADMIN"]),
   createClientUser
-); // DONE
+);
 
 clientUserRouter.post(
   "/single-client-user/:id",
   onlyAdminAndClientWithRoles(["ADMIN"]),
   getSingleClientUser
-); //DONE
+);
 
 clientUserRouter.post(
   "/list",
   onlyAdminAndClientWithRoles(["ADMIN"]),
   listClientUser
-); //DONE
+);
 
 clientUserRouter.post(
   "/update/:id",
   onlyAdminAndClientWithRoles(["ADMIN"]),
   updateClientUser
-); //DONE
+);
 
 clientUserRouter.post(
   "/delete/:id",
   onlyAdminAndClientWithRoles(["ADMIN"]),
   deleteClientUser
-); //DONE
+);
 
-clientUserRouter.post("/forgot-password",forgetPasswordHandler);
+clientUserRouter.post("/forgot-password", forgetPasswordHandler);
 
-  
-clientUserRouter.post("/reset-password",resetPasswordHandler);
+clientUserRouter.post("/reset-password", resetPasswordHandler);
 
 export default clientUserRouter;

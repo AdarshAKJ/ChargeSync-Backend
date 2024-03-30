@@ -148,9 +148,6 @@ export const updateClient = async (req, res) => {
         `The client you are trying to update is deleted or does not exist.`
       );
 
-    // ? any key handling that cannot be updated should be handled here i.e. email, contact
-    // if(req.body.email) throw new CustomError(`email cannot be updated.`);
-
     let keys = [];
     for (let key in req.body) {
       keys.push(key);
