@@ -82,7 +82,6 @@ chargerRouter.post(
 // available connector for charger
 chargerRouter.post(
   "/charger-available-connectors",
-  // onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),
   chargerAvailableConnectorsHandler
 );
 

@@ -28,6 +28,8 @@ import {
   chargerOfflineOnlineValidation,
   getChargerSelectValidation,
 } from "../../helpers/validations/customer.validation";
+import TransactionModel from "../../models/transaction";
+import CustomerModel from "../../models/customer";
 
 // DONE
 export const createChargerHandler = async (req, res) => {
@@ -709,6 +711,25 @@ export const chargerAvailableConnectorsHandler = async (req, res) => {
       .sort(pagination.sort)
       .skip(pagination.offset)
       .limit(pagination.limit);
+
+    // Get customer data for active session.
+    for (const connectorData of chargerData[0].chargerConnectorData) {
+      if (connectorData.status == "Charging") {
+        // get customer and add fname and lname with email or phone
+        let chargingHistory = await TransactionModel.findOne({
+          connectorId: connectorData._id,
+          status: "InProgress",
+        }).select("customerId");
+
+        if (chargingHistory) {
+          let customerData = await CustomerModel.findOne({
+            _id: chargingHistory.customerId,
+          }).select("fname lname phoneNumber email");
+
+          connectorData.customerData = customerData;
+        }
+      }
+    }
 
     let total_count = await ChargerModel.count(where);
 

@@ -487,6 +487,11 @@ export const loginHandler = async (req, res) => {
     if (!customerData.isVerified)
       throw new CustomError(`Customer  not  verified`);
 
+    if (customerData.isBlocked)
+      throw new CustomError(
+        `Your account is blocked by Admin, Please contact Administrator.`
+      );
+
     //compare the pin
     let passwordMatch = await comparePassword(
       req.body.password.toString(),

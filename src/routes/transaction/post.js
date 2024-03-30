@@ -450,9 +450,8 @@ export const singlecustomerTransactionsHandler = async (req, res) => {
     checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
-      isDeleted: false,
       clientId: req.session.clientId || req.body.clientId,
-      customerId: req.body.id,
+      customerId: req.session._id,
       _id: req.params.id,
     };
 
@@ -546,14 +545,15 @@ export const getCostHandler = async (req, res) => {
     let where = {
       isDeleted: false,
       clientId: req.session.clientId,
-      connectorId: req.body.connectorId,
-      serialNumber: req.body.serialNumber,
+      _id: req.body.connectorId,
     };
 
     let costData = await ChargerConnectorModel.findOne(where)
       .select("pricePerUnit")
       .lean()
       .exec();
+
+    if (!costData) throw new CustomError(`Connect not found.`);
 
     const requireWatt = +req.body.requireWatt / 1000;
 
