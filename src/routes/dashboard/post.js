@@ -5,6 +5,7 @@ import { CustomError } from "../../helpers/custome.error";
 import ChargerModel from "../../models/charger";
 import TransactionModel from "../../models/transaction";
 import ChargerConnectorModel from "../../models/chargerConnector";
+import { dateToUnix, getUnixEndTime, getUnixStartTime } from "../../commons/common-functions";
 // import { getMonthStartData } from "../../commons/common-functions";
 
 export const dashboardHandler = async (req, res) => {
@@ -29,14 +30,19 @@ export const dashboardHandler = async (req, res) => {
 
     if (req?.query?.startDate) {
       where.created_at = {
-        ...where.created_at,
         $gte: getUnixStartTime(dateToUnix(req.query.startDate)),
       };
     }
 
     if (req?.query?.endDate) {
       where.created_at = {
-        ...where.created_at,
+        $lte: getUnixEndTime(dateToUnix(req.query.endDate)),
+      };
+    }
+
+    if(req?.query?.startDate && req?.query?.endDate){
+      where.created_at = {
+        $gte: getUnixStartTime(dateToUnix(req.query.startDate)),
         $lte: getUnixEndTime(dateToUnix(req.query.endDate)),
       };
     }
