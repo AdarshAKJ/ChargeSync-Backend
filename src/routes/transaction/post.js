@@ -559,6 +559,8 @@ export const getCostHandler = async (req, res) => {
 
     let estimatedCost = +costData.pricePerUnit * +requireWatt;
 
+    estimatedCost = (estimatedCost * +process.env.TAX) / 100 + estimatedCost;
+
     return res.status(StatusCodes.OK).send(
       responseGenerators(
         {
