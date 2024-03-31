@@ -23,6 +23,7 @@ const WithdrawRequestSchema = new mongoose.Schema({
     enum: ["PENDING", "IN_PROGRESS", "COMPLETED", "REJECTED"],
   },
   reason: { type: String, trim: true },
+  note: { type: String, trim: true },
   requestedDate: { type: String },
   completedDate: { type: String },
   transactionId: { type: String, trim: true },
