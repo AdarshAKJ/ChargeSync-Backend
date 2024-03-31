@@ -719,11 +719,12 @@ export const chargerAvailableConnectorsHandler = async (req, res) => {
         let chargingHistory = await TransactionModel.findOne({
           connectorId: connectorData._id,
           status: "InProgress",
-        }).select("customerId");
+        }).select("_id customerId");
 
         if (chargingHistory) {
           let customerData = await CustomerModel.findOne({
             _id: chargingHistory.customerId,
+            activeTransactionId: chargingHistory._id,
           }).select("fname lname phoneNumber email");
 
           connectorData.customerData = customerData;
