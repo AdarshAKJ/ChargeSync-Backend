@@ -32,6 +32,7 @@ import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
 import configVariables from "../../../config";
 import CustomerModel from "../../models/customer";
 import { hashSync } from "bcryptjs";
+import TransactionModel from "../../models/transaction";
 
 /** Outdated route for customer creation */
 export const createCustomerHandler = async (req, res) => {
@@ -888,6 +889,12 @@ export const infoCustomerHandler = async (req, res) => {
     delete customerData?.password;
     delete customerData?.otpSecret;
 
+    let currentTransaction = await TransactionModel.find({
+      customerId: req.session._id,
+      status: "InProgress",
+    }).select("_id serialNumber status occpTransactionId");
+
+    customerData.currentTransaction = currentTransaction;
     return res
       .status(StatusCodes.OK)
       .send(responseGenerators(customerData, StatusCodes.OK, "SUCCESS", 0));

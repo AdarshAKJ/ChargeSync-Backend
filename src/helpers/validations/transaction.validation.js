@@ -19,7 +19,6 @@ export const customerTransactionsValidation = Joi.object({
 export const singlecustomerTransactionsValidation = Joi.object({
   id: Joi.string().required(),
   clientId: Joi.string().required(),
-  connectorId: Joi.string().required(),
 });
 export const inprogressTransactionHistoryValidation = Joi.object({
   serialNumber: Joi.string().required(),
