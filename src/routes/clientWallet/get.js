@@ -7,16 +7,20 @@ import ClientWalletTransactionModel from "../../models/clientWalletTransaction";
 
 export const listWalletClientlistHandler = async (req, res) => {
   try {
-    let where;
+    let where = {
+      isDeleted: false,
+    };
     if (req.session.superAdmin) {
-      where = {
-        isDeleted: false,
-        clientId: req.session._id,
-      };
+      if (req.body?.clientId) {
+        where = {
+          ...where,
+          clientId: req.body.clientId,
+        };
+      }
     } else {
       where = {
-        isDeleted: false,
-        clientId: req.session.clientId,
+        ...where,
+        clientId: req.body.clientId,
       };
     }
 
@@ -31,8 +35,6 @@ export const listWalletClientlistHandler = async (req, res) => {
       .lean()
       .exec();
 
-    if (!ClientWalletTransactionData)
-      throw new CustomError(`No Customer found.`);
     let total_count = await ClientWalletTransactionModel.count(where);
 
     return res.status(StatusCodes.OK).send(
