@@ -92,7 +92,7 @@ chargerRouter.post(
   chargerClientIdHandler
 );
 
-// Check charger is online or offline.
+// Check charger is online or offline.
 chargerRouter.post(
   "/charger-offline-online",
   onlyAdminAndClientWithRoles(["ADMIN", "OPERATION"]),

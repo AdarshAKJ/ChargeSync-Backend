@@ -15,6 +15,8 @@ import { getCurrentUnix, setPagination } from "../../commons/common-functions";
 import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 import ClientModel from "../../models/client";
 import { getStationSelectValidation } from "../../helpers/validations/customer.validation";
+import ChargerModel from "../../models/charger";
+import ChargerConnectorModel from "../../models/chargerConnector";
 
 // DONE
 export const createChargerStationHandler = async (req, res) => {
@@ -168,14 +170,62 @@ export const deleteChargerStationHandler = async (req, res) => {
     const chargerStationId = req.params.id;
     // const { id: ChargerStationId } = req.params;
 
-    const ChargerStation = await ChargingStationModel.findOne({
+    let ChargerStation = await ChargingStationModel.findOne({
       _id: chargerStationId,
       clientId: req.body.clientId,
       isDeleted: false,
-    });
+    }).select("isDeleted");
 
     if (!ChargerStation)
       throw new CustomError(`No such user is registered with us.`);
+
+    // before deleting the Station we need to delete the all the stations charger and connector.
+    let chargerData = await ChargerModel.find({
+      stationId: chargerStationId,
+      clientId: req.body.clientId,
+      isDeleted: false,
+    }).select("status");
+
+    // chacking any charger of that station is online or not
+    for (let iterator of chargerData) {
+      if (iterator.status === "ONLINE")
+        throw new CustomError(
+          `Oops! You can't delete the charging station while it's still connected to a charger. Please make sure to disconnect any chargers associated with this station before trying to delete it.
+          .`
+        );
+    }
+
+    // delete the all connectors of that station
+    await ChargerConnectorModel.updateMany(
+      {
+        stationId: chargerStationId,
+        clientId: req.body.clientId,
+        isDeleted: false,
+      },
+      {
+        $set: {
+          isDeleted: true,
+          updated_by: req.session._id,
+          updated_at: getCurrentUnix(),
+        },
+      }
+    );
+
+    // delete all the charger of that station
+    await ChargerModel.updateMany(
+      {
+        stationId: chargerStationId,
+        clientId: req.body.clientId,
+        isDeleted: false,
+      },
+      {
+        $set: {
+          isDeleted: true,
+          updated_by: req.session._id,
+          updated_at: getCurrentUnix(),
+        },
+      }
+    );
 
     ChargerStation.isDeleted = true;
 

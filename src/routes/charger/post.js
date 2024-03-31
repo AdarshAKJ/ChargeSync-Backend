@@ -376,11 +376,11 @@ export const deleteChargerHandler = async (req, res) => {
 
     const chargerId = req.params.id;
 
-    const Charger = await ChargerModel.findOne({
+    let Charger = await ChargerModel.findOne({
       _id: chargerId,
       clientId: req.body.clientId,
       isDeleted: false,
-    });
+    }).select("status isDeleted");
 
     if (!Charger)
       throw new CustomError(`No such charger is registered with us.`);
@@ -389,6 +389,22 @@ export const deleteChargerHandler = async (req, res) => {
       throw new CustomError(
         `Charger cannot be deleted while it is still connected. Please disconnect the charger before attempting to delete.`
       );
+
+    // before deletion of charger we need to delete the connector of that charger
+    await ChargerConnectorModel.updateMany(
+      {
+        chargerId: chargerId,
+        clientId: req.body.clientId,
+        isDeleted: false,
+      },
+      {
+        $set: {
+          isDeleted: true,
+          updated_by: req.session._id,
+          updated_at: getCurrentUnix(),
+        },
+      }
+    );
 
     Charger.isDeleted = true;
 
@@ -812,7 +828,7 @@ export const chargerClientIdHandler = async (req, res) => {
   }
 };
 
-// Check charger is online or offline.
+// Check charger is online or offline.
 export const chargerOfflineOnlineHandler = async (req, res) => {
   try {
     await chargerOfflineOnlineValidation.validateAsync(req.body);
