@@ -10,8 +10,8 @@ const WithdrawRequestSchema = new mongoose.Schema({
   },
   clientId: { type: String, required: true, trim: true },
   requestedAmount: { type: Number, required: true, trim: true },
-  upiId: { type: String, required: true, trim: true },
-  name: { type: String, required: true, trim: true },
+  upiId: { type: String, trim: true },
+  name: { type: String, trim: true },
   accountNumber: { type: String },
   ifscCode: { type: String },
   branchName: { type: String },
@@ -21,6 +21,7 @@ const WithdrawRequestSchema = new mongoose.Schema({
     type: String,
     required: true,
     enum: ["PENDING", "IN_PROGRESS", "COMPLETED", "REJECTED"],
+    default: "PENDING"
   },
   reason: { type: String, trim: true },
   note: { type: String, trim: true },

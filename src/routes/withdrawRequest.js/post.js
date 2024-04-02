@@ -65,7 +65,9 @@ export const updateWithdrawRequestByClientHandler = async (req, res) => {
     try {
         await updateWithdrawRequestValidationByClient.validateAsync(req.body);
         const { id } = req.params;
-        const allowedFields = ["clientId", "requestedAmount", "status"];
+        const clientId = req.session.clientId || req.query.clientId;
+        const allowedFields = [clientId, "requestedAmount", "status"];
+        
 
         // Extracting the allowed fields based on payment method
         switch (req.body.paymentMethod) {
@@ -137,6 +139,7 @@ export const updateWithdrawRequestByAdminHandler = async (req, res) => {
         let updateFields = {};
         if (req.body.status === "COMPLETED") {
             updateFields = {
+                status: req.body.status,
                 transactionId: req.body.transactionId,
                 note: req.body.note,
                 updated_at: getCurrentUnix()

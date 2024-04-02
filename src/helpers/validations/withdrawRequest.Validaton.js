@@ -37,7 +37,6 @@ export const createWithdrawRequestValidation = Joi.object({
 
 
 export const updateWithdrawRequestValidationByClient = Joi.object({
-  clientId: Joi.string().required(),
   requestedAmount: Joi.number().required(),
   upiId: Joi.string().when("paymentMethod", {
       is: "UPI",
@@ -70,7 +69,6 @@ export const updateWithdrawRequestValidationByClient = Joi.object({
       otherwise: Joi.string().allow("").optional(),
   }),
   paymentMethod: Joi.string().valid("UPI", "BANK").required(),
-  status: Joi.string().valid("PENDING").required(),
 });
 
 
