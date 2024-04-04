@@ -362,7 +362,7 @@ export const singleTransaction = async (req, res) => {
 export const customerTransactionsHandler = async (req, res) => {
   try {
     let where = {
-      customerId: req.session.id,
+      customerId: req.session._id,
     };
 
     if (req.query?.status) {
@@ -393,7 +393,7 @@ export const customerTransactionsHandler = async (req, res) => {
 
     const pagination = setPagination(req.query);
 
-    const transactions = await TransactionModel.findOne(where)
+    const transactions = await TransactionModel.find(where)
       .sort(pagination.sort)
       .skip(pagination.offset)
       .limit(pagination.limit)
