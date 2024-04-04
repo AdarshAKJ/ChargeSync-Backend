@@ -23,6 +23,8 @@ import messageRouter from "./routes/messages";
 import dashboardRouter from "./routes/dashboard";
 import supportRouter from "./routes/support";
 import withdrawRequestRouter from "./routes/withdrawRequest.js";
+import clientWalletRouter from "./routes/clientWallet";
+
 
 const app = express();
 const server = new http.Server(app);
@@ -89,6 +91,7 @@ app.get("/", health);
 app.use("/api/admin", adminRoute);
 app.use("/api/client-user", clientUserRouter);
 app.use("/api/client", clientRouter);
+app.use("/api/client-wallet", clientWalletRouter);
 app.use("/api/charger-station", chargerStationRouter);
 app.use("/api/charger", chargerRouter);
 app.use("/api/transaction", transactionRouter);
@@ -101,6 +104,7 @@ app.use("/api/message", messageRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/support",supportRouter);
 app.use("/api/withdraw-req",withdrawRequestRouter);
+app.use("/api/support", supportRouter);
 
 app.use(express.json());
 

@@ -6,7 +6,7 @@ import {
 } from "./get";
 import { onlyAdminAndClientWithRoles } from "../../middleware/onlyClientAndAdmin";
 import { authenticateCustomer } from "../../middleware/authenticateCustomer";
-import { addAmountToWallet} from "./post";
+import { addAmountToWallet } from "./post";
 
 const walletRouter = express.Router();
 
@@ -24,14 +24,8 @@ walletRouter.post(
   listAdminWalletTransactions
 );
 
-walletRouter.post("/add-amount",
-authenticateCustomer,
-addAmountToWallet
-);
+walletRouter.post("/add-amount", authenticateCustomer, addAmountToWallet);
 
-walletRouter.get("/current-balance",
-authenticateCustomer,
-getCurrentBalance
-);
+walletRouter.get("/current-balance", authenticateCustomer, getCurrentBalance);
 
 export default walletRouter;
