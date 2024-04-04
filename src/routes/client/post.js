@@ -8,12 +8,14 @@ import {
 } from "../../helpers/validations/client.validation";
 import ClientModel from "../../models/client";
 import {
+  generatePublicId,
   getCurrentUnix,
   hashPassword,
   setPagination,
 } from "../../commons/common-functions";
 import { StatusCodes } from "http-status-codes";
 import ClientUserModel from "../../models/clientUser";
+import ClientWalletModel from "../../models/clientWallet";
 
 /** This APi will create client and default client members */
 export const createClient = async (req, res) => {
@@ -21,14 +23,15 @@ export const createClient = async (req, res) => {
     await createClientValidation.validateAsync(req.body);
 
     const isAvailable = await ClientModel.findOne({
-      $or: [{ username: req.body.username }, { name: req.body.name }],
+      name: req.body.name,
       isDeleted: false,
     })
       .lean()
       .exec();
 
-    if (isAvailable)
+    if (isAvailable) {
       throw new CustomError(`Client with same name or username already exist.`);
+    }
 
     let clientUserExist = await ClientUserModel.findOne({
       $or: [{ username: req.body.username }, { email: req.body.email }],
@@ -69,6 +72,18 @@ export const createClient = async (req, res) => {
 
     // Create the client
     const client = await ClientModel.create(data);
+
+    // after creating the client, need to create the Wallet for that client
+    await ClientWalletModel.create({
+      _id: generatePublicId(),
+      clientId: client._id,
+      amount: 0,
+
+      created_by: client._id,
+      updated_by: client._id,
+      created_at: getCurrentUnix(),
+      updated_at: getCurrentUnix(),
+    });
 
     // Create client default member and as isAdminCreated = true
 
