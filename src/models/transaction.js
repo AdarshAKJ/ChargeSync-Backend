@@ -14,7 +14,7 @@ const TransactionSchema = new mongoose.Schema({
   serialNumber: { type: String, required: true }, //database
   connectorId: { type: String, required: true }, //database
   status: {
-    type: String, 
+    type: String,
     required: true,
     enum: [
       "Pending",

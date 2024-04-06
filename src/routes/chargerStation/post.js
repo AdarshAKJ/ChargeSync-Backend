@@ -264,7 +264,7 @@ export const listChargerStationHandler = async (req, res) => {
 
     let where = {
       isDeleted: false,
-      clientId: req.session.clientId || req.query.clientId,
+      clientId: req.session.clientId || req.body.clientId,
     };
 
     console.log(req.query);
