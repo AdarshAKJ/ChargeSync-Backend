@@ -22,6 +22,8 @@ import walletRouter from "./routes/wallet";
 import messageRouter from "./routes/messages";
 import dashboardRouter from "./routes/dashboard";
 import supportRouter from "./routes/support";
+import { encryptDataHandler } from "./routes/encryptData";
+import { decryptDataHandler } from "./routes/decryptData";
 
 const app = express();
 const server = new http.Server(app);
@@ -98,7 +100,9 @@ app.use("/api/vehicle", vehicleRouter);
 app.use("/api/wallet", walletRouter);
 app.use("/api/message", messageRouter);
 app.use("/api/dashboard", dashboardRouter);
-app.use("/api/support",supportRouter);
+app.use("/api/support", supportRouter);
+app.post("/api/encrypt-data", encryptDataHandler);
+app.get("/api/decrypt-data/:token", decryptDataHandler);
 
 app.use(express.json());
 

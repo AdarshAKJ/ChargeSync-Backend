@@ -850,9 +850,8 @@ export const toggleBlockUnblockHandler = async (req, res) => {
     );
 
     res.status(StatusCodes.OK).json({
-      message: `Customer ${
-        updatedCustomer.isBlocked ? "blocked" : "unblocked"
-      } successfully`,
+      message: `Customer ${updatedCustomer.isBlocked ? "blocked" : "unblocked"
+        } successfully`,
       customer: updatedCustomer,
     });
   } catch (error) {
