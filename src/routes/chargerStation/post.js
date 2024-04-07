@@ -350,7 +350,7 @@ export const singleChargerStationHandler = async (req, res) => {
     checkClientIdAccess(req.session, req.body.clientId);
 
     const { id: chargerStationId } = req.params;
-    let clientId = req.session.clientId || req.query.clientId;
+    let clientId = req.session.clientId || req.body.clientId;
 
     let where = {
       _id: chargerStationId,
@@ -392,7 +392,7 @@ export const singleChargerStationHandler = async (req, res) => {
       aggregationPipeline
     );
 
-    if (!ChargerStation.length) throw new CustomError(`No such Charger found.`);
+    // if (!ChargerStation.length) throw new CustomError(`No such Charger found.`);
 
     return res
       .status(StatusCodes.OK)

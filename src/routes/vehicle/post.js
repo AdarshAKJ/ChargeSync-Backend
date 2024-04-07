@@ -32,7 +32,6 @@ export const createVehicleHandler = async (req, res) => {
     let vehicleData = await VehicleModel.create({
       ...req.body,
       customerId: req.session._id,
-      clientId: req.session.clientId,
       created_by: req.session._id,
       updated_by: req.session._id,
       created_at: getCurrentUnix(),
@@ -94,10 +93,7 @@ export const updateVehicleHandler = async (req, res) => {
       ],
     });
 
-    if (isAvailable)
-      throw new CustomError(
-        `Vehicle is not Found!.`
-      );
+    if (isAvailable) throw new CustomError(`Vehicle is not Found!.`);
 
     let vehicleData = await VehicleModel.findOneAndUpdate(
       { _id: req.params.id },

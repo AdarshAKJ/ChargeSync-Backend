@@ -8,7 +8,7 @@ const VehicleSchema = new mongoose.Schema({
     trim: true,
     default: generatePublicId,
   },
-  clientId: { type: String, required: true, trim: true },
+  // clientId: { type: String, required: true, trim: true },
   customerId: { type: String, required: true, trim: true },
   name: { type: String, required: true, trim: true },
   description: { type: String },
