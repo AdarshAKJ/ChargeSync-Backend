@@ -1,7 +1,6 @@
 import Joi from "joi";
 
 export const createCustomerValidation = Joi.object({
-  clientId: Joi.string().required(),
   email: Joi.string().email().optional().allow(null),
   password: Joi.string(),
   phoneNumber: Joi.string().optional().allow(null),
@@ -10,7 +9,6 @@ export const createCustomerValidation = Joi.object({
 });
 
 export const v2CreateCustomerValidation = Joi.object({
-  clientId: Joi.string().required(),
   email: Joi.string().email().optional().allow(null),
   phoneNumber: Joi.string().optional().allow(null),
   countryCode: Joi.string().optional().allow(null),
@@ -18,7 +16,7 @@ export const v2CreateCustomerValidation = Joi.object({
 });
 
 export const createPinValidation = Joi.object({
-  clientId: Joi.string().required(),
+  clientId: Joi.string().optional(),
   id: Joi.string().required(),
   pin: Joi.string().required(),
   checkPin: Joi.string().required(),
@@ -41,13 +39,13 @@ export const updateCustomerValidation = Joi.object({
   // termAndCondition: Joi.boolean().valid(true).required(),
 });
 
-export const listCustomerValidation = Joi.object({
-  clientId: Joi.string().required(),
-});
+// export const listCustomerValidation = Joi.object({
+//   clientId: Joi.string().required(),
+// });
 
 export const singleCustomerValidation = Joi.object({
   id: Joi.string().required(),
-  clientId: Joi.string().required(),
+  // clientId: Joi.string().required(),
 });
 
 export const startTransactionValidation = Joi.object({
@@ -64,9 +62,9 @@ export const stopTransactionValidation = Joi.object({
   customerReason: Joi.string().required(),
 });
 
-export const getCustomerSelectValidation = Joi.object({
-  clientId: Joi.string().optional().allow(null),
-});
+// export const getCustomerSelectValidation = Joi.object({
+//   clientId: Joi.string().optional().allow(null),
+// });
 export const getChargerSelectValidation = Joi.object({
   clientId: Joi.string().optional().allow(null),
 });
