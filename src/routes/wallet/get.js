@@ -7,7 +7,7 @@ import {
   listWalletCustomerTransactionsValidation,
 } from "../../helpers/validations/wallet.validation.js";
 import { ValidationError } from "joi";
-import { checkClientIdAccess } from "../../middleware/checkClientIdAccess.js";
+// import { checkClientIdAccess } from "../../middleware/checkClientIdAccess.js";
 import { setPagination } from "../../commons/common-functions.js";
 import WalletModel from "../../models/wallet.js";
 
@@ -16,11 +16,11 @@ export const listWalletCustomerTransactions = async (req, res) => {
   try {
     await listWalletCustomerTransactionsValidation.validateAsync(req.body);
 
-    const clientId = req?.session?.clientId;
+    // const clientId = req?.session?.clientId;
 
     const filters = {
       customerId: req?.session?._id,
-      ...(clientId && { clientId }),
+      // ...(clientId && { clientId }),
       ...(req.query.type && { type: req.query.type }),
       ...(req.query.source && { source: req.query.source }),
     };
@@ -151,10 +151,10 @@ export const listAdminWalletTransactions = async (req, res) => {
 
 export const getCurrentBalance = async (req, res) => {
   try {
-    const clientId = req.session.clientId || req.query.clientId;
+    // const clientId = req.session.clientId || req.query.clientId;
     const customerId = req.session._id || req.query.customerId;
 
-    const wallet = await WalletModel.findOne({ clientId, customerId });
+    const wallet = await WalletModel.findOne({ customerId });
 
     if (!wallet) {
       throw new CustomError(

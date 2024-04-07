@@ -13,10 +13,10 @@ export const addAmountToWallet = async (req, res) => {
   try {
     await addBalanceToWalletValidation.validateAsync(req.body);
     const { amount } = req.body;
-    const clientId = req.session.clientId || req.query.clientId;
+    // const clientId = req.session.clientId || req.query.clientId;
     const customerId = req.session._id || req.query.customerId;
 
-    let wallet = await WalletModel.findOne({ clientId, customerId });
+    let wallet = await WalletModel.findOne({ customerId });
 
     if (!wallet) {
       throw new CustomError(
@@ -32,7 +32,7 @@ export const addAmountToWallet = async (req, res) => {
 
     // Add wallet history
     await WalletTransactionModel.create({
-      clientId: clientId,
+      // clientId: clientId,
       customerId: customerId,
       preBalance: +previousBalance,
       effectedBalance: +wallet.amount,

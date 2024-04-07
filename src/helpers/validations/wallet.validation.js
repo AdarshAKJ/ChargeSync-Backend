@@ -17,7 +17,7 @@ export const listAdminWalletTransactionsValidation = Joi.object({
 });
 
 export const listWalletCustomerTransactionsValidation = Joi.object({
-  clientId: Joi.string().optional().allow("", null),
+  // clientId: Joi.string().optional().allow("", null),
   type: Joi.string()
     .valid("CREDITED", "DEBITED", "REFUNDED")
     .optional()
