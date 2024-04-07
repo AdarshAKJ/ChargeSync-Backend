@@ -1,5 +1,4 @@
 import { ValidationError } from "joi";
-import jwt from "jsonwebtoken";
 import {
   createCustomerValidation,
   forgotPasswordValidation,
