@@ -1,5 +1,4 @@
 import { ValidationError } from "joi";
-import jwt from "jsonwebtoken";
 import {
   createCustomerValidation,
   forgotPasswordValidation,
@@ -13,7 +12,6 @@ import {
   v2CreateCustomerValidation,
 } from "../../helpers/validations/customer.validation";
 import { responseGenerators } from "../../lib/utils";
-import { checkClientIdAccess } from "../../middleware/checkClientIdAccess";
 import WalletModel from "../../models/wallet";
 import { StatusCodes } from "http-status-codes";
 import { CustomError } from "../../helpers/custome.error";
@@ -29,195 +27,9 @@ import {
 } from "../../commons/common-functions";
 import { getJwt } from "../../helpers/Jwt.helper";
 import { CUSTOMER_MESSAGE, OTP } from "../../commons/global-constants";
-import configVariables from "../../../config";
 import CustomerModel from "../../models/customer";
 import { hashSync } from "bcryptjs";
 import TransactionModel from "../../models/transaction";
-
-/** Outdated route for customer creation */
-export const createCustomerHandler = async (req, res) => {
-  try {
-    await createCustomerValidation.validateAsync(req.body);
-
-    if (req.body.loginBy == "EMAIL") {
-      if (!req.body.password)
-        throw new CustomError(`Please provide valid password.`);
-
-      let customerData;
-
-      customerData = await CustomerModel.findOne({
-        email: req.body.email.toLowerCase(),
-        clientId: req.body.clientId,
-        isDeleted: false,
-      });
-
-      if (!customerData || (customerData && !customerData.isVerified)) {
-        if (customerData && !customerData.isVerified) {
-          await CustomerModel.deleteOne({
-            _id: customerData._id,
-          });
-        }
-
-        //create customer
-        customerData = await CustomerModel.create({
-          ...req.body,
-          email: req.body.email.toLowerCase(),
-          password: await hashPassword(req.body.password),
-          created_by: req.body._id,
-          updated_by: req.body._id,
-          created_at: getCurrentUnix(),
-          updated_at: getCurrentUnix(),
-        });
-
-        // generate otp
-        const secret = generateSecret();
-        const purpose = "SIGNUP-LOGIN";
-        const { code, newOtpSecret } = generateTOTP(secret, purpose);
-        customerData.otpSecret.push(newOtpSecret);
-        await customerData.save();
-        console.log(
-          `SIGNUP OR LOGIN EMAIL:- ` + req.body.email + ` OTP :- ` + code
-        );
-
-        //send otp  TO DO
-        return res.status(StatusCodes.OK).send(
-          responseGenerators(
-            {
-              token: null,
-              customerData: null,
-              loginCompleted: false,
-              email: customerData.email,
-            },
-            StatusCodes.OK,
-            OTP.SUCCESS,
-            0
-          )
-        );
-      } else {
-        // password compare
-        let passwordMatch = await comparePassword(
-          req.body.password,
-          customerData.password
-        );
-
-        if (!passwordMatch)
-          throw new CustomError(
-            `No account found with given Email address and password.`
-          );
-
-        customerData.lastLogin = getCurrentUnix();
-        customerData.updated_at = getCurrentUnix();
-
-        let customerTokenData = customerData.toJSON();
-
-        // token generate
-        let jswToken = await getJwt({
-          id: customerData._id,
-          clientId: customerData?.clientId,
-          email: customerData.email,
-          role: "CUSTOMER",
-        });
-
-        delete customerTokenData?.password;
-        delete customerTokenData?.otpSecret;
-
-        return res.status(StatusCodes.OK).send(
-          responseGenerators(
-            {
-              token: encryptData(jswToken),
-              customerData: customerTokenData,
-              loginCompleted: true,
-            },
-            StatusCodes.OK,
-            CUSTOMER_MESSAGE.LOGIN_SUCCESS,
-            0
-          )
-        );
-      }
-    } else if (req.body.loginBy == "PHONE") {
-      let customerData = await CustomerModel.findOne({
-        phoneNumber: req.body.phoneNumber,
-        countryCode: req.body.countryCode,
-        clientId: req.body.clientId,
-        isDeleted: false,
-      });
-
-      if (!customerData) {
-        customerData = await CustomerModel.create({
-          ...req.body,
-          created_by: req.body._id,
-          updated_by: req.body._id,
-          created_at: getCurrentUnix(),
-          updated_at: getCurrentUnix(),
-        });
-      }
-
-      const secret = generateSecret();
-      const purpose = "SIGNUP-LOGIN";
-      const { code, newOtpSecret } = generateTOTP(secret, purpose);
-      customerData.otpSecret.push(newOtpSecret);
-      customerData.isVerified = true;
-      await customerData.save();
-      // check wallet
-      let isWalletAvailable = await WalletModel.findOne({
-        customerId: customerData._id,
-      });
-
-      if (!isWalletAvailable) {
-        await WalletModel.create({
-          clientId: req.body.clientId,
-          customerId: customerData._id,
-          amount: 0,
-          created_by: req.body._id,
-          updated_by: req.body._id,
-          created_at: getCurrentUnix(),
-          updated_at: getCurrentUnix(),
-        });
-      }
-
-      console.log(
-        `SIGNUP OR LOGIN PHONE:- ` + req.body.phoneNumber + ` OTP :- ` + code
-      );
-
-      //send otp  TO DO
-      return res.status(StatusCodes.OK).send(
-        responseGenerators(
-          {
-            token: null,
-            customerData: null,
-            loginCompleted: false,
-            phoneNumber: customerData.phoneNumber,
-            countryCode: customerData.countryCode,
-          },
-          StatusCodes.OK,
-          OTP.SUCCESS,
-          0
-        )
-      );
-    } else {
-      throw new CustomError("Please provide a valid login type");
-    }
-  } catch (error) {
-    if (error instanceof ValidationError || error instanceof CustomError) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .send(
-          responseGenerators({}, StatusCodes.BAD_REQUEST, error.message, 1)
-        );
-    }
-    console.log(JSON.stringify(error));
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        responseGenerators(
-          {},
-          StatusCodes.INTERNAL_SERVER_ERROR,
-          "Internal Server Error",
-          1
-        )
-      );
-  }
-};
 
 /** v2 version of create customer. We are using this Route */
 export const v2CreateCustomerHandler = async (req, res) => {
@@ -230,7 +42,6 @@ export const v2CreateCustomerHandler = async (req, res) => {
 
       customerData = await CustomerModel.findOne({
         email: req.body.email.toLowerCase(),
-        clientId: req.body.clientId,
         isDeleted: false,
       });
 
@@ -292,7 +103,6 @@ export const v2CreateCustomerHandler = async (req, res) => {
       customerData = await CustomerModel.findOne({
         phoneNumber: req.body.phoneNumber,
         countryCode: req.body.countryCode,
-        clientId: req.body.clientId,
         isDeleted: false,
       });
 
@@ -412,7 +222,6 @@ export const signupOrLoginOTPVerificationHandler = async (req, res) => {
 
       // create wallet for customer.
       const wallet = new WalletModel({
-        clientId: customerData?.clientId,
         customerId: customerData?._id,
         amount: 0.0,
         created_at: getCurrentUnix(),
@@ -477,12 +286,10 @@ export const loginHandler = async (req, res) => {
     await loginValidation.validateAsync(req.body);
 
     // check exist
-    let customerData = await CustomerModel.findOne({
-      _id: req.body.id,
-      isDeleted: false,
-    });
+    let customerData = await CustomerModel.findById(req.body.id);
 
-    if (!customerData) throw new CustomError(`Customer not found`);
+    if (!customerData || customerData.isDeleted)
+      throw new CustomError(`Customer not found`);
 
     // is verified
     if (!customerData.isVerified)
@@ -508,7 +315,6 @@ export const loginHandler = async (req, res) => {
     delete loginDataRaw.password;
     let jswToken = await getJwt({
       id: loginDataRaw._id,
-      clientId: loginDataRaw.clientId,
     });
 
     return res.status(StatusCodes.OK).send(
@@ -608,13 +414,13 @@ export const updateCustomerHandler = async (req, res) => {
 /** list customer */
 export const listCustomerHandler = async (req, res) => {
   try {
-    await listCustomerValidation.validateAsync(req.body);
-    checkClientIdAccess(req.session, req.body.clientId);
+    // await listCustomerValidation.validateAsync(req.body);
+    // checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
       isDeleted: false,
-      clientId: req.session.clientId || req.body.clientId,
     };
+
     if (req.query?.search) {
       where = {
         ...where,
@@ -684,12 +490,12 @@ export const singleCustomerHandler = async (req, res) => {
       ...req.params,
     });
 
-    checkClientIdAccess(req.session, req.body.clientId);
+    // checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
       _id: req.params.id,
       isDeleted: false,
-      clientId: req.session.clientId || req.query.clientId,
+      // clientId: req.session.clientId || req.query.clientId,
     };
 
     const aggregationPipeline = [
@@ -746,11 +552,11 @@ export const singleCustomerHandler = async (req, res) => {
 /** get-customer-select */
 export const getCustomerSelectHandler = async (req, res) => {
   try {
-    await getCustomerSelectValidation.validateAsync(req.body);
+    // await getCustomerSelectValidation.validateAsync(req.body);
 
     let where = {
       isDeleted: false,
-      clientId: req?.session?.clientId || req?.body?.clientId,
+      // clientId: req?.session?.clientId || req?.body?.clientId,
     };
 
     const pagination = setPagination(req.query);
@@ -850,8 +656,9 @@ export const toggleBlockUnblockHandler = async (req, res) => {
     );
 
     res.status(StatusCodes.OK).json({
-      message: `Customer ${updatedCustomer.isBlocked ? "blocked" : "unblocked"
-        } successfully`,
+      message: `Customer ${
+        updatedCustomer.isBlocked ? "blocked" : "unblocked"
+      } successfully`,
       customer: updatedCustomer,
     });
   } catch (error) {

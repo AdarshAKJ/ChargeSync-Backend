@@ -825,7 +825,7 @@ export const startTransactionHandler = async (req, res) => {
     walletBalance.amount = +walletBalance.amount - +amountWithTax;
     // add the wallet history
     let walletTransactionData = await WalletTransactionModel.create({
-      clientId: req.session.clientId,
+      // clientId: req.session.clientId,
       customerId: req.session._id,
       preBalance: preBalance,
       effectedBalance: +walletBalance.amount,

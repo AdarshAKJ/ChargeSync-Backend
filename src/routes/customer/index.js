@@ -1,6 +1,5 @@
 import express from "express";
 import {
-  createCustomerHandler,
   forgetPasswordHandler,
   getCustomerSelectHandler,
   infoCustomerHandler,
@@ -19,8 +18,8 @@ import { privateKeyMiddleware } from "../../middleware/privateKeyCheck";
 
 const customerRouter = express.Router();
 
-//create customer
-customerRouter.post("/create", privateKeyMiddleware, createCustomerHandler);
+// //create customer
+// customerRouter.post("/create", privateKeyMiddleware, createCustomerHandler);
 
 //create customer
 customerRouter.post(
@@ -68,15 +67,9 @@ customerRouter.post(
   toggleBlockUnblockHandler
 );
 
-customerRouter.post(
-  "/forgot-password",
-  forgetPasswordHandler
-);
+customerRouter.post("/forgot-password", forgetPasswordHandler);
 
-customerRouter.post(
-  "/reset-password",
-  resetPasswordHandler
-);
+customerRouter.post("/reset-password", resetPasswordHandler);
 
 customerRouter.get("/info", authenticateCustomer, infoCustomerHandler);
 

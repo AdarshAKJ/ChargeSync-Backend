@@ -8,7 +8,6 @@ const WalletSchema = new mongoose.Schema({
     trim: true,
     default: generatePublicId,
   },
-  clientId: { type: String, required: true, trim: true },
   customerId: { type: String, required: true, trim: true },
   amount: { type: Number, required: true, trim: true },
   created_by: { type: String },
