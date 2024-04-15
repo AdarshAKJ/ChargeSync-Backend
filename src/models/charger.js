@@ -29,6 +29,8 @@ const ChargerSchema = new mongoose.Schema({
   chargerKey: { type: String, required: true },
   created_by: { type: String },
   updated_by: { type: String },
+  lastOnline: { type: String },
+  lastOffline: { type: String },
   created_at: { type: String },
   updated_at: { type: String },
   isDeleted: { type: Boolean, default: false },

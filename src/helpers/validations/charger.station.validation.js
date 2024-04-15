@@ -3,17 +3,18 @@ import Joi from "joi";
 export const createChargerStationValidation = Joi.object({
   clientId: Joi.string().required(),
   station_name: Joi.string().max(30).required(),
-  address: Joi.object({
-    area: Joi.string().required(),
-    city: Joi.string().required(),
-    postal: Joi.string().required(),
-    state: Joi.string().required(),
-    countryCode: Joi.string().required(),
-    coordinates: Joi.object({
-      latitude: Joi.string().optional().allow(null, ""),
-      longitude: Joi.string().optional().allow(null, ""),
-    }),
-  }),
+  // Commented for testing purposes
+  // address: Joi.object({
+  //   area: Joi.string().required(),
+  //   city: Joi.string().required(),
+  //   postal: Joi.string().required(),
+  //   state: Joi.string().required(),
+  //   countryCode: Joi.string().required(),
+  //   coordinates: Joi.object({
+  //     latitude: Joi.string().optional().allow(null, ""),
+  //     longitude: Joi.string().optional().allow(null, ""),
+  //   }),
+  // }),
   own_by: Joi.string().optional().allow(null),
   contact_no: Joi.string().optional().allow(null),
   contact_email: Joi.string().optional().allow(null),
@@ -25,17 +26,18 @@ export const updateChargerStationValidation = Joi.object({
   id: Joi.string().required(),
   clientId: Joi.string().required(),
   station_name: Joi.string().max(30).required(),
-  address: Joi.object({
-    area: Joi.string().required(),
-    city: Joi.string().required(),
-    state: Joi.string().required(),
-    postal: Joi.string().required(),
-    countryCode: Joi.string().required(),
-    coordinates: Joi.object({
-      latitude: Joi.string().optional().allow(null, ""),
-      longitude: Joi.string().optional().allow(null, ""),
-    }),
-  }),
+  // Commented for testing purposes
+  // address: Joi.object({
+  //   area: Joi.string().required(),
+  //   city: Joi.string().required(),
+  //   postal: Joi.string().required(),
+  //   state: Joi.string().required(),
+  //   countryCode: Joi.string().required(),
+  //   coordinates: Joi.object({
+  //     latitude: Joi.string().optional().allow(null, ""),
+  //     longitude: Joi.string().optional().allow(null, ""),
+  //   }),
+  // }),
   own_by: Joi.string().optional().allow(null),
   contact_no: Joi.string().optional().allow(null),
   contact_email: Joi.string().optional().allow(null),

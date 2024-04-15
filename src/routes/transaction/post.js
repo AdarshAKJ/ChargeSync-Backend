@@ -444,17 +444,17 @@ export const singlecustomerTransactionsHandler = async (req, res) => {
       ...req.body,
       ...req.params,
     });
-    checkClientIdAccess(req.session, req.body.clientId);
+    // checkClientIdAccess(req.session, req.body.clientId);
 
     let where = {
-      clientId: req.session.clientId || req.body.clientId,
+      // clientId: req.session.clientId || req.body.clientId,
       customerId: req.session._id,
       _id: req.params.id,
     };
 
     const transactions = await TransactionModel.findOne(where).lean().exec();
 
-    if (!transactions) throw new CustomError(`No transactions found.`);
+    // if (!transactions) throw new CustomError(`No transactions found.`);
 
     return res.status(StatusCodes.OK).send(
       responseGenerators(
@@ -495,7 +495,7 @@ export const inProgressTransactionHistoryHandler = async (req, res) => {
 
     let where = {
       isDeleted: false,
-      clientId: req.session.clientId,
+      // clientId: req.session.clientId,
       serialNumber: req.body.serialNumber,
       status: "InProgress",
     };
@@ -541,7 +541,6 @@ export const getCostHandler = async (req, res) => {
 
     let where = {
       isDeleted: false,
-      clientId: req.session.clientId,
       _id: req.body.connectorId,
     };
 
@@ -698,7 +697,7 @@ export const startTransactionHandler = async (req, res) => {
     // check vehicle exists
     let isVehicle = await VehicleModel.findOne({
       _id: vehicleId,
-      clientId: req.session.clientId,
+      // clientId: req.session.clientId,
       customerId: req.session._id,
     });
 
@@ -707,7 +706,7 @@ export const startTransactionHandler = async (req, res) => {
     // check charger exits
     let chargerData = await ChargerModel.findOne({
       serialNumber: serialNumber,
-      clientId: req.session.clientId,
+      // clientId: req.session.clientId,
     });
 
     if (!chargerData)
@@ -716,7 +715,7 @@ export const startTransactionHandler = async (req, res) => {
     // check connector exists
     let connectorData = await ChargerConnectorModel.findOne({
       _id: connectorId,
-      clientId: req.session.clientId,
+      // clientId: req.session.clientId,
     });
 
     if (!connectorData)
@@ -755,7 +754,7 @@ export const startTransactionHandler = async (req, res) => {
       sendNotification(
         NOTIFICATION_TITLE.chargerOffline,
         NOTIFICATION_MESSAGE.chargerOfflineWhileTransaction(serialNumber),
-        req.session.clientId
+        chargerData.clientId
       );
       throw new CustomError(`Charger is offline`);
     }
@@ -796,7 +795,7 @@ export const startTransactionHandler = async (req, res) => {
         vehicleId: vehicleId,
         connectorId: connectorId,
         connectorOCPPId: Number(connectorData.connectorId),
-        clientId: req.session.clientId,
+        clientId: chargerData.clientId,
         requestedWatts: requestedWatts,
         requiredTime: null,
         pricePerUnit: connectorData.pricePerUnit,
@@ -812,7 +811,7 @@ export const startTransactionHandler = async (req, res) => {
       sendNotification(
         NOTIFICATION_TITLE.transactionAPIFailed,
         NOTIFICATION_MESSAGE.transactionAPIFailingFor(serialNumber),
-        req.session.clientId,
+        chargerData.clientId,
         null,
         null,
         true
@@ -825,7 +824,6 @@ export const startTransactionHandler = async (req, res) => {
     walletBalance.amount = +walletBalance.amount - +amountWithTax;
     // add the wallet history
     let walletTransactionData = await WalletTransactionModel.create({
-      // clientId: req.session.clientId,
       customerId: req.session._id,
       preBalance: preBalance,
       effectedBalance: +walletBalance.amount,
@@ -868,7 +866,7 @@ export const startTransactionHandler = async (req, res) => {
       NOTIFICATION_MESSAGE.transactionStarted(
         transactionData?.data?.transactionId
       ),
-      req.session.clientId
+      chargerData.clientId
     );
     return res
       .status(StatusCodes.OK)
@@ -949,7 +947,7 @@ export const stopTransactionHandler = async (req, res) => {
       sendNotification(
         NOTIFICATION_TITLE.stopTransactionFailed,
         NOTIFICATION_MESSAGE.stopTransactionFailed(serialNumber),
-        req.session.clientId
+        tData.clientId
       );
       throw new CustomError(
         `Failed to stop transaction, Please trigger Emergency stop`
@@ -959,7 +957,7 @@ export const stopTransactionHandler = async (req, res) => {
     sendNotification(
       NOTIFICATION_TITLE.transactionStopped,
       NOTIFICATION_MESSAGE.transactionStopped(transactionId),
-      req.session.clientId
+      tData.clientId
     );
 
     await TransactionModel.findOneAndUpdate(

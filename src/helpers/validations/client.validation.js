@@ -18,7 +18,7 @@ export const createClientValidation = Joi.object({
     )
     .optional(),
   countryCode: Joi.string().optional(),
-  address: Joi.string().min(5).max(100).optional(),
+  address: Joi.object().optional(),
 });
 
 export const updateClientValidation = Joi.object({

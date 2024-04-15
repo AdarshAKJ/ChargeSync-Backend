@@ -23,7 +23,7 @@ export const createClient = async (req, res) => {
     await createClientValidation.validateAsync(req.body);
 
     const isAvailable = await ClientModel.findOne({
-      name: req.body.name,
+      username: req.body.name,
       isDeleted: false,
     })
       .lean()
@@ -34,7 +34,10 @@ export const createClient = async (req, res) => {
     }
 
     let clientUserExist = await ClientUserModel.findOne({
-      $or: [{ username: req.body.username }, { email: req.body.email }],
+      $or: [
+        { username: req.body.username },
+        { email: req.body.contactPersonEmailAddress.toLowerCase() },
+      ],
     });
 
     if (clientUserExist)
@@ -78,7 +81,6 @@ export const createClient = async (req, res) => {
       _id: generatePublicId(),
       clientId: client._id,
       amount: 0,
-
       created_by: client._id,
       updated_by: client._id,
       created_at: getCurrentUnix(),
@@ -110,8 +112,8 @@ export const createClient = async (req, res) => {
       isAdminCreated: true,
       roleId: "ADMIN",
       fname: contactPersonParts[0],
-      lname: contactPersonParts.slice(1).join(" "),
-      email: contactPersonEmailAddress,
+      lname: contactPersonParts.slice(1).join(" ") || contactPersonParts[0],
+      email: contactPersonEmailAddress.toLowerCase(),
       phoneNumber: contactPersonPhoneNumber,
       countryCode: countryCode,
     });

@@ -8,7 +8,17 @@ const clientSchema = new mongoose.Schema({
   contactPersonEmailAddress: { type: String, required: true },
   contactPersonPhoneNumber: { type: String, required: true },
   countryCode: { type: String, required: true },
-  address: { type: String, required: true },
+  address: {
+    type: {
+      street_address_line1: { type: String },
+      street_address_line2: { type: String },
+      city: { type: String },
+      state: { type: String },
+      postal_code: { type: String },
+      country: { type: String },
+    },
+    required: false,
+  },
   prefix: { type: String, required: true },
   status: {
     type: String,
