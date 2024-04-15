@@ -26,6 +26,7 @@ import withdrawRequestRouter from "./routes/withdrawRequest.js";
 import clientWalletRouter from "./routes/clientWallet";
 import { encryptDataHandler } from "./routes/encryptData";
 import { decryptDataHandler } from "./routes/decryptData";
+import { getCountryStateCityHandler } from "./routes/country-state-city";
 
 
 const app = express();
@@ -109,6 +110,8 @@ app.use("/api/withdraw-req", withdrawRequestRouter);
 app.use("/api/support", supportRouter);
 app.post("/api/encrypt-data", encryptDataHandler);
 app.get("/api/decrypt-data/:token", decryptDataHandler);
+
+app.get("/api/get-country-state-city", getCountryStateCityHandler)
 
 app.use(express.json());
 
